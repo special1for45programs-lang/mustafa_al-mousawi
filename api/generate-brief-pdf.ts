@@ -31,18 +31,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing pdfBase64 data' });
     }
 
-    // Convert Base64 to Buffer
-    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
-    const pdfFileName = `Brief_${projectName || 'Project'}.pdf`;
+    // 🔍 Step 1 & 2: Debug & Clean Base64
+    console.log("[API] Raw Base64 length:", pdfBase64.length);
+    console.log("[API] Base64 starts with:", pdfBase64.slice(0, 30));
 
-    console.log('[API] Received PDF payload. Size:', pdfBuffer.length);
+    // Remove data URI prefix if present (common cause of corruption)
+    const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
+
+    // Convert to Buffer to check size
+    const pdfBuffer = Buffer.from(cleanBase64, 'base64');
+    console.log("[API] PDF Size (bytes):", pdfBuffer.length);
+
+    // 🔍 Step 6: Size Check
+    if (pdfBuffer.length > 3000000) {
+      console.warn("[API] ⚠️ PDF size exceeds 3MB, Resend might reject it.");
+    }
+
+    const pdfFileName = `Brief_${projectName || 'Project'}.pdf`;
 
     // 1. Send Email via Resend
     try {
       console.log('[API] Sending email via Resend...');
       await resend.emails.send({
-        from: 'Mustafa Al Moussawi <onboarding@resend.dev>', // Update this if you have a custom domain
-        to: ['mustafahaidar0955@gmail.com', clientEmail].filter(Boolean), // Send to you and the client
+        from: 'onboarding@resend.dev', // 🔍 Step 4: Use simple "from"
+        to: ['mustafahaidar0955@gmail.com', clientEmail].filter(Boolean),
         subject: `New Project Brief: ${projectName}`,
         html: `
             <h1>New Project Brief Received!</h1>
@@ -54,14 +66,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         attachments: [
           {
             filename: pdfFileName,
-            content: pdfBuffer.toString('base64'),
+            content: cleanBase64, // 🔍 Step 3: Use Clean Base64 String
+            type: 'application/pdf', // 🔍 Step 3: Explicit Type
           },
         ],
       });
       console.log('[API] Email sent successfully.');
-    } catch (emailError) {
-      console.error('[API] Failed to send email:', emailError);
-      // We continue to Telegram even if email fails
+    } catch (emailError: any) {
+      // 🔍 Step 5: Full Error Log
+      console.error('[API] Resend full error:', JSON.stringify(emailError, null, 2));
     }
 
     // 2. Send via Telegram (Optional)
