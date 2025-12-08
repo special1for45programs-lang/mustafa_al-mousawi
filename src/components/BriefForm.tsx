@@ -187,9 +187,14 @@ const BriefForm: React.FC = () => {
       });
 
       if (!response.ok) {
-        // حتى لو فشل الإيميل، المستخدم حصل على الملف
-        console.warn('[Frontend] Email sending failed, but PDF was downloaded.');
-        toast.error('تم تحميل الملف، ولكن فشل إرساله عبر البريد.', { duration: 5000 });
+        let errorMsg = `Server Error (${response.status})`;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.details || errorData.error || JSON.stringify(errorData);
+        } catch (e) {
+          errorMsg = await response.text();
+        }
+        throw new Error(errorMsg);
       } else {
         console.log('[Frontend] Email sent successfully!');
       }
