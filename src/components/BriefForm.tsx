@@ -210,9 +210,11 @@ const BriefForm: React.FC = () => {
 
       setIsSuccess(true);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Frontend] PDF Generation Error:', error);
-      alert(`حدث خطأ أثناء إنشاء الملف:\n${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+      // Show detailed error
+      const errorMessage = error instanceof Error ? error.message : typeof error === 'object' ? JSON.stringify(error) : String(error);
+      alert(`حدث خطأ أثناء إنشاء الملف:\n${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

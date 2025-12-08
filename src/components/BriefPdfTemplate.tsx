@@ -11,29 +11,8 @@ const BriefPdfTemplate: React.FC<BriefPdfTemplateProps> = ({ formData }) => {
         <div className="bg-white text-gray-900 w-full min-h-screen font-sans flex flex-col" dir="rtl">
             {/* Header - Forced LTR for correct visual alignment (Logo Left, Text Right of it) */}
             <div className="bg-black relative overflow-hidden border-b-2 border-brand-lime h-48 flex items-center px-12 shrink-0" dir="ltr">
-                {/* Abstract Wave Pattern - Simulated with SVG */}
-                <div className="absolute top-0 right-0 w-2/3 h-full pointer-events-none opacity-40">
-                    <svg viewBox="0 0 400 200" preserveAspectRatio="none" className="w-full h-full">
-                        <defs>
-                            <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-                                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.1" />
-                                <stop offset="100%" stopColor="#ffffff" stopOpacity="0.3" />
-                            </linearGradient>
-                        </defs>
-                        {/* Curved Geometric Lines */}
-                        <path d="M0,200 Q200,200 400,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M20,200 Q210,210 420,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M40,200 Q220,220 440,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M60,200 Q230,230 460,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M80,200 Q240,240 480,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M100,200 Q250,250 500,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M120,200 Q260,260 520,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M140,200 Q270,270 540,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M160,200 Q280,280 560,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                        <path d="M180,200 Q290,290 580,0" fill="none" stroke="url(#waveGradient)" strokeWidth="0.5" />
-                    </svg>
-                </div>
+                {/* Simple Background */}
+                <div className="absolute top-0 right-0 w-full h-full bg-black"></div>
 
                 <div className="flex items-center gap-6 relative z-10 w-full justify-start">
                     {/* Logo - Fluorescent Green */}
@@ -42,8 +21,7 @@ const BriefPdfTemplate: React.FC<BriefPdfTemplateProps> = ({ formData }) => {
                         <img
                             src="https://mustafa-kappa.vercel.app/Images/logoS1.png"
                             alt="Logo"
-                            className="w-20 h-20 object-contain"
-                            style={{ filter: 'brightness(0) saturate(100%) invert(76%) sepia(50%) saturate(693%) hue-rotate(24deg) brightness(101%) contrast(101%)' }}
+                            className="w-20 h-20 object-contain brightness-0 invert"
                         />
                     </div>
 
