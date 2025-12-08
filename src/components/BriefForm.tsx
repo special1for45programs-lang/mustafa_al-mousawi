@@ -53,9 +53,17 @@ const BriefForm: React.FC = () => {
     notes: ''
   });  // مرجع لحاوية النموذج للتمرير إليها
   const formRef = useRef<HTMLDivElement>(null);
+  // مرجع لتتتبع التحميل الأول (لمنع التمرير عند فتح الصفحة)
+  const isFirstRender = useRef(true);
 
   // الانتقال إلى بداية النموذج عند تغيير الخطوة
   useEffect(() => {
+    // منع التمرير في المرة الأولى (عند تحميل الصفحة)
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth' });
     }
