@@ -51,11 +51,14 @@ const BriefForm: React.FC = () => {
     deadline: '',
     budget: '100-150',
     notes: ''
-  });
+  });  // مرجع لحاوية النموذج للتمرير إليها
+  const formRef = useRef<HTMLDivElement>(null);
 
-  // الانتقال للأعلى عند تغيير الخطوة
+  // الانتقال إلى بداية النموذج عند تغيير الخطوة
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [step]);
 
   // تحديث البيانات (Generic Updater)
@@ -312,7 +315,7 @@ const BriefForm: React.FC = () => {
         </div>
 
         {/* شريط التقدم (Step Indicator) */}
-        <div className="flex justify-between items-center max-w-2xl mx-auto mb-16 relative">
+        <div ref={formRef} className="flex justify-between items-center max-w-2xl mx-auto mb-16 relative">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-brand-gray -z-10 rounded-full"></div>
           <div
             className="absolute top-1/2 right-0 h-1 bg-brand-lime -z-10 rounded-full transition-all duration-500"
