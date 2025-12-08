@@ -40,7 +40,7 @@ const BriefPdfTemplate: React.FC<BriefPdfTemplateProps> = ({ formData }) => {
                     <div className="w-24 h-24 flex items-center justify-center">
                         {/* Note: In production, use absolute URL for image if possible or base64 */}
                         <img
-                            src="https://mustafa-al-moussaw.vercel.app/Images/logoS1.png"
+                            src="https://mustafa-kappa.vercel.app/Images/logoS1.png"
                             alt="Logo"
                             className="w-20 h-20 object-contain"
                             style={{ filter: 'brightness(0) saturate(100%) invert(76%) sepia(50%) saturate(693%) hue-rotate(24deg) brightness(101%) contrast(101%)' }}
