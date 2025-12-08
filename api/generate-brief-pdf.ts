@@ -73,8 +73,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       console.log('[API] Email sent successfully.');
     } catch (emailError: any) {
-      // 🔍 Step 5: Full Error Log
-      console.error('[API] Resend full error:', JSON.stringify(emailError, null, 2));
+      // 🔍 Step 5: Full Error Log & Return to User
+      const errorDetails = JSON.stringify(emailError, null, 2);
+      console.error('[API] Resend full error:', errorDetails);
+      return res.status(500).json({
+        error: 'Failed to send email via Resend',
+        details: emailError.message || errorDetails
+      });
     }
 
     // 2. Send via Telegram (Optional)
