@@ -53,7 +53,10 @@ const BriefForm: React.FC = () => {
     notes: ''
   });
 
-
+  // الانتقال للأعلى عند تغيير الخطوة
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   // تحديث البيانات (Generic Updater)
   const updateFormData = (data: Partial<BriefFormData>) => {
