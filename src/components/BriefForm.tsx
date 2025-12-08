@@ -124,16 +124,23 @@ const BriefForm: React.FC = () => {
     console.log('[Frontend] Starting Client-Side PDF generation...');
 
     try {
+      // 1. توليد PDF محلياً - التحقق من وجود العنصر
+      console.log('[Frontend] Validating PDF container...');
+
       if (!pdfContainerRef.current) {
-        throw new Error('PDF container not found');
+        throw new Error('PDF container reference is null - element not mounted');
       }
 
-      // 1. توليد PDF محلياً
-      console.log('[Frontend] Capturing PDF template...');
+      if (!(pdfContainerRef.current instanceof HTMLElement)) {
+        throw new Error('PDF container is not a valid HTML element');
+      }
 
-      // انتظار قصير للتأكد من تحميل الصور (اختياري لكن مفيد)
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('[Frontend] Container validated. Waiting for content to load...');
 
+      // انتظار أطول للتأكد من تحميل الصور والخطوط
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log('[Frontend] Capturing PDF template with html2canvas...');
       const canvas = await html2canvas(pdfContainerRef.current, {
         scale: 2, // جودة عالية
         useCORS: true, // للسماح بتحميل الصور الخارجية
@@ -310,11 +317,22 @@ const BriefForm: React.FC = () => {
 
       <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
 
-        {/* Hidden Render Container for PDF */}
-        <div style={{ position: 'absolute', top: '-10000px', left: '-10000px', width: '794px', zIndex: -50 }}>
-          <div ref={pdfContainerRef}>
-            <BriefPdfTemplate formData={formData} />
-          </div>
+        {/* Hidden Render Container for PDF - Using visibility:hidden for proper DOM rendering */}
+        <div
+          ref={pdfContainerRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '794px',
+            visibility: 'hidden',
+            opacity: 0,
+            pointerEvents: 'none',
+            zIndex: -9999,
+            backgroundColor: '#ffffff'
+          }}
+        >
+          <BriefPdfTemplate formData={formData} />
         </div>
 
         <div className="text-center mb-16">
