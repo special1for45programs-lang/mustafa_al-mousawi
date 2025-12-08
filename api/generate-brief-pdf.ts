@@ -40,10 +40,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log('[PDF] Chromium executable path:', executablePath);
 
         browser = await puppeteer.launch({
-          args: chromium.args,
-          defaultViewport: { width: 1920, height: 1080 },
+          args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          defaultViewport: chromium.defaultViewport,
           executablePath: executablePath,
-          headless: true,
+          headless: chromium.headless,
+          ignoreHTTPSErrors: true,
+          dumpio: true, // Log all browser output
+          ignoreDefaultArgs: ['--disable-extensions'],
         });
       }
     } catch (launchError: any) {
