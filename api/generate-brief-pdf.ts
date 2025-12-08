@@ -54,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         attachments: [
           {
             filename: pdfFileName,
-            content: pdfBuffer,
+            content: pdfBuffer.toString('base64'),
           },
         ],
       });
