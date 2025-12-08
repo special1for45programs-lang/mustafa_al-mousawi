@@ -1,4 +1,3 @@
-
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
 import chromium from '@sparticuz/chromium';
@@ -12,6 +11,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let browser = null;
+
   try {
     const { html, projectName, clientName, companyName, clientEmail } = req.body;
 
@@ -23,23 +24,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const isLocal = process.env.VERCEL_ENV === 'development' || !process.env.VERCEL_ENV;
     console.log(`[PDF] Environment: ${isLocal ? 'Local' : 'Production'}`);
 
-    let browser;
     try {
       if (isLocal) {
         console.log('[PDF] Launching local puppeteer...');
         browser = await puppeteer.launch({
-          args: chromium.args,
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
           defaultViewport: { width: 1920, height: 1080 },
-          executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', // Explicit local path
+          executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
           headless: true,
         });
       } else {
         console.log('[PDF] Launching production chromium...');
+        // Configure chromium for serverless - minimal memory usage
+        chromium.setHeadlessMode = true;
+        chromium.setGraphicsMode = false;
+
+        const executablePath = await chromium.executablePath();
+        console.log('[PDF] Chromium executable path:', executablePath);
+
         browser = await puppeteer.launch({
           args: chromium.args,
           defaultViewport: { width: 1920, height: 1080 },
-          executablePath: await chromium.executablePath(),
-          headless: true,
+          executablePath: executablePath,
+          headless: chromium.headless,
         });
       }
     } catch (launchError: any) {
@@ -52,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Set content
     await page.setContent(html, {
       waitUntil: 'networkidle0',
-      timeout: 60000
+      timeout: 30000
     });
 
     // Generate PDF
@@ -63,6 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     await browser.close();
+    browser = null;
     console.log('[PDF] Generated successfully, size:', pdfBuffer.length);
 
     // Send Email (Resend)
@@ -145,5 +153,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error('[PDF] Critical Endpoint Error:', error);
     return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
