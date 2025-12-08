@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           {
             filename: pdfFileName,
             content: cleanBase64, // 🔍 Step 3: Use Clean Base64 String
-            type: 'application/pdf', // 🔍 Step 3: Explicit Type
+            contentType: 'application/pdf', // 🔍 Step 3: Explicit Type (correction: using contentType)
           },
         ],
       });
