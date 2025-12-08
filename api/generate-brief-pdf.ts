@@ -27,33 +27,66 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { pdfBase64, projectName, clientName, companyName, clientEmail } = req.body;
 
+    // ✅ CRITICAL FIX: Validate API Key First
+    if (!process.env.RESEND_API_KEY) {
+      console.error('[API] ❌ RESEND_API_KEY is missing!');
+      return res.status(500).json({
+        error: 'Server configuration error',
+        details: 'RESEND_API_KEY environment variable is not set'
+      });
+    }
+
     if (!pdfBase64) {
       return res.status(400).json({ error: 'Missing pdfBase64 data' });
     }
 
-    // 🔍 Step 1 & 2: Debug & Clean Base64
+    // Debug & Clean Base64
     console.log("[API] Raw Base64 length:", pdfBase64.length);
     console.log("[API] Base64 starts with:", pdfBase64.slice(0, 30));
 
-    // Remove data URI prefix if present (common cause of corruption)
+    // Remove data URI prefix if present
     const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
 
-    // Convert to Buffer to check size
+    // ✅ CRITICAL FIX: Convert to Buffer (Resend prefers Buffer over raw Base64)
     const pdfBuffer = Buffer.from(cleanBase64, 'base64');
     console.log("[API] PDF Size (bytes):", pdfBuffer.length);
 
-    // 🔍 Step 6: Size Check
+    // Size Check
     if (pdfBuffer.length > 3000000) {
       console.warn("[API] ⚠️ PDF size exceeds 3MB, Resend might reject it.");
     }
 
     const pdfFileName = `Brief_${projectName || 'Project'}.pdf`;
 
-    // 1. Send Email via Resend
+    // 🧪 DIAGNOSTIC: Try sending WITHOUT attachment first
     try {
-      console.log('[API] Sending email via Resend...');
-      await resend.emails.send({
-        from: 'onboarding@resend.dev', // 🔍 Step 4: Use simple "from"
+      console.log('[API] 🧪 TEST 1: Sending email WITHOUT attachment...');
+      const testResult = await resend.emails.send({
+        from: 'onboarding@resend.dev',
+        to: ['mustafahaidar0955@gmail.com'],
+        subject: `[TEST] Email System Check - ${projectName}`,
+        html: `
+            <h1>✅ Email System is Working!</h1>
+            <p>This is a test email to confirm Resend API is functioning.</p>
+            <p><strong>Client:</strong> ${clientName}</p>
+            <p><strong>Project:</strong> ${projectName}</p>
+            <p>If you received this, the next email will contain the PDF attachment.</p>
+            `,
+      });
+      console.log('[API] ✅ TEST 1 PASSED: Email sent successfully without attachment. ID:', testResult.data?.id);
+    } catch (testError: any) {
+      console.error('[API] ❌ TEST 1 FAILED:', JSON.stringify(testError, null, 2));
+      return res.status(500).json({
+        error: 'Email system test failed (without attachment)',
+        details: testError.message || JSON.stringify(testError)
+      });
+    }
+
+    // 🧪 DIAGNOSTIC: Now try WITH attachment using Buffer (recommended by Resend docs)
+    try {
+      console.log('[API] 🧪 TEST 2: Sending email WITH attachment (Buffer format)...');
+      const attachmentResult = await resend.emails.send({
+        from: 'onboarding@resend.dev',
         to: ['mustafahaidar0955@gmail.com', clientEmail].filter(Boolean),
         subject: `New Project Brief: ${projectName}`,
         html: `
@@ -66,18 +99,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         attachments: [
           {
             filename: pdfFileName,
-            content: cleanBase64, // 🔍 Step 3: Use Clean Base64 String
-            contentType: 'application/pdf', // 🔍 Step 3: Explicit Type (correction: using contentType)
+            content: pdfBuffer, // ✅ Using Buffer directly (Resend SDK handles conversion)
           },
         ],
       });
-      console.log('[API] Email sent successfully.');
+      console.log('[API] ✅ TEST 2 PASSED: Email with attachment sent successfully. ID:', attachmentResult.data?.id);
     } catch (emailError: any) {
-      // 🔍 Step 5: Full Error Log & Return to User
       const errorDetails = JSON.stringify(emailError, null, 2);
-      console.error('[API] Resend full error:', errorDetails);
+      console.error('[API] ❌ TEST 2 FAILED (Attachment):', errorDetails);
       return res.status(500).json({
-        error: 'Failed to send email via Resend',
+        error: 'Failed to send email with attachment',
         details: emailError.message || errorDetails
       });
     }
@@ -90,7 +121,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         formData.append('chat_id', TELEGRAM_CHAT_ID);
         formData.append('caption', `🚀 New Brief: ${projectName}\n👤 ${clientName}`);
 
-        // Telegram expects a Blob for files in FormData
         const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
         formData.append('document', blob, pdfFileName);
 
@@ -110,7 +140,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Return success
-    return res.status(200).json({ success: true, message: 'PDF processed and sent' });
+    return res.status(200).json({
+      success: true,
+      message: 'Both test emails sent successfully! Check your inbox.'
+    });
 
   } catch (error: any) {
     console.error('[API] Error processing request:', error);
