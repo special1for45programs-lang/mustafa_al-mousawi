@@ -124,23 +124,44 @@ const BriefForm: React.FC = () => {
     console.log('[Frontend] Starting Client-Side PDF generation...');
 
     try {
-      // 1. توليد PDF محلياً - التحقق من وجود العنصر
-      console.log('[Frontend] Validating PDF container...');
+      console.log('[Frontend] Starting Client-Side PDF generation...');
 
+      // 1. Validate container reference
       if (!pdfContainerRef.current) {
-        throw new Error('PDF container reference is null - element not mounted');
+        throw new Error('❌ PDF container reference is null - DOM element not found');
       }
 
       if (!(pdfContainerRef.current instanceof HTMLElement)) {
-        throw new Error('PDF container is not a valid HTML element');
+        throw new Error('❌ PDF container is not a valid HTML element');
       }
 
-      console.log('[Frontend] Container validated. Waiting for content to load...');
+      // 2. Validate that BriefPdfTemplate has rendered (check for children)
+      if (!pdfContainerRef.current.children || pdfContainerRef.current.children.length === 0) {
+        throw new Error('❌ PDF template did not render - container is empty. Check formData values.');
+      }
 
-      // انتظار أطول للتأكد من تحميل الصور والخطوط
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('[Frontend] ✅ Container validated. Children count:', pdfContainerRef.current.children.length);
+      console.log('[Frontend] ✅ Container HTML length:', pdfContainerRef.current.innerHTML.length);
 
-      console.log('[Frontend] Capturing PDF template with html2canvas...');
+      // 3. Wait for images to load
+      console.log('[Frontend] Waiting for images and fonts to load...');
+      const images = pdfContainerRef.current.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => {
+            console.warn('[Frontend] Image failed to load:', img.src);
+            resolve(); // Continue even if image fails
+          };
+          setTimeout(resolve, 5000); // Timeout after 5s
+        });
+      });
+
+      await Promise.all(imagePromises);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Extra safety margin
+
+      console.log('[Frontend] ✅ All resources loaded. Starting html2canvas...');
       const canvas = await html2canvas(pdfContainerRef.current, {
         scale: 2, // جودة عالية
         useCORS: true, // للسماح بتحميل الصور الخارجية
