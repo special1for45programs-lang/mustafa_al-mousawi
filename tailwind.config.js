@@ -7,7 +7,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Cairo', 'sans-serif'], // الخط الأساسي العربي
+                sans: ['Dubai', 'sans-serif'], // الخط الأساسي العربي
                 serif: ['Playfair Display', 'serif'], // الخط الثانوي الإنجليزي
             },
             colors: {

@@ -166,8 +166,8 @@ const BriefForm: React.FC = () => {
             }
           </script>
           <style>
-             @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-             body { font-family: 'Cairo', 'Arial', sans-serif; }
+             @import url('https://fonts.googleapis.com/css2?family=Dubai:wght@300;400;500;700&display=swap');
+             body { font-family: 'Dubai', 'Arial', sans-serif; }
           </style>
         </head>
         <body>
@@ -269,6 +269,60 @@ const BriefForm: React.FC = () => {
   // شاشة النجاح
   if (isSuccess) {
     return <SuccessView resetForm={resetForm} />;
+  }
+
+  // شاشة التحميل المحسنة
+  if (isSubmitting) {
+    return (
+      <div className="py-24 bg-brand-black font-sans relative overflow-hidden select-none min-h-screen flex items-center justify-center">
+        <div className="w-full max-w-lg mx-auto px-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
+            {/* أيقونة متحركة */}
+            <div className="relative w-24 h-24 mx-auto mb-8">
+              <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-brand-lime border-t-transparent rounded-full animate-spin"></div>
+              <div className="absolute inset-4 bg-brand-lime/10 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-brand-lime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">جاري إعداد ملف المشروع...</h3>
+            <p className="text-gray-500 mb-8">قد تستغرق هذه العملية حتى 30 ثانية</p>
+
+            {/* شريط التقدم */}
+            <div className="w-full bg-gray-100 rounded-full h-2 mb-8 overflow-hidden">
+              <div className="bg-brand-lime h-full rounded-full animate-pulse" style={{ width: '60%', animation: 'loading 2s ease-in-out infinite' }}></div>
+            </div>
+
+            {/* ملاحظات مهمة */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-right">
+              <h4 className="font-bold text-yellow-800 mb-2 flex items-center gap-2 justify-end">
+                <span>ملاحظات مهمة</span>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </h4>
+              <ul className="text-sm text-yellow-700 space-y-2">
+                <li className="flex items-start gap-2 justify-end">
+                  <span>سيتم تحميل ملف PDF تلقائياً على جهازك</span>
+                  <span>📥</span>
+                </li>
+                <li className="flex items-start gap-2 justify-end">
+                  <span>سيصل المصمم نسخة عبر البريد والتليقرام</span>
+                  <span>📧</span>
+                </li>
+                <li className="flex items-start gap-2 justify-end">
+                  <span>لا تغلق الصفحة حتى اكتمال العملية</span>
+                  <span>⚠️</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

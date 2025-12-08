@@ -39,7 +39,7 @@ const Footer: React.FC = () => {
                 <a href="mailto:mustafahaidar0955@gmail.com" className="hover:text-brand-lime transition-colors">mustafa.al_moussawi</a>
               </li>
               <li>البصرة، العراق</li>
-              <li className="text-xs mt-4 text-gray-600">© 2024 جميع الحقوق محفوظة.</li>
+              <li className="text-xs mt-4 text-gray-600">© {new Date().getFullYear()} جميع الحقوق محفوظة.</li>
             </ul>
           </div>
         </div>

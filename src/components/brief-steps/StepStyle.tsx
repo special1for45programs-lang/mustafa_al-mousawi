@@ -10,22 +10,70 @@ const StepStyle: React.FC<StepProps> = ({ formData, updateFormData }) => {
         updateFormData({ logoType: id });
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // دالة ضغط الصور لتقليل الحجم قبل التخزين
+    const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let { width, height } = img;
+
+                    // تصغير الأبعاد مع الحفاظ على النسبة
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxWidth) {
+                        width = (width * maxWidth) / height;
+                        height = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error('Failed to get canvas context'));
+                        return;
+                    }
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // تحويل لـ JPEG مضغوط
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedBase64);
+                };
+                img.onerror = () => reject(new Error('Failed to load image'));
+                img.src = e.target?.result as string;
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             if (formData.moodboard.length >= 5) {
                 alert("لقد وصلت للحد الأقصى (5 صور). يرجى حذف صورة قبل إضافة أخرى.");
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                alert("حجم الملف كبير جداً. يرجى اختيار صورة أقل من 5 ميجابايت.");
+            if (file.size > 10 * 1024 * 1024) {
+                alert("حجم الملف كبير جداً. يرجى اختيار صورة أقل من 10 ميجابايت.");
                 return;
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                updateFormData({ moodboard: [...formData.moodboard, reader.result as string] });
-            };
-            reader.readAsDataURL(file);
+
+            try {
+                // ضغط الصورة قبل التخزين
+                const compressedImage = await compressImage(file, 800, 0.7);
+                console.log(`[Moodboard] Original size: ${(file.size / 1024).toFixed(1)}KB, Compressed: ${(compressedImage.length / 1024).toFixed(1)}KB (Base64)`);
+                updateFormData({ moodboard: [...formData.moodboard, compressedImage] });
+            } catch (error) {
+                console.error('[Moodboard] Compression failed:', error);
+                alert("فشل في معالجة الصورة. يرجى المحاولة مرة أخرى.");
+            }
         }
         if (fileInputRef.current) fileInputRef.current.value = '';
     };

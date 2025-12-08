@@ -35,9 +35,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
       } else {
         console.log('[PDF] Launching production chromium...');
-        // Configure chromium for serverless - minimal memory usage
-        chromium.setHeadlessMode = true;
-        chromium.setGraphicsMode = false;
 
         const executablePath = await chromium.executablePath();
         console.log('[PDF] Chromium executable path:', executablePath);
@@ -46,7 +43,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           args: chromium.args,
           defaultViewport: { width: 1920, height: 1080 },
           executablePath: executablePath,
-          headless: chromium.headless,
+          headless: true,
         });
       }
     } catch (launchError: any) {

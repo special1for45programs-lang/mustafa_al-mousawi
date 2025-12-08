@@ -96,6 +96,8 @@ const Hero: React.FC = () => {
               <img
                 src={ASSETS.profile}
                 alt="Mustafa Al Moussawi"
+                loading="eager"
+                fetchPriority="high"
                 className="w-full h-full object-cover filter contrast-110 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110"
                 // صورة بديلة في حال عدم التحميل
                 onError={(e) => {
