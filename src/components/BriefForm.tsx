@@ -162,13 +162,33 @@ const BriefForm: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 500)); // Extra safety margin
 
       console.log('[Frontend] ✅ All resources loaded. Starting html2canvas...');
+      console.log('[Frontend] Container element:', pdfContainerRef.current);
+      console.log('[Frontend] Container tagName:', pdfContainerRef.current.tagName);
+      console.log('[Frontend] Container clientWidth:', pdfContainerRef.current.clientWidth);
+      console.log('[Frontend] Container clientHeight:', pdfContainerRef.current.clientHeight);
+
+      // Temporarily move container to visible area for capture (some browsers need this)
+      const originalTop = pdfContainerRef.current.style.top;
+      const originalLeft = pdfContainerRef.current.style.left;
+      pdfContainerRef.current.style.top = '0';
+      pdfContainerRef.current.style.left = '0';
+      pdfContainerRef.current.style.zIndex = '99999';
+
+      // Small delay to let browser re-position
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(pdfContainerRef.current, {
         scale: 2, // جودة عالية
         useCORS: true, // للسماح بتحميل الصور الخارجية
         logging: false,
         backgroundColor: '#ffffff',
-        windowWidth: 794, // عرض A4 بالبكسل تقريباً
+        windowWidth: 794, //        windowWidth: 794,
       });
+
+      // Move container back off-screen
+      pdfContainerRef.current.style.top = originalTop;
+      pdfContainerRef.current.style.left = originalLeft;
+      pdfContainerRef.current.style.zIndex = '-1';
 
       console.log('[Frontend] Canvas created. Generating PDF...');
       const imgData = canvas.toDataURL('image/png');
@@ -338,19 +358,17 @@ const BriefForm: React.FC = () => {
 
       <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
 
-        {/* Hidden Render Container for PDF - Using visibility:hidden for proper DOM rendering */}
+        {/* PDF Render Container - Positioned off-screen for rendering */}
         <div
           ref={pdfContainerRef}
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
+            position: 'absolute',
+            top: '-50000px',
+            left: '-50000px',
             width: '794px',
-            visibility: 'hidden',
-            opacity: 0,
-            pointerEvents: 'none',
-            zIndex: -9999,
-            backgroundColor: '#ffffff'
+            height: 'auto',
+            backgroundColor: '#ffffff',
+            zIndex: -1
           }}
         >
           <BriefPdfTemplate formData={formData} />
