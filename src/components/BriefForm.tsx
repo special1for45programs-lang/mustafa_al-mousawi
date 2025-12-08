@@ -53,32 +53,7 @@ const BriefForm: React.FC = () => {
     notes: ''
   });
 
-  // --- Auto-Save Logic Start ---
-  // استعادة البيانات المحفوظة عند تحميل المكون
-  useEffect(() => {
-    const savedData = localStorage.getItem('briefFormData');
-    const savedStep = localStorage.getItem('briefFormStep');
-    if (savedData) {
-      try {
-        setFormData(JSON.parse(savedData));
-      } catch (e) {
-        console.error("Failed to parse saved form data", e);
-      }
-    }
-    if (savedStep) {
-      setStep(parseInt(savedStep));
-    }
-  }, []);
 
-  // حفظ البيانات عند كل تغيير
-  useEffect(() => {
-    // لا تقم بالحفظ إذا كنا في حالة النجاح (لأننا نريد تنظيف النموذج)
-    if (!isSuccess) {
-      localStorage.setItem('briefFormData', JSON.stringify(formData));
-      localStorage.setItem('briefFormStep', step.toString());
-    }
-  }, [formData, step, isSuccess]);
-  // --- Auto-Save Logic End ---
 
   // تحديث البيانات (Generic Updater)
   const updateFormData = (data: Partial<BriefFormData>) => {
@@ -123,10 +98,6 @@ const BriefForm: React.FC = () => {
     setIsSuccess(false);
     setIsSubmitting(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // مسح البيانات المحفوظة
-    localStorage.removeItem('briefFormData');
-    localStorage.removeItem('briefFormStep');
   };
 
   // دالة توليد ملف PDF وإرساله عبر API
