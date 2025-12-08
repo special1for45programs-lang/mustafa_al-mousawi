@@ -14,6 +14,8 @@ import StepReview from './brief-steps/StepReview';
 import SuccessView from './brief-steps/SuccessView';
 import { renderToStaticMarkup } from 'react-dom/server';
 import BriefPdfTemplate from './BriefPdfTemplate';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // مكون استمارة بدء المشروع (Brief Form)
 const BriefForm: React.FC = () => {
@@ -53,6 +55,8 @@ const BriefForm: React.FC = () => {
     notes: ''
   });  // مرجع لحاوية النموذج للتمرير إليها
   const formRef = useRef<HTMLDivElement>(null);
+  // مرجع لحاوية PDF المخفية
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   // مرجع لتتتبع التحميل الأول (لمنع التمرير عند فتح الصفحة)
   const isFirstRender = useRef(true);
 
@@ -117,61 +121,64 @@ const BriefForm: React.FC = () => {
   // دالة توليد ملف PDF وإرساله عبر API
   const generateAndSendPDF = async () => {
     setIsSubmitting(true);
-    console.log('[Frontend] Starting PDF generation...');
+    console.log('[Frontend] Starting Client-Side PDF generation...');
 
     try {
-      // 1. توليد كود HTML من المكون
-      console.log('[Frontend] Rendering PDF template...');
-      const pdfContentArray = [
-        renderToStaticMarkup(<BriefPdfTemplate formData={formData} />)
-      ];
+      if (!pdfContainerRef.current) {
+        throw new Error('PDF container not found');
+      }
 
-      const pdfHtml = `
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <script src="https://cdn.tailwindcss.com"></script>
-          <script>
-            tailwind.config = {
-              theme: {
-                extend: {
-                  colors: {
-                    'brand-lime': '#ccff00',
-                    'brand-black': '#0a0a0a',
-                    'brand-dark': '#1a1a1a',
-                    'brand-gray': '#333333',
-                  },
-                  fontFamily: {
-                    sans: ['Arial', 'sans-serif'],
-                  }
-                }
-              }
-            }
-          </script>
-          <style>
-             @import url('https://fonts.googleapis.com/css2?family=Dubai:wght@300;400;500;700&display=swap');
-             body { font-family: 'Dubai', 'Arial', sans-serif; }
-          </style>
-        </head>
-        <body>
-          ${pdfContentArray[0]}
-        </body>
-        </html>
-      `;
+      // 1. توليد PDF محلياً
+      console.log('[Frontend] Capturing PDF template...');
 
-      console.log('[Frontend] HTML generated, size:', pdfHtml.length, 'characters');
+      // انتظار قصير للتأكد من تحميل الصور (اختياري لكن مفيد)
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // 2. إرسال إلى الـ API
-      console.log('[Frontend] Calling API endpoint: /api/generate-brief-pdf');
+      const canvas = await html2canvas(pdfContainerRef.current, {
+        scale: 2, // جودة عالية
+        useCORS: true, // للسماح بتحميل الصور الخارجية
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: 794, // عرض A4 بالبكسل تقريباً
+      });
+
+      console.log('[Frontend] Canvas created. Generating PDF...');
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // إضافة الصورة للـ PDF (fit to page)
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      // 2. تحميل الملف للمستخدم فوراً
+      console.log('[Frontend] Saving PDF locally...');
+      const pdfFileName = `Brief_${formData.projectName || 'Project'}.pdf`;
+      pdf.save(pdfFileName);
+
+      // 3. تجهيز الملف للإرسال
+      const pdfBlob = pdf.output('blob');
+      const reader = new FileReader();
+
+      const pdfBase64 = await new Promise<string>((resolve) => {
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          // إزالة الـ prefix (data:application/pdf;base64,)
+          const base64Content = base64String.split(',')[1];
+          resolve(base64Content);
+        };
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      // 4. إرسال إلى الـ API للإيميل
+      console.log('[Frontend] Sending PDF to API for email...');
       const response = await fetch('/api/generate-brief-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          html: pdfHtml,
+          pdfBase64: pdfBase64, // نرسل الملف الجاهز
           projectName: formData.projectName,
           clientName: formData.clientName,
           companyName: formData.companyName,
@@ -179,37 +186,16 @@ const BriefForm: React.FC = () => {
         }),
       });
 
-      console.log('[Frontend] API response status:', response.status, response.statusText);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Frontend] API error response:', errorText);
-        throw new Error(`فشل في إنشاء ملف PDF: ${response.status} - ${errorText}`);
+        // حتى لو فشل الإيميل، المستخدم حصل على الملف
+        console.warn('[Frontend] Email sending failed, but PDF was downloaded.');
+        toast.error('تم تحميل الملف، ولكن فشل إرساله عبر البريد.', { duration: 5000 });
+      } else {
+        console.log('[Frontend] Email sent successfully!');
       }
 
-      // 3. تحميل ملف PDF الناتج
-      console.log('[Frontend] Creating blob from response...');
-      const blob = await response.blob();
-      console.log('[Frontend] Blob created, size:', blob.size, 'bytes, type:', blob.type);
-
-      if (blob.size === 0) {
-        throw new Error('ملف PDF فارغ - فشل في إنشاء الملف');
-      }
-
-      console.log('[Frontend] Triggering download...');
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Brief_${formData.projectName || 'Project'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-
-      console.log('[Frontend] PDF downloaded successfully!');
-
-      // إشعار العميل بأن الملف تم تحميله بنجاح
-      toast.success('✅ تم تحميل ملف PDF على جهازك بنجاح!', {
+      // إشعار العميل بالنجاح الكامل
+      toast.success('✅ تم تحميل ملف PDF وإرساله بنجاح!', {
         duration: 5000,
         style: {
           background: '#1a1a1a',
@@ -225,8 +211,8 @@ const BriefForm: React.FC = () => {
       setIsSuccess(true);
 
     } catch (error) {
-      console.error('[Frontend] PDF Generation/Sending Error:', error);
-      alert(`حدث خطأ أثناء المعالجة أو الإرسال:\n${error instanceof Error ? error.message : 'خطأ غير معروف'}\n\nيرجى التحقق من وحدة التحكم (Console) للحصول على مزيد من التفاصيل.`);
+      console.error('[Frontend] PDF Generation Error:', error);
+      alert(`حدث خطأ أثناء إنشاء الملف:\n${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -316,6 +302,13 @@ const BriefForm: React.FC = () => {
 
 
       <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
+
+        {/* Hidden Render Container for PDF */}
+        <div style={{ position: 'absolute', top: '-10000px', left: '-10000px', width: '794px', zIndex: -50 }}>
+          <div ref={pdfContainerRef}>
+            <BriefPdfTemplate formData={formData} />
+          </div>
+        </div>
 
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">ابدأ مشروعك</h2>
