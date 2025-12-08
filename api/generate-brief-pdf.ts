@@ -49,10 +49,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             '--single-process', // Often helps in serverless
             '--no-zygote'
           ],
-          defaultViewport: chromium.defaultViewport,
+          defaultViewport: { width: 1920, height: 1080 },
           executablePath: executablePath,
           headless: true, // Force boolean true
-          ignoreHTTPSErrors: true,
         });
       }
     } catch (launchError: any) {
