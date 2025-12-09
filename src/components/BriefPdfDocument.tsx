@@ -5,39 +5,20 @@ import {
     Text,
     View,
     StyleSheet,
-    Font,
     Image,
     Link
 } from '@react-pdf/renderer';
 import { BriefFormData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
 
-// تسجيل الخطوط العربية من Google Fonts
-Font.register({
-    family: 'Cairo',
-    fonts: [
-        {
-            src: 'https://fonts.gstatic.com/s/cairo/v28/SLXgc1nY6HkvangtZmpcWmhzfH5lWWgcQyyS4J0.ttf',
-            fontWeight: 400
-        },
-        {
-            src: 'https://fonts.gstatic.com/s/cairo/v28/SLXgc1nY6HkvangtZmpcWmhzfH5l92gcQyyS4J0.ttf',
-            fontWeight: 700
-        }
-    ]
-});
-
-// تسجيل خط Arial للعناوين الإنجليزية
-Font.register({
-    family: 'Arial',
-    src: 'https://fonts.gstatic.com/s/opensans/v34/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4nY1M2xLER.ttf'
-});
+// Note: Using default Helvetica font which is bundled with @react-pdf/renderer
+// Custom Arabic fonts can be added later if needed
 
 // تعريف الأنماط
 const styles = StyleSheet.create({
     page: {
         backgroundColor: '#ffffff',
-        fontFamily: 'Cairo',
+        fontFamily: 'Helvetica',
         fontSize: 11,
         direction: 'rtl'
     },
@@ -61,9 +42,8 @@ const styles = StyleSheet.create({
         flexDirection: 'column'
     },
     headerTitle: {
-        fontFamily: 'Arial',
+        fontFamily: 'Helvetica-Bold',
         fontSize: 32,
-        fontWeight: 900,
         color: '#ffffff',
         letterSpacing: 2,
         textTransform: 'uppercase'
@@ -252,8 +232,7 @@ const styles = StyleSheet.create({
         padding: 4
     },
     instagramText: {
-        fontFamily: 'Arial',
-        fontWeight: 700,
+        fontFamily: 'Helvetica-Bold',
         fontSize: 11,
         color: '#d4ff00',
         letterSpacing: 1
