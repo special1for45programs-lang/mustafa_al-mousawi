@@ -263,6 +263,31 @@ function generatePdfHTML(formData: BriefFormData): string {
       line-height: 1.8;
     }
     
+    /* Images Gallery */
+    .images-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 15px;
+    }
+    
+    .gallery-image {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+    
+    .gallery-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+    
     /* Footer */
     .footer {
       background: #000000;
@@ -394,6 +419,23 @@ function generatePdfHTML(formData: BriefFormData): string {
           </div>
         </div>
       </div>
+      
+      ${formData.moodboard && formData.moodboard.length > 0 ? `
+      <!-- المرفقات / الصور -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-indicator"></div>
+          <div class="section-title">المرفقات (${formData.moodboard.length})</div>
+        </div>
+        <div class="images-gallery">
+          ${formData.moodboard.map((img: string, index: number) => `
+            <div class="gallery-image">
+              <img src="${img}" alt="مرفق ${index + 1}">
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
       
       ${formData.notes ? `
       <!-- ملاحظات -->
