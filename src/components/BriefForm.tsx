@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Instagram } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Download, Send } from 'lucide-react';
+import { pdf } from '@react-pdf/renderer';
 import toast from 'react-hot-toast';
+import BriefPdfDocument from './BriefPdfDocument';
 import { Button } from './ui/Button';
 import { BriefFormData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
-
+import { useFormAutosave, loadSavedFormData, clearSavedFormData } from '../hooks/useFormAutosave';
 
 // Import New Components
 import StepInfo from './brief-steps/StepInfo';
@@ -13,46 +15,82 @@ import StepDetails from './brief-steps/StepDetails';
 import StepReview from './brief-steps/StepReview';
 import SuccessView from './brief-steps/SuccessView';
 
+// مفتاح حفظ البيانات في localStorage
+const FORM_STORAGE_KEY = 'brief_form_data';
+
+// البيانات المبدئية للاستمارة
+const getInitialFormData = (): BriefFormData => ({
+  clientStatus: 'new',
+  date: new Date().toISOString().split('T')[0],
+  clientName: '',
+  companyName: '',
+  phone: '',
+  email: '',
+  projectName: '',
+  projectDescription: '',
+  projectType: '',
+  favoriteColors: '',
+  logoType: 'text',
+  moodboard: [],
+  applications: APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
+  otherApplication: '',
+  paperSizes: {
+    dl: false,
+    a5: false,
+    a4: false,
+    a3: false,
+  },
+  startDate: '',
+  deadline: '',
+  budget: '100-150',
+  notes: ''
+});
+
 // مكون استمارة بدء المشروع (Brief Form)
 const BriefForm: React.FC = () => {
   const [step, setStep] = useState(1); // تتبع خطوة الاستمارة الحالية
   const [isSubmitting, setIsSubmitting] = useState(false); // حالة الإرسال (توليد PDF)
   const [isSuccess, setIsSuccess] = useState(false); // حالة النجاح
-
-
-
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false); // حالة نافذة الاستعادة
 
   // الحالة المبدئية للبيانات
-  const [formData, setFormData] = useState<BriefFormData>({
-    clientStatus: 'new',
-    date: new Date().toISOString().split('T')[0],
-    clientName: '',
-    companyName: '',
-    phone: '',
-    email: '',
-    projectName: '',
-    projectDescription: '',
-    projectType: '',
-    favoriteColors: '',
-    logoType: 'text',
-    moodboard: [],
-    // تهيئة جميع الخيارات بـ false
-    applications: APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
-    otherApplication: '',
-    paperSizes: {
-      dl: false,
-      a5: false,
-      a4: false,
-      a3: false,
-    },
-    startDate: '',
-    deadline: '',
-    budget: '100-150',
-    notes: ''
-  });  // مرجع لحاوية النموذج للتمرير إليها
+  const [formData, setFormData] = useState<BriefFormData>(getInitialFormData());
+
+  // مرجع لحاوية النموذج للتمرير إليها
   const formRef = useRef<HTMLDivElement>(null);
   // مرجع لتتتبع التحميل الأول (لمنع التمرير عند فتح الصفحة)
   const isFirstRender = useRef(true);
+
+  // تفعيل الحفظ التلقائي
+  useFormAutosave(FORM_STORAGE_KEY, formData, 2000);
+
+  // التحقق من وجود بيانات محفوظة عند التحميل
+  useEffect(() => {
+    const savedData = loadSavedFormData<BriefFormData>(FORM_STORAGE_KEY);
+    if (savedData && (savedData.clientName || savedData.projectName || savedData.companyName)) {
+      // إظهار نافذة الاستعادة فقط إذا كانت هناك بيانات مهمة
+      setShowRestorePrompt(true);
+    }
+  }, []);
+
+  // استعادة البيانات المحفوظة
+  const handleRestoreData = () => {
+    const savedData = loadSavedFormData<BriefFormData>(FORM_STORAGE_KEY);
+    if (savedData) {
+      setFormData(savedData);
+      toast.success('✅ تم استعادة البيانات المحفوظة!', {
+        duration: 3000,
+        style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
+      });
+    }
+    setShowRestorePrompt(false);
+  };
+
+  // تجاهل البيانات المحفوظة
+  const handleDiscardSavedData = () => {
+    clearSavedFormData(FORM_STORAGE_KEY);
+    setShowRestorePrompt(false);
+  };
 
   // الانتقال إلى بداية النموذج عند تغيير الخطوة
   useEffect(() => {
@@ -112,10 +150,66 @@ const BriefForm: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // دالة إرسال البيانات إلى API لتوليد PDF
-  const generateAndSendPDF = async () => {
+  // حالات توليد وتحميل PDF
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
+
+  // دالة توليد وتحميل PDF على جانب العميل
+  const downloadPDF = async () => {
+    setIsGeneratingPdf(true);
+    console.log('[Frontend] 📄 Generating PDF on client-side...');
+
+    try {
+      // توليد PDF باستخدام @react-pdf/renderer
+      const blob = await pdf(<BriefPdfDocument formData={formData} />).toBlob();
+
+      // إنشاء رابط تحميل
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Brief_${formData.projectName || 'Project'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log('[Frontend] ✅ PDF downloaded successfully!');
+
+      // تفعيل حالة "تم التحميل" لإظهار زر الإرسال
+      setIsPdfDownloaded(true);
+
+      toast.success('✅ تم تحميل ملف PDF بنجاح! يمكنك الآن إرساله للمصمم', {
+        duration: 4000,
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+          border: '1px solid #ccff00',
+        },
+        iconTheme: {
+          primary: '#ccff00',
+          secondary: '#1a1a1a',
+        },
+      });
+
+    } catch (error: any) {
+      console.error('[Frontend] ❌ PDF Generation Error:', error);
+      toast.error('حدث خطأ أثناء توليد PDF', {
+        duration: 5000,
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+          border: '1px solid #ff0000',
+        },
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // دالة إرسال البيانات إلى API (بدون PDF)
+  const sendFormData = async () => {
     setIsSubmitting(true);
-    console.log('[Frontend] 📤 Sending form data to API for PDF generation...');
+    console.log('[Frontend] 📤 Sending form data to API...');
 
     try {
       // إرسال البيانات إلى الـ API
@@ -143,7 +237,7 @@ const BriefForm: React.FC = () => {
       console.log('[Frontend] ✅ Success:', result.message);
 
       // إشعار العميل بالنجاح
-      toast.success('✅ تم إنشاء وإرسال ملف PDF بنجاح!', {
+      toast.success('✅ تم إرسال البيانات بنجاح!', {
         duration: 5000,
         style: {
           background: '#1a1a1a',
@@ -179,15 +273,15 @@ const BriefForm: React.FC = () => {
     e.preventDefault();
     if (step < 4) {
       setStep(step + 1);
-    } else {
-      // إشعار المستخدم قبل الإرسال
+    } else if (isPdfDownloaded) {
+      // الإرسال بعد تحميل PDF
       const shouldProceed = window.confirm(
-        "📧 سيتم إرسال ملف PDF إلى المصمم عبر البريد الإلكتروني\n" +
+        "📧 سيتم إرسال تفاصيل المشروع إلى المصمم عبر البريد الإلكتروني\n" +
         "📱 وإرسال نسخة عبر التليقرام\n\n" +
         "هل تود المتابعة؟"
       );
       if (shouldProceed) {
-        generateAndSendPDF();
+        sendFormData();
       }
     }
   };
@@ -254,7 +348,36 @@ const BriefForm: React.FC = () => {
   return (
     <div className="py-24 bg-brand-black font-sans relative overflow-hidden select-none">
 
-
+      {/* نافذة استعادة البيانات المحفوظة */}
+      {showRestorePrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center" dir="rtl">
+            <div className="w-16 h-16 bg-brand-lime/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-brand-lime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">وجدنا بيانات محفوظة!</h3>
+            <p className="text-gray-500 mb-6">
+              يبدو أنك كنت تملأ استمارة سابقاً. هل تريد استعادة البيانات المحفوظة؟
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={handleDiscardSavedData}
+                className="px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl font-bold transition-all"
+              >
+                البدء من جديد
+              </button>
+              <button
+                onClick={handleRestoreData}
+                className="px-6 py-3 bg-brand-lime text-black hover:bg-lime-400 rounded-xl font-bold transition-all shadow-lg"
+              >
+                استعادة البيانات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
 
@@ -357,13 +480,29 @@ const BriefForm: React.FC = () => {
                   {step === 3 ? 'مراجعة' : 'التالي'} <ArrowLeft className="mr-2 w-5 h-5" />
                 </Button>
               ) : (
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`bg-brand-lime text-black hover:bg-lime-400 font-bold px-12 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all ${isSubmitting ? 'opacity-75 cursor-wait' : ''}`}
-                >
-                  {isSubmitting ? 'جاري المعالجة...' : 'تأكيد وإرسال'}
-                </Button>
+                /* زر واحد يتغير حسب الحالة */
+                !isPdfDownloaded ? (
+                  /* زر تحميل PDF */
+                  <button
+                    type="button"
+                    onClick={downloadPDF}
+                    disabled={isGeneratingPdf}
+                    className={`flex items-center gap-3 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all ${isGeneratingPdf ? 'opacity-75 cursor-wait' : ''}`}
+                  >
+                    <Download className="w-6 h-6" />
+                    {isGeneratingPdf ? 'جاري إنشاء الملف...' : 'تحميل ملف PDF'}
+                  </button>
+                ) : (
+                  /* زر إرسال للمصمم */
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`flex items-center gap-3 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all animate-pulse ${isSubmitting ? 'opacity-75 cursor-wait animate-none' : ''}`}
+                  >
+                    <Send className="w-6 h-6" />
+                    {isSubmitting ? 'جاري الإرسال...' : 'إرسال للمصمم'}
+                  </Button>
+                )
               )}
             </div>
           </form>

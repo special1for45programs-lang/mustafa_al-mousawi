@@ -12,16 +12,16 @@ import {
 import { BriefFormData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
 
-// تسجيل الخطوط العربية
+// تسجيل الخطوط العربية من Google Fonts
 Font.register({
     family: 'Cairo',
     fonts: [
         {
-            src: '/fonts/Cairo-Regular.ttf',
+            src: 'https://fonts.gstatic.com/s/cairo/v28/SLXgc1nY6HkvangtZmpcWmhzfH5lWWgcQyyS4J0.ttf',
             fontWeight: 400
         },
         {
-            src: '/fonts/Cairo-Bold.ttf',
+            src: 'https://fonts.gstatic.com/s/cairo/v28/SLXgc1nY6HkvangtZmpcWmhzfH5l92gcQyyS4J0.ttf',
             fontWeight: 700
         }
     ]
