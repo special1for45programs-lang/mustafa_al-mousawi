@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import * as React from 'react';
+import { renderToBuffer } from '@react-pdf/renderer';
+import BriefPdfDocument from '../src/components/BriefPdfDocument';
+import { BriefFormData } from '../src/types';
 
 // Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -25,9 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { pdfBase64, projectName, clientName, companyName, clientEmail } = req.body;
+    const { formData } = req.body as { formData: BriefFormData };
 
-    // ✅ CRITICAL FIX: Validate API Key First
+    // Validate API Key
     if (!process.env.RESEND_API_KEY) {
       console.error('[API] ❌ RESEND_API_KEY is missing!');
       return res.status(500).json({
@@ -36,117 +40,109 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    if (!pdfBase64) {
-      return res.status(400).json({ error: 'Missing pdfBase64 data' });
+    if (!formData) {
+      return res.status(400).json({ error: 'Missing formData' });
     }
 
-    // Debug & Clean Base64
-    console.log("[API] Raw Base64 length:", pdfBase64.length);
-    console.log("[API] Base64 starts with:", pdfBase64.slice(0, 30));
+    const { projectName, clientName, companyName, email: clientEmail } = formData;
 
-    // Remove data URI prefix if present
-    const cleanBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
+    console.log('[API] 📄 Generating PDF for project:', projectName);
 
-    // ✅ CRITICAL FIX: Convert to Buffer (Resend prefers Buffer over raw Base64)
-    const pdfBuffer = Buffer.from(cleanBase64, 'base64');
-    console.log("[API] PDF Size (bytes):", pdfBuffer.length);
+    // Generate PDF using @react-pdf/renderer
+    const pdfBuffer = await renderToBuffer(React.createElement(BriefPdfDocument, { formData }));
+
+    console.log('[API] ✅ PDF generated successfully. Size:', pdfBuffer.length, 'bytes');
 
     // Size Check
     if (pdfBuffer.length > 3000000) {
-      console.warn("[API] ⚠️ PDF size exceeds 3MB, Resend might reject it.");
+      console.warn('[API] ⚠️ PDF size exceeds 3MB, Resend might reject it.');
     }
 
     const pdfFileName = `Brief_${projectName || 'Project'}.pdf`;
 
-    // 🧪 DIAGNOSTIC: Try sending WITHOUT attachment first
+    // Send via Email
     try {
-      console.log('[API] 🧪 TEST 1: Sending email WITHOUT attachment...');
-      const testResult = await resend.emails.send({
+      console.log('[API] 📧 Sending email with PDF attachment...');
+      const emailResult = await resend.emails.send({
         from: 'onboarding@resend.dev',
-        to: ['mustafahaidar0955@gmail.com'],
-        subject: `[TEST] Email System Check - ${projectName}`,
+        to: ['mustafahaidar0955@gmail.com', clientEmail].filter(Boolean) as string[],
+        subject: `مشروع جديد: ${projectName}`,
         html: `
-            <h1>✅ Email System is Working!</h1>
-            <p>This is a test email to confirm Resend API is functioning.</p>
-            <p><strong>Client:</strong> ${clientName}</p>
-            <p><strong>Project:</strong> ${projectName}</p>
-            <p>If you received this, the next email will contain the PDF attachment.</p>
-            `,
-      });
-      console.log('[API] ✅ TEST 1 PASSED: Email sent successfully without attachment. ID:', testResult.data?.id);
-    } catch (testError: any) {
-      console.error('[API] ❌ TEST 1 FAILED:', JSON.stringify(testError, null, 2));
-      return res.status(500).json({
-        error: 'Email system test failed (without attachment)',
-        details: testError.message || JSON.stringify(testError)
-      });
-    }
+            <div dir="rtl" style="font-family: Arial, sans-serif; padding: 20px; background: #f9fafb;">
+              <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h1 style="color: #111827; border-bottom: 3px solid #d4ff00; padding-bottom: 15px;">📋 مشروع جديد: ${projectName}</h1>
+                
+                <div style="margin: 25px 0; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                  <p style="margin: 8px 0; color: #374151;"><strong>👤 العميل:</strong> ${clientName}</p>
+                  <p style="margin: 8px 0; color: #374151;"><strong>🏢 الشركة:</strong> ${companyName}</p>
+                  <p style="margin: 8px 0; color: #374151;"><strong>📧 البريد:</strong> ${clientEmail}</p>
+                </div>
 
-    // 🧪 DIAGNOSTIC: Now try WITH attachment using Buffer (recommended by Resend docs)
-    try {
-      console.log('[API] 🧪 TEST 2: Sending email WITH attachment (Buffer format)...');
-      const attachmentResult = await resend.emails.send({
-        from: 'onboarding@resend.dev',
-        to: ['mustafahaidar0955@gmail.com', clientEmail].filter(Boolean),
-        subject: `New Project Brief: ${projectName}`,
-        html: `
-            <h1>New Project Brief Received!</h1>
-            <p><strong>Client:</strong> ${clientName}</p>
-            <p><strong>Company:</strong> ${companyName}</p>
-            <p><strong>Project:</strong> ${projectName}</p>
-            <p>See the attached PDF for full details.</p>
+                <p style="color: #6b7280; margin: 20px 0;">📎 تجد في المرفقات ملف PDF الكامل بتفاصيل المشروع.</p>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 12px;">
+                  Mustafa Ali Moossawi - Graphic Designer
+                </div>
+              </div>
+            </div>
             `,
         attachments: [
           {
             filename: pdfFileName,
-            content: pdfBuffer, // ✅ Using Buffer directly (Resend SDK handles conversion)
+            content: pdfBuffer,
           },
         ],
       });
-      console.log('[API] ✅ TEST 2 PASSED: Email with attachment sent successfully. ID:', attachmentResult.data?.id);
+      console.log('[API] ✅ Email sent successfully. ID:', emailResult.data?.id);
     } catch (emailError: any) {
       const errorDetails = JSON.stringify(emailError, null, 2);
-      console.error('[API] ❌ TEST 2 FAILED (Attachment):', errorDetails);
+      console.error('[API] ❌ Email Error:', errorDetails);
       return res.status(500).json({
-        error: 'Failed to send email with attachment',
+        error: 'Failed to send email',
         details: emailError.message || errorDetails
       });
     }
 
-    // 2. Send via Telegram (Optional)
+    // Send via Telegram (Optional)
     if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
       try {
-        console.log('[API] Sending to Telegram...');
-        const formData = new FormData();
-        formData.append('chat_id', TELEGRAM_CHAT_ID);
-        formData.append('caption', `🚀 New Brief: ${projectName}\n👤 ${clientName}`);
+        console.log('[API] 📱 Sending to Telegram...');
+        const formDataTelegram = new FormData();
+        formDataTelegram.append('chat_id', TELEGRAM_CHAT_ID);
+        formDataTelegram.append('caption', `🚀 مشروع جديد: ${projectName}\n👤 ${clientName}\n🏢 ${companyName}`);
 
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
-        formData.append('document', blob, pdfFileName);
+        // Convert Buffer to Uint8Array for Blob compatibility
+        const pdfBlobData = new Uint8Array(pdfBuffer);
+        const blob = new Blob([pdfBlobData], { type: 'application/pdf' });
+        formDataTelegram.append('document', blob, pdfFileName);
 
         const telegramRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
           method: 'POST',
-          body: formData
+          body: formDataTelegram
         });
 
         if (!telegramRes.ok) {
-          console.error('[API] Telegram Error:', await telegramRes.text());
+          console.error('[API] ❌ Telegram Error:', await telegramRes.text());
         } else {
-          console.log('[API] Telegram sent successfully.');
+          console.log('[API] ✅ Telegram sent successfully.');
         }
       } catch (tgError) {
-        console.error('[API] Failed to send to Telegram:', tgError);
+        console.error('[API] ⚠️ Failed to send to Telegram:', tgError);
+        // Don't fail the request if Telegram fails
       }
     }
 
     // Return success
     return res.status(200).json({
       success: true,
-      message: 'Both test emails sent successfully! Check your inbox.'
+      message: 'تم إنشاء وإرسال ملف PDF بنجاح!'
     });
 
   } catch (error: any) {
-    console.error('[API] Error processing request:', error);
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    console.error('[API] ❌ Error processing request:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      details: error.message
+    });
   }
 }

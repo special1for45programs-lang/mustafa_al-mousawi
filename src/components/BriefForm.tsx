@@ -12,10 +12,6 @@ import StepStyle from './brief-steps/StepStyle';
 import StepDetails from './brief-steps/StepDetails';
 import StepReview from './brief-steps/StepReview';
 import SuccessView from './brief-steps/SuccessView';
-import { renderToStaticMarkup } from 'react-dom/server';
-import BriefPdfTemplate from './BriefPdfTemplate';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 // مكون استمارة بدء المشروع (Brief Form)
 const BriefForm: React.FC = () => {
@@ -55,8 +51,6 @@ const BriefForm: React.FC = () => {
     notes: ''
   });  // مرجع لحاوية النموذج للتمرير إليها
   const formRef = useRef<HTMLDivElement>(null);
-  // مرجع لحاوية PDF المخفية
-  const pdfContainerRef = useRef<HTMLDivElement>(null);
   // مرجع لتتتبع التحميل الأول (لمنع التمرير عند فتح الصفحة)
   const isFirstRender = useRef(true);
 
@@ -118,120 +112,19 @@ const BriefForm: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // دالة توليد ملف PDF وإرساله عبر API
+  // دالة إرسال البيانات إلى API لتوليد PDF
   const generateAndSendPDF = async () => {
     setIsSubmitting(true);
-    console.log('[Frontend] Starting Client-Side PDF generation...');
+    console.log('[Frontend] 📤 Sending form data to API for PDF generation...');
 
     try {
-      console.log('[Frontend] Starting Client-Side PDF generation...');
-
-      // 1. Validate container reference
-      if (!pdfContainerRef.current) {
-        throw new Error('❌ PDF container reference is null - DOM element not found');
-      }
-
-      if (!(pdfContainerRef.current instanceof HTMLElement)) {
-        throw new Error('❌ PDF container is not a valid HTML element');
-      }
-
-      // 2. Validate that BriefPdfTemplate has rendered (check for children)
-      if (!pdfContainerRef.current.children || pdfContainerRef.current.children.length === 0) {
-        throw new Error('❌ PDF template did not render - container is empty. Check formData values.');
-      }
-
-      console.log('[Frontend] ✅ Container validated. Children count:', pdfContainerRef.current.children.length);
-      console.log('[Frontend] ✅ Container HTML length:', pdfContainerRef.current.innerHTML.length);
-
-      // 3. Wait for images to load
-      console.log('[Frontend] Waiting for images and fonts to load...');
-      const images = pdfContainerRef.current.querySelectorAll('img');
-      const imagePromises = Array.from(images).map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = () => {
-            console.warn('[Frontend] Image failed to load:', img.src);
-            resolve(); // Continue even if image fails
-          };
-          setTimeout(resolve, 5000); // Timeout after 5s
-        });
-      });
-
-      await Promise.all(imagePromises);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Extra safety margin
-
-      console.log('[Frontend] ✅ All resources loaded. Starting html2canvas...');
-      console.log('[Frontend] Container element:', pdfContainerRef.current);
-      console.log('[Frontend] Container tagName:', pdfContainerRef.current.tagName);
-      console.log('[Frontend] Container clientWidth:', pdfContainerRef.current.clientWidth);
-      console.log('[Frontend] Container clientHeight:', pdfContainerRef.current.clientHeight);
-
-      // Temporarily move container to visible area for capture (some browsers need this)
-      const originalTop = pdfContainerRef.current.style.top;
-      const originalLeft = pdfContainerRef.current.style.left;
-      pdfContainerRef.current.style.top = '0';
-      pdfContainerRef.current.style.left = '0';
-      pdfContainerRef.current.style.zIndex = '99999';
-
-      // Small delay to let browser re-position
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const canvas = await html2canvas(pdfContainerRef.current, {
-        scale: 2, // جودة عالية
-        useCORS: true, // للسماح بتحميل الصور الخارجية
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 794, //        windowWidth: 794,
-      });
-
-      // Move container back off-screen
-      pdfContainerRef.current.style.top = originalTop;
-      pdfContainerRef.current.style.left = originalLeft;
-      pdfContainerRef.current.style.zIndex = '-1';
-
-      console.log('[Frontend] Canvas created. Generating PDF...');
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      // إضافة الصورة للـ PDF (fit to page)
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-      // 2. تحميل الملف للمستخدم فوراً
-      console.log('[Frontend] Saving PDF locally...');
-      const pdfFileName = `Brief_${formData.projectName || 'Project'}.pdf`;
-      pdf.save(pdfFileName);
-
-      // 3. تجهيز الملف للإرسال
-      const pdfBlob = pdf.output('blob');
-      const reader = new FileReader();
-
-      const pdfBase64 = await new Promise<string>((resolve) => {
-        reader.onloadend = () => {
-          const base64String = reader.result as string;
-          // إزالة الـ prefix (data:application/pdf;base64,)
-          const base64Content = base64String.split(',')[1];
-          resolve(base64Content);
-        };
-        reader.readAsDataURL(pdfBlob);
-      });
-
-      // 4. إرسال إلى الـ API للإيميل
-      console.log('[Frontend] Sending PDF to API for email...');
+      // إرسال البيانات إلى الـ API
       const response = await fetch('/api/generate-brief-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          pdfBase64: pdfBase64, // نرسل الملف الجاهز
-          projectName: formData.projectName,
-          clientName: formData.clientName,
-          companyName: formData.companyName,
-          clientEmail: formData.email
-        }),
+        body: JSON.stringify({ formData }),
       });
 
       if (!response.ok) {
@@ -243,12 +136,13 @@ const BriefForm: React.FC = () => {
           errorMsg = await response.text();
         }
         throw new Error(errorMsg);
-      } else {
-        console.log('[Frontend] Email sent successfully!');
       }
 
-      // إشعار العميل بالنجاح الكامل
-      toast.success('✅ تم تحميل ملف PDF وإرساله بنجاح!', {
+      const result = await response.json();
+      console.log('[Frontend] ✅ Success:', result.message);
+
+      // إشعار العميل بالنجاح
+      toast.success('✅ تم إنشاء وإرسال ملف PDF بنجاح!', {
         duration: 5000,
         style: {
           background: '#1a1a1a',
@@ -264,10 +158,16 @@ const BriefForm: React.FC = () => {
       setIsSuccess(true);
 
     } catch (error: any) {
-      console.error('[Frontend] PDF Generation Error:', error);
-      // Show detailed error
+      console.error('[Frontend] ❌ Error:', error);
       const errorMessage = error instanceof Error ? error.message : typeof error === 'object' ? JSON.stringify(error) : String(error);
-      alert(`حدث خطأ أثناء إنشاء الملف:\n${errorMessage}`);
+      toast.error(`حدث خطأ: ${errorMessage}`, {
+        duration: 7000,
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+          border: '1px solid #ff0000',
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -281,8 +181,7 @@ const BriefForm: React.FC = () => {
     } else {
       // إشعار المستخدم قبل الإرسال
       const shouldProceed = window.confirm(
-        "📥 سيتم تحميل نسخة من ملف PDF على جهازك\n" +
-        "📧 وإرسال نسخة إلى المصمم عبر البريد الإلكتروني\n" +
+        "📧 سيتم إرسال ملف PDF إلى المصمم عبر البريد الإلكتروني\n" +
         "📱 وإرسال نسخة عبر التليقرام\n\n" +
         "هل تود المتابعة؟"
       );
@@ -315,7 +214,7 @@ const BriefForm: React.FC = () => {
             </div>
 
             <h3 className="text-2xl font-bold text-gray-900 mb-3">جاري إعداد ملف المشروع...</h3>
-            <p className="text-gray-500 mb-8">قد تستغرق هذه العملية حتى 30 ثانية</p>
+            <p className="text-gray-500 mb-8">قد تستغرق هذه العملية حتى 15 ثانية</p>
 
             {/* شريط التقدم */}
             <div className="w-full bg-gray-100 rounded-full h-2 mb-8 overflow-hidden">
@@ -332,8 +231,8 @@ const BriefForm: React.FC = () => {
               </h4>
               <ul className="text-sm text-yellow-700 space-y-2">
                 <li className="flex items-start gap-2 justify-end">
-                  <span>سيتم تحميل ملف PDF تلقائياً على جهازك</span>
-                  <span>📥</span>
+                  <span>سيتم إنشاء ملف PDF احترافي بتصميم عالي الجودة</span>
+                  <span>📄</span>
                 </li>
                 <li className="flex items-start gap-2 justify-end">
                   <span>سيصل المصمم نسخة عبر البريد والتليقرام</span>
@@ -357,22 +256,6 @@ const BriefForm: React.FC = () => {
 
 
       <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
-
-        {/* PDF Render Container - Positioned off-screen for rendering */}
-        <div
-          ref={pdfContainerRef}
-          style={{
-            position: 'absolute',
-            top: '-50000px',
-            left: '-50000px',
-            width: '794px',
-            height: 'auto',
-            backgroundColor: '#ffffff',
-            zIndex: -1
-          }}
-        >
-          <BriefPdfTemplate formData={formData} />
-        </div>
 
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">ابدأ مشروعك</h2>
