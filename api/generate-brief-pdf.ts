@@ -107,18 +107,13 @@ function generatePdfHTML(formData: BriefFormData): string {
     
     /* Header */
     .header {
-      background: #000000;
-      padding: 30px 40px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      border-bottom: 4px solid #d4ff00;
-      direction: ltr;
+      width: 100%;
     }
     
-    .logo {
-      width: 60px;
-      height: 60px;
+    .header img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
     
     .header-text h1 {
@@ -306,11 +301,7 @@ function generatePdfHTML(formData: BriefFormData): string {
   <div class="page">
     <!-- Header -->
     <div class="header">
-      <img src="https://mustafa-kappa.vercel.app/Images/logoS1.png" alt="Logo" class="logo">
-      <div class="header-text">
-        <h1>MUSTAFA</h1>
-        <p>Ali Moossawi</p>
-      </div>
+      <img src="https://mustafa-kappa.vercel.app/Images/pdf-header.png" alt="Header">
     </div>
     
     <!-- Content -->
