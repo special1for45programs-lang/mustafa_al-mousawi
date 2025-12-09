@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, Download, Send } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
 import toast from 'react-hot-toast';
-import BriefPdfDocument from './BriefPdfDocument';
 import { Button } from './ui/Button';
 import { BriefFormData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
@@ -154,27 +152,41 @@ const BriefForm: React.FC = () => {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
 
-  // دالة توليد وتحميل PDF على جانب العميل
+  // دالة توليد وتحميل PDF من السيرفر
   const downloadPDF = async () => {
     setIsGeneratingPdf(true);
-    console.log('[Frontend] 📄 Generating PDF on client-side...');
-    console.log('[Frontend] Form data:', JSON.stringify(formData, null, 2));
+    console.log('[Frontend] 📄 Requesting PDF from server...');
 
     try {
-      // توليد PDF باستخدام @react-pdf/renderer
-      console.log('[Frontend] Creating PDF document...');
-      const pdfDoc = <BriefPdfDocument formData={formData} />;
+      // طلب PDF من السيرفر
+      const response = await fetch('/api/generate-brief-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formData }),
+      });
 
-      console.log('[Frontend] Converting to blob...');
-      const blob = await pdf(pdfDoc).toBlob();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || 'Server Error');
+      }
 
-      console.log('[Frontend] Blob created, size:', blob.size);
+      const result = await response.json();
 
-      // إنشاء رابط تحميل
+      if (!result.pdf) {
+        throw new Error('No PDF data received');
+      }
+
+      // تحويل Base64 إلى Blob
+      const pdfBytes = Uint8Array.from(atob(result.pdf), c => c.charCodeAt(0));
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+
+      // تحميل الملف
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Brief_${formData.projectName || 'Project'}.pdf`;
+      link.download = result.fileName || `Brief_${formData.projectName || 'Project'}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -185,7 +197,7 @@ const BriefForm: React.FC = () => {
       // تفعيل حالة "تم التحميل" لإظهار زر الإرسال
       setIsPdfDownloaded(true);
 
-      toast.success('✅ تم تحميل ملف PDF بنجاح! يمكنك الآن إرساله للمصمم', {
+      toast.success('✅ تم تحميل ملف PDF بنجاح! تم إرسال نسخة للمصمم', {
         duration: 4000,
         style: {
           background: '#1a1a1a',
@@ -198,12 +210,12 @@ const BriefForm: React.FC = () => {
         },
       });
 
+      // الانتقال مباشرة لشاشة النجاح لأن البيانات أُرسلت بالفعل
+      setIsSuccess(true);
+
     } catch (error: any) {
       const errorMessage = error?.message || error?.toString() || 'Unknown error';
-      const errorStack = error?.stack || '';
       console.error('[Frontend] ❌ PDF Generation Error:', errorMessage);
-      console.error('[Frontend] ❌ Error Stack:', errorStack);
-      console.error('[Frontend] ❌ Full Error Object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
 
       toast.error(`حدث خطأ أثناء توليد PDF: ${errorMessage.substring(0, 100)}`, {
         duration: 7000,
@@ -218,87 +230,10 @@ const BriefForm: React.FC = () => {
     }
   };
 
-  // دالة إرسال البيانات والـ PDF إلى API
+  // دالة إرسال البيانات (لم تعد مستخدمة - كل شيء يتم في downloadPDF)
   const sendFormData = async () => {
-    setIsSubmitting(true);
-    console.log('[Frontend] 📤 Generating PDF and sending data to API...');
-
-    try {
-      // توليد PDF أولاً
-      console.log('[Frontend] 📄 Generating PDF for sending...');
-      const pdfBlob = await pdf(<BriefPdfDocument formData={formData} />).toBlob();
-
-      // تحويل PDF إلى Base64
-      const pdfBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(',')[1];
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(pdfBlob);
-      });
-
-      console.log('[Frontend] 📤 Sending to API with PDF...');
-
-      // إرسال البيانات مع PDF إلى الـ API
-      const response = await fetch('/api/generate-brief-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          formData,
-          pdfBase64,
-          pdfFileName: `Brief_${formData.projectName || 'Project'}.pdf`
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMsg = `Server Error (${response.status})`;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.details || errorData.error || JSON.stringify(errorData);
-        } catch (e) {
-          // If JSON parsing fails, use the status text instead
-          errorMsg = response.statusText || errorMsg;
-        }
-        throw new Error(errorMsg);
-      }
-
-      const result = await response.json();
-      console.log('[Frontend] ✅ Success:', result.message);
-
-      // إشعار العميل بالنجاح
-      toast.success('✅ تم إرسال البيانات والملف بنجاح!', {
-        duration: 5000,
-        style: {
-          background: '#1a1a1a',
-          color: '#fff',
-          border: '1px solid #ccff00',
-        },
-        iconTheme: {
-          primary: '#ccff00',
-          secondary: '#1a1a1a',
-        },
-      });
-
-      setIsSuccess(true);
-
-    } catch (error: any) {
-      console.error('[Frontend] ❌ Error:', error);
-      const errorMessage = error instanceof Error ? error.message : typeof error === 'object' ? JSON.stringify(error) : String(error);
-      toast.error(`حدث خطأ: ${errorMessage}`, {
-        duration: 7000,
-        style: {
-          background: '#1a1a1a',
-          color: '#fff',
-          border: '1px solid #ff0000',
-        },
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // هذه الدالة لم تعد مستخدمة لأن كل شيء يتم عند تحميل الـ PDF
+    setIsSuccess(true);
   };
 
   // معالجة التنقل بين الخطوات والإرسال النهائي
