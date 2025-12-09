@@ -158,10 +158,17 @@ const BriefForm: React.FC = () => {
   const downloadPDF = async () => {
     setIsGeneratingPdf(true);
     console.log('[Frontend] 📄 Generating PDF on client-side...');
+    console.log('[Frontend] Form data:', JSON.stringify(formData, null, 2));
 
     try {
       // توليد PDF باستخدام @react-pdf/renderer
-      const blob = await pdf(<BriefPdfDocument formData={formData} />).toBlob();
+      console.log('[Frontend] Creating PDF document...');
+      const pdfDoc = <BriefPdfDocument formData={formData} />;
+
+      console.log('[Frontend] Converting to blob...');
+      const blob = await pdf(pdfDoc).toBlob();
+
+      console.log('[Frontend] Blob created, size:', blob.size);
 
       // إنشاء رابط تحميل
       const url = URL.createObjectURL(blob);
@@ -192,9 +199,14 @@ const BriefForm: React.FC = () => {
       });
 
     } catch (error: any) {
-      console.error('[Frontend] ❌ PDF Generation Error:', error);
-      toast.error('حدث خطأ أثناء توليد PDF', {
-        duration: 5000,
+      const errorMessage = error?.message || error?.toString() || 'Unknown error';
+      const errorStack = error?.stack || '';
+      console.error('[Frontend] ❌ PDF Generation Error:', errorMessage);
+      console.error('[Frontend] ❌ Error Stack:', errorStack);
+      console.error('[Frontend] ❌ Full Error Object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+
+      toast.error(`حدث خطأ أثناء توليد PDF: ${errorMessage.substring(0, 100)}`, {
+        duration: 7000,
         style: {
           background: '#1a1a1a',
           color: '#fff',
