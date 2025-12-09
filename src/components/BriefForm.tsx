@@ -133,7 +133,8 @@ const BriefForm: React.FC = () => {
           const errorData = await response.json();
           errorMsg = errorData.details || errorData.error || JSON.stringify(errorData);
         } catch (e) {
-          errorMsg = await response.text();
+          // If JSON parsing fails, use the status text instead
+          errorMsg = response.statusText || errorMsg;
         }
         throw new Error(errorMsg);
       }

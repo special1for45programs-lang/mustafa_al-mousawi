@@ -23,7 +23,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-500">اسم الشركة</label>
+                    <label className="text-sm font-bold text-gray-500">اسم الشركة <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         name="companyName"
@@ -31,13 +31,14 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         onChange={handleChange}
                         placeholder="اسم الشركة أو المؤسسة"
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                        required
                     />
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-500">اسم المشروع (للتضمين في الشعار)</label>
+                    <label className="text-sm font-bold text-gray-500">اسم المشروع (للتضمين في الشعار) <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         name="projectName"
@@ -45,6 +46,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         onChange={handleChange}
                         placeholder="الاسم كما سيظهر في الشعار"
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-bold text-gray-900 placeholder:text-gray-400"
+                        required
                     />
                 </div>
             </div>
@@ -62,7 +64,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-500">البريد الإلكتروني <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-bold text-gray-500">البريد الإلكتروني (اختياري)</label>
                     <input
                         type="email"
                         name="email"
@@ -70,7 +72,6 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         onChange={handleChange}
                         placeholder="لاستلام ملفات المشروع"
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-bold text-gray-900 placeholder:text-gray-400"
-                        required
                     />
                 </div>
             </div>
