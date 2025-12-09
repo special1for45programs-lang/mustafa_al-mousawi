@@ -98,7 +98,6 @@ function generatePdfHTML(formData: BriefFormData): string {
     
     .page {
       width: 210mm;
-      min-height: 297mm;
       margin: 0 auto;
       background: white;
       display: flex;
@@ -430,7 +429,7 @@ async function generatePdfWithPuppeteer(html: string): Promise<Buffer> {
 
   const browser = await puppeteer.launch({
     args: chromium.args,
-    defaultViewport: { width: 1200, height: 1600 },
+    defaultViewport: { width: 794, height: 1200 }, // A4 width in pixels at 96 DPI
     executablePath: await chromium.executablePath(),
     headless: true,
   });
@@ -441,10 +440,26 @@ async function generatePdfWithPuppeteer(html: string): Promise<Buffer> {
     // Set content
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    // Generate PDF
+    // Get the actual content height
+    const contentHeight = await page.evaluate(() => {
+      const body = document.body;
+      const html = document.documentElement;
+      return Math.max(
+        body.scrollHeight,
+        body.offsetHeight,
+        html.clientHeight,
+        html.scrollHeight,
+        html.offsetHeight
+      );
+    });
+
+    console.log('[API] 📐 Content height:', contentHeight);
+
+    // Generate PDF with dynamic height (single long page)
     console.log('[API] 📄 Generating PDF...');
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      width: '210mm',  // A4 width
+      height: `${contentHeight + 20}px`,  // Dynamic height based on content
       printBackground: true,
       margin: { top: 0, right: 0, bottom: 0, left: 0 }
     });
