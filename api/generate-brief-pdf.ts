@@ -36,6 +36,51 @@ interface BriefFormData {
   notes: string;
 }
 
+// Helper function to send text message to Telegram
+async function sendTelegramTextMessage(
+  botToken: string,
+  chatId: string,
+  projectName: string,
+  clientName: string,
+  companyName: string,
+  clientEmail: string | undefined,
+  formData: BriefFormData
+) {
+  const telegramMessage = `
+🚀 *مشروع جديد!*
+
+📋 *${projectName}*
+👤 العميل: ${clientName}
+🏢 الشركة: ${companyName}
+📧 البريد: ${clientEmail || 'غير محدد'}
+📞 الهاتف: ${formData.phone || 'غير محدد'}
+
+💰 الميزانية: ${formData.budget}$
+📅 موعد التسليم: ${formData.deadline || 'غير محدد'}
+
+📝 الوصف:
+${formData.projectDescription || 'لا يوجد وصف'}
+
+${formData.notes ? `💡 ملاحظات:\n${formData.notes}` : ''}
+  `.trim();
+
+  const telegramRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: telegramMessage,
+      parse_mode: 'Markdown'
+    })
+  });
+
+  if (!telegramRes.ok) {
+    console.error('[API] ❌ Telegram Text Error:', await telegramRes.text());
+  } else {
+    console.log('[API] ✅ Telegram text message sent successfully.');
+  }
+}
+
 // Helper function to generate HTML email with all project details
 function generateEmailHTML(formData: BriefFormData): string {
   const selectedApps = Object.entries(formData.applications)
@@ -281,39 +326,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       try {
         console.log('[API] 📱 Sending to Telegram...');
 
-        // Send text message first
-        const telegramMessage = `
-🚀 *مشروع جديد!*
+        // Check if PDF was sent
+        const { pdfBase64, pdfFileName } = req.body;
 
-📋 *${projectName}*
-👤 العميل: ${clientName}
-🏢 الشركة: ${companyName}
-📧 البريد: ${clientEmail || 'غير محدد'}
-📞 الهاتف: ${formData.phone || 'غير محدد'}
+        if (pdfBase64 && pdfFileName) {
+          // Send PDF as document using multipart/form-data
+          console.log('[API] 📄 Sending PDF document to Telegram...');
 
-💰 الميزانية: ${formData.budget}$
-📅 موعد التسليم: ${formData.deadline || 'غير محدد'}
+          // Convert base64 to Buffer
+          const pdfBuffer = Buffer.from(pdfBase64, 'base64');
 
-📝 الوصف:
-${formData.projectDescription || 'لا يوجد وصف'}
+          // Create form data manually for Telegram
+          const boundary = '----FormBoundary' + Math.random().toString(36).substring(2);
 
-${formData.notes ? `💡 ملاحظات:\n${formData.notes}` : ''}
-        `.trim();
+          // Create caption with project summary
+          const caption = `🚀 مشروع جديد!\n\n📋 ${projectName}\n👤 العميل: ${clientName}\n🏢 الشركة: ${companyName}\n💰 الميزانية: ${formData.budget}$`;
 
-        const telegramRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: telegramMessage,
-            parse_mode: 'Markdown'
-          })
-        });
+          // Build multipart body
+          let body = '';
+          body += `--${boundary}\r\n`;
+          body += `Content-Disposition: form-data; name="chat_id"\r\n\r\n${TELEGRAM_CHAT_ID}\r\n`;
+          body += `--${boundary}\r\n`;
+          body += `Content-Disposition: form-data; name="caption"\r\n\r\n${caption}\r\n`;
+          body += `--${boundary}\r\n`;
+          body += `Content-Disposition: form-data; name="document"; filename="${pdfFileName}"\r\n`;
+          body += `Content-Type: application/pdf\r\n\r\n`;
 
-        if (!telegramRes.ok) {
-          console.error('[API] ❌ Telegram Error:', await telegramRes.text());
+          // Combine text parts with binary PDF
+          const textEncoder = new TextEncoder();
+          const bodyStart = textEncoder.encode(body);
+          const bodyEnd = textEncoder.encode(`\r\n--${boundary}--\r\n`);
+
+          // Combine all parts
+          const fullBody = new Uint8Array(bodyStart.length + pdfBuffer.length + bodyEnd.length);
+          fullBody.set(bodyStart, 0);
+          fullBody.set(pdfBuffer, bodyStart.length);
+          fullBody.set(bodyEnd, bodyStart.length + pdfBuffer.length);
+
+          const telegramRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            },
+            body: fullBody
+          });
+
+          if (!telegramRes.ok) {
+            const errorText = await telegramRes.text();
+            console.error('[API] ❌ Telegram Document Error:', errorText);
+            // Fallback to text message if document fails
+            console.log('[API] 📱 Falling back to text message...');
+            await sendTelegramTextMessage(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, projectName, clientName, companyName, clientEmail, formData);
+          } else {
+            console.log('[API] ✅ Telegram document sent successfully.');
+          }
         } else {
-          console.log('[API] ✅ Telegram sent successfully.');
+          // No PDF, send text message
+          await sendTelegramTextMessage(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, projectName, clientName, companyName, clientEmail, formData);
         }
       } catch (tgError) {
         console.error('[API] ⚠️ Failed to send to Telegram:', tgError);

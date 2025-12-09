@@ -218,19 +218,40 @@ const BriefForm: React.FC = () => {
     }
   };
 
-  // دالة إرسال البيانات إلى API (بدون PDF)
+  // دالة إرسال البيانات والـ PDF إلى API
   const sendFormData = async () => {
     setIsSubmitting(true);
-    console.log('[Frontend] 📤 Sending form data to API...');
+    console.log('[Frontend] 📤 Generating PDF and sending data to API...');
 
     try {
-      // إرسال البيانات إلى الـ API
+      // توليد PDF أولاً
+      console.log('[Frontend] 📄 Generating PDF for sending...');
+      const pdfBlob = await pdf(<BriefPdfDocument formData={formData} />).toBlob();
+
+      // تحويل PDF إلى Base64
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(pdfBlob);
+      });
+
+      console.log('[Frontend] 📤 Sending to API with PDF...');
+
+      // إرسال البيانات مع PDF إلى الـ API
       const response = await fetch('/api/generate-brief-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ formData }),
+        body: JSON.stringify({
+          formData,
+          pdfBase64,
+          pdfFileName: `Brief_${formData.projectName || 'Project'}.pdf`
+        }),
       });
 
       if (!response.ok) {
@@ -249,7 +270,7 @@ const BriefForm: React.FC = () => {
       console.log('[Frontend] ✅ Success:', result.message);
 
       // إشعار العميل بالنجاح
-      toast.success('✅ تم إرسال البيانات بنجاح!', {
+      toast.success('✅ تم إرسال البيانات والملف بنجاح!', {
         duration: 5000,
         style: {
           background: '#1a1a1a',
