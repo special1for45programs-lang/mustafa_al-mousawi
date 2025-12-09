@@ -6,19 +6,47 @@ import {
     View,
     StyleSheet,
     Image,
-    Link
+    Link,
+    Font
 } from '@react-pdf/renderer';
 import { BriefFormData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
 
-// Note: Using default Helvetica font which is bundled with @react-pdf/renderer
-// Custom Arabic fonts can be added later if needed
+// تسجيل خط Amiri العربي - يدعم العربية بشكل كامل
+Font.register({
+    family: 'Amiri',
+    fonts: [
+        {
+            src: 'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.21/files/amiri-arabic-400-normal.woff',
+            fontWeight: 400
+        },
+        {
+            src: 'https://cdn.jsdelivr.net/npm/@fontsource/amiri@5.0.21/files/amiri-arabic-700-normal.woff',
+            fontWeight: 700
+        }
+    ]
+});
+
+// تسجيل خط Cairo كبديل
+Font.register({
+    family: 'Cairo',
+    fonts: [
+        {
+            src: 'https://cdn.jsdelivr.net/npm/@fontsource/cairo@5.0.21/files/cairo-arabic-400-normal.woff',
+            fontWeight: 400
+        },
+        {
+            src: 'https://cdn.jsdelivr.net/npm/@fontsource/cairo@5.0.21/files/cairo-arabic-700-normal.woff',
+            fontWeight: 700
+        }
+    ]
+});
 
 // تعريف الأنماط
 const styles = StyleSheet.create({
     page: {
         backgroundColor: '#ffffff',
-        fontFamily: 'Helvetica',
+        fontFamily: 'Cairo',
         fontSize: 11,
         direction: 'rtl'
     },
@@ -416,9 +444,6 @@ const BriefPdfDocument: React.FC<BriefPdfDocumentProps> = ({ formData }) => {
                     <View style={styles.footerLeft}>
                         <View style={styles.instagramIcon} />
                         <Text style={styles.instagramText}>mustafa.al_moossawi</Text>
-                    </View>
-                    <View style={styles.pageNumber}>
-                        <Text style={styles.pageNumberText} render={({ pageNumber }) => `${pageNumber}`} />
                     </View>
                 </View>
 
