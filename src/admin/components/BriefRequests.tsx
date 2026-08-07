@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getBriefRequests, updateBriefRequestStatus, BriefRequestWithId } from '../../lib/firestore';
-import { Eye, X, Instagram, TrendingUp, Star, Layers, Download } from 'lucide-react';
+import { getBriefRequests, updateBriefRequestStatus, deleteBriefRequest, BriefRequestWithId } from '../../lib/firestore';
+import { Eye, X, Instagram, TrendingUp, Star, Layers, Download, Trash2 } from 'lucide-react';
 import AdminPageWrapper from './AdminPageWrapper';
 
 // ==========================================
@@ -139,6 +139,18 @@ const BriefRequests: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+    try {
+      await deleteBriefRequest(id);
+      fetchRequests();
+      if (selectedReq?.id === id) setSelectedReq(null);
+    } catch (error) {
+      console.error('Error deleting request', error);
+      alert('فشل الحذف. حاول مرة أخرى.');
+    }
+  };
+
   // تطبيق الفلاتر
   const filteredRequests = requests.filter(r => {
     const statusOk   = filter === 'all'   || r.status === filter;
@@ -270,13 +282,24 @@ const BriefRequests: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-4">
-                        <button
-                          onClick={() => setSelectedReq(req)}
-                          className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition-colors"
-                          title="عرض التفاصيل"
-                        >
-                          <Eye size={18} />
-                        </button>
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => setSelectedReq(req)}
+                            className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition-colors"
+                            title="عرض التفاصيل"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          {req.status === 'archived' && (
+                            <button
+                              onClick={() => handleDelete(req.id)}
+                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                              title="حذف نهائي"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

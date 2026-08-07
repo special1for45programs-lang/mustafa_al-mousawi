@@ -63,6 +63,11 @@ export const updateBriefRequestStatus = async (id: string, status: 'new' | 'in_p
   await updateDoc(docRef, { status });
 };
 
+export const deleteBriefRequest = async (id: string): Promise<void> => {
+  const docRef = doc(db, 'briefRequests', id);
+  await deleteDoc(docRef);
+};
+
 export const uploadImage = async (file: File, path: string): Promise<string> => {
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file);

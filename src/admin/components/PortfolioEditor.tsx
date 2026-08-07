@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Upload, Briefcase } from 'lucide-react';
-import { getPortfolioProjects, addProject, updateProject, deleteProject, uploadImage, uploadImageWithProgress } from '../../lib/firestore';
+import { getPortfolioProjects, addProject, updateProject, deleteProject } from '../../lib/firestore';
 import type { Project } from '../../types';
 import { PROJECTS } from '../../constants';
 import AdminPageWrapper from './AdminPageWrapper';
+import { compressImageToWebP } from '../../utils/imageUtils';
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 
 const PortfolioEditor: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -112,14 +122,11 @@ const PortfolioEditor: React.FC = () => {
     setUploadProgress(0);
     try {
       const compressedBlob = await compressImageToWebP(file, 1600, 0.8);
-      const fileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-      const url = await uploadImageWithProgress(compressedBlob, `portfolio/${Date.now()}_${fileName}`, (prog) => {
-        setUploadProgress(prog);
-      });
-      setFormData({ ...formData, [field]: url });
+      const base64Str = await blobToBase64(compressedBlob);
+      setFormData({ ...formData, [field]: base64Str });
     } catch (error: any) {
       console.error('Error uploading image', error);
-      alert(error.message || 'فشل الاتصال بالخادم أثناء الرفع. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+      alert('فشل تحويل الصورة.');
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -136,17 +143,14 @@ const PortfolioEditor: React.FC = () => {
       const totalFiles = files.length;
       for (let i = 0; i < totalFiles; i++) {
         const compressedBlob = await compressImageToWebP(files[i], 1600, 0.8);
-        const fileName = files[i].name.replace(/\.[^/.]+$/, "") + ".webp";
-        const url = await uploadImageWithProgress(compressedBlob, `portfolio/gallery/${Date.now()}_${fileName}`, (prog) => {
-          const overallProgress = Math.round(((i * 100) + prog) / totalFiles);
-          setUploadProgress(overallProgress);
-        });
-        urls.push(url);
+        const base64Str = await blobToBase64(compressedBlob);
+        urls.push(base64Str);
+        setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
       }
       setFormData({ ...formData, gallery: [...(formData.gallery || []), ...urls] });
     } catch (error: any) {
       console.error('Error uploading gallery', error);
-      alert(error.message || 'فشل الاتصال بالخادم أثناء الرفع. يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.');
+      alert('فشل تحويل صور المعرض.');
     } finally {
       setUploading(false);
       setUploadProgress(0);

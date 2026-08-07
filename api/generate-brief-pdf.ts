@@ -783,6 +783,7 @@ function generateEmailHTML(formData: BriefFormData): string {
 const ALLOWED_ORIGINS = new Set([
   'https://mustafa-al-mousawi.web.app',
   'https://www.mustafa-al-mousawi.web.app',
+  'https://mustafa-kappa.vercel.app',
   // Add any custom domain here when registered, e.g.:
   // 'https://www.mustafa-design.com',
 ]);
