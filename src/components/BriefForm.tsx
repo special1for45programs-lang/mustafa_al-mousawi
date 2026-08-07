@@ -1,480 +1,572 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Download, Send } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Download, Send, Package, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from './ui/Button';
-import { BriefFormData } from '../types';
+import { BriefFormData, SocialDetails, LogoDetails, BaseBriefData } from '../types';
 import { APPLICATION_OPTIONS } from '../constants';
-import { useFormAutosave, loadSavedFormData, clearSavedFormData } from '../hooks/useFormAutosave';
+import { DESIGN_STYLES } from '../utils/designConstants';
+import { SelectedPackage } from '../App';
 
-// Import New Components
-import StepInfo from './brief-steps/StepInfo';
-import StepStyle from './brief-steps/StepStyle';
+// مكونات الخطوات — شعار / هوية بصرية
+import StepInfo    from './brief-steps/StepInfo';
+import StepColorPalette from './brief-steps/StepColorPalette';
+import StepStyle   from './brief-steps/StepStyle';
 import StepDetails from './brief-steps/StepDetails';
-import StepReview from './brief-steps/StepReview';
+import StepReview  from './brief-steps/StepReview';
+
+// مكونات الخطوات — سوشيال ميديا (جديدة)
+import SocialStepPlatforms from './brief-steps/SocialStepPlatforms';
+import SocialStepContent   from './brief-steps/SocialStepContent';
+import SocialStepReview    from './brief-steps/SocialStepReview';
+
 import SuccessView from './brief-steps/SuccessView';
 
-// مفتاح حفظ البيانات في localStorage
-const FORM_STORAGE_KEY = 'brief_form_data';
+// ==========================================
+// ثوابت
+// ==========================================
 
-// البيانات المبدئية للاستمارة
-const getInitialFormData = (): BriefFormData => ({
-  clientStatus: 'new',
-  date: new Date().toISOString().split('T')[0],
-  clientName: '',
-  companyName: '',
-  phone: '',
-  email: '',
-  projectName: '',
-  projectDescription: '',
-  projectType: '',
-  favoriteColors: '',
-  logoType: 'text',
-  moodboard: [],
-  applications: APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
-  otherApplication: '',
-  paperSizes: {
-    dl: false,
-    a5: false,
-    a4: false,
-    a3: false,
-  },
-  startDate: '',
-  deadline: '',
-  budget: '100-150',
-  notes: ''
+const getInitialSocialData = (): SocialDetails => ({
+  favoriteColors:   '',
+  inspirationImage: '',
+  designStyle:      '',
+  postsPatternImages: [],
+  platforms:        [],
+  businessType:     '',
+  productsServices: '',
+  postIdeas:        '',
+  visualStyle:      '',
+  additionalNotes:  '',
 });
 
-// مكون استمارة بدء المشروع (Brief Form)
-const BriefForm: React.FC = () => {
-  const [step, setStep] = useState(1); // تتبع خطوة الاستمارة الحالية
-  const [isSubmitting, setIsSubmitting] = useState(false); // حالة الإرسال (توليد PDF)
-  const [isSuccess, setIsSuccess] = useState(false); // حالة النجاح
-  const [showRestorePrompt, setShowRestorePrompt] = useState(false); // حالة نافذة الاستعادة
+const getInitialLogoData = (): LogoDetails => ({
+  favoriteColors:   '',
+  inspirationImage: '',
+  designStyle:      '',
+  logoType:         'text',
+  moodboard:        [],
+  applications:     APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
+  otherApplication: '',
+  paperSizes:       { dl: false, a5: false, a4: false, a3: false },
+  startDate:        '',
+  deadline:         '',
+  notes:            '',
+});
 
-  // الحالة المبدئية للبيانات
-  const [formData, setFormData] = useState<BriefFormData>(getInitialFormData());
+const getInitialBaseData = (): BaseBriefData => ({
+  clientStatus:     'new',
+  date:             new Date().toISOString().split('T')[0],
+  clientName:       '',
+  companyName:      '',
+  phone:            '',
+  email:            '',
+  projectName:      '',
+  projectDescription: '',
+  projectType:      '',
+});
 
-  // مرجع لحاوية النموذج للتمرير إليها
-  const formRef = useRef<HTMLDivElement>(null);
-  // مرجع لتتتبع التحميل الأول (لمنع التمرير عند فتح الصفحة)
-  const isFirstRender = useRef(true);
+const getInitialFormData = (): BriefFormData => ({
+  ...getInitialBaseData(),
+  briefType:        '',
+  logoDetails:      getInitialLogoData(),
+  socialDetails:    getInitialSocialData(),
+});
 
-  // تفعيل الحفظ التلقائي
-  useFormAutosave(FORM_STORAGE_KEY, formData, 2000);
+// ==========================================
+// تحديد نوع المسار بناءً على الباقة
+// ==========================================
+const isSocialType = (pkg: SelectedPackage | null): boolean =>
+  pkg?.type === 'social';
 
-  // التحقق من وجود بيانات محفوظة عند التحميل
-  useEffect(() => {
-    const savedData = loadSavedFormData<BriefFormData>(FORM_STORAGE_KEY);
-    if (savedData && (savedData.clientName || savedData.projectName || savedData.companyName)) {
-      // إظهار نافذة الاستعادة فقط إذا كانت هناك بيانات مهمة
-      setShowRestorePrompt(true);
-    }
-  }, []);
+// تسميات الخطوات حسب المسار
+const LOGO_STEPS  = ['المعلومات', 'الهوية اللونية', 'الأسلوب', 'التفاصيل', 'مراجعة'];
+const SOCIAL_STEPS = ['المعلومات', 'الهوية اللونية', 'المنصات', 'البوستات', 'مراجعة'];
 
-  // استعادة البيانات المحفوظة
-  const handleRestoreData = () => {
-    const savedData = loadSavedFormData<BriefFormData>(FORM_STORAGE_KEY);
-    if (savedData) {
-      setFormData(savedData);
-      toast.success('✅ تم استعادة البيانات المحفوظة!', {
-        duration: 3000,
-        style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
-      });
-    }
-    setShowRestorePrompt(false);
-  };
+// ==========================================
+// Props
+// ==========================================
+interface BriefFormProps {
+  selectedPackage: SelectedPackage | null;
+  onClearPackage: () => void;
+}
 
-  // تجاهل البيانات المحفوظة
-  const handleDiscardSavedData = () => {
-    clearSavedFormData(FORM_STORAGE_KEY);
-    setShowRestorePrompt(false);
-  };
-
-  // الانتقال إلى بداية النموذج عند تغيير الخطوة
-  useEffect(() => {
-    // منع التمرير في المرة الأولى (عند تحميل الصفحة)
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [step]);
-
-  // تحديث البيانات (Generic Updater)
-  const updateFormData = (data: Partial<BriefFormData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
-  };
-
-
-
-  // حذف صورة محددة من المرفقات
-  const removeUploadedFile = (e: React.MouseEvent, index: number) => {
-    e.stopPropagation();
-    setFormData(prev => ({
-      ...prev,
-      moodboard: prev.moodboard.filter((_, i) => i !== index)
-    }));
-  };
-
-  // إعادة تعيين النموذج لبدء مشروع جديد
-  const resetForm = () => {
-    setFormData({
-      clientStatus: 'new',
-      date: new Date().toISOString().split('T')[0],
-      clientName: '',
-      companyName: '',
-      phone: '',
-      email: '',
-      projectName: '',
-      projectDescription: '',
-      projectType: '',
-      favoriteColors: '',
-      logoType: 'text',
-      moodboard: [],
-      applications: APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
-      otherApplication: '',
-      paperSizes: { dl: false, a5: false, a4: false, a3: false },
-      startDate: '',
-      deadline: '',
-      budget: '100-150',
-      notes: ''
-    });
-    setStep(1);
-    setIsSuccess(false);
-    setIsSubmitting(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // حالات توليد وتحميل PDF
+// ==========================================
+// المكوّن الرئيسي
+// ==========================================
+const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }) => {
+  const [step, setStep]               = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess]     = useState(false);
+  const [formData, setFormData]       = useState<BriefFormData>(getInitialFormData());
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
 
-  // دالة توليد وتحميل PDF من السيرفر
-  const downloadPDF = async () => {
-    setIsGeneratingPdf(true);
-    console.log('[Frontend] 📄 Requesting PDF from server...');
+  const formRef       = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
-    try {
-      // طلب PDF من السيرفر
-      const response = await fetch('/api/generate-brief-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ formData }),
+  const isSocial = isSocialType(selectedPackage);
+  const STEPS    = isSocial ? SOCIAL_STEPS : LOGO_STEPS;
+
+
+  // ─── إعادة الضبط عند تغيير الباقة المختارة ────────────────────────────
+  useEffect(() => {
+    if (selectedPackage) {
+      const resolvedCategory = selectedPackage.category
+        ?? (selectedPackage.type === 'social'
+            ? (selectedPackage.id.includes('presence') || selectedPackage.id.includes('growth') || selectedPackage.id.includes('domination')
+                ? 'social_plans' : 'social_posts')
+            : selectedPackage.type) as BriefFormData['briefCategory'];
+
+      // HARD RESET of the state to avoid bleeding
+      setFormData({
+        ...getInitialFormData(),
+        briefType:            selectedPackage.type === 'social' ? 'social' : 'logo',
+        briefCategory:        resolvedCategory,
+        selectedPackageName:  selectedPackage.name,
+        selectedPackagePrice: selectedPackage.price,
       });
+      setStep(1);
+      setIsPdfDownloaded(false);
+    }
+  }, [selectedPackage?.id]);
+
+  // ─── التمرير عند تغيير الخطوة ─────────────────────────────────────────
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    formRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [step]);
+
+  // ─── تحديث البيانات ───────────────────────────────────────────────────
+  const updateFormData = (data: Partial<BaseBriefData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const updateLogoData = (data: Partial<LogoDetails>) => {
+    setFormData(prev => ({
+      ...prev,
+      logoDetails: { ...prev.logoDetails, ...data },
+    }));
+  };
+
+  const updateSocialData = (data: Partial<SocialDetails>) => {
+    setFormData(prev => ({
+      ...prev,
+      socialDetails: { ...prev.socialDetails, ...data },
+    }));
+  };
+
+  // ─── إزالة صورة مرفقة ─────────────────────────────────────────────────
+  const removeUploadedFile = (e: React.MouseEvent, index: number, isSocialPath: boolean = false) => {
+    e.stopPropagation();
+    if (isSocialPath) {
+      setFormData(prev => ({ 
+        ...prev, 
+        socialDetails: {
+          ...prev.socialDetails,
+          postsPatternImages: prev.socialDetails.postsPatternImages.filter((_, i) => i !== index)
+        }
+      }));
+    } else {
+      setFormData(prev => ({ 
+        ...prev, 
+        logoDetails: {
+          ...prev.logoDetails,
+          moodboard: prev.logoDetails.moodboard.filter((_, i) => i !== index)
+        }
+      }));
+    }
+  };
+
+  // ─── إعادة تعيين النموذج ─────────────────────────────────────────────
+  const resetForm = () => {
+    setFormData(getInitialFormData());
+    setStep(1);
+    setIsSuccess(false);
+    setIsSubmitting(false);
+    setIsPdfDownloaded(false);
+  };
+
+  // ─── التحقق من صحة البيانات قبل الانتقال ─────────────────────────────
+  const validateStep = (): boolean => {
+    // 1. Email validation (if provided)
+    if (step === 1 && formData.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast.error('يرجى إدخال عنوان بريد إلكتروني صحيح.');
+        return false;
+      }
+    }
+
+    // 2. Phone validation (basic length check for valid phone numbers)
+    if (step === 1 && formData.phone) {
+      if (formData.phone.length < 6) {
+        toast.error('يرجى إدخال رقم هاتف صحيح.');
+        return false;
+      }
+    }
+
+    if (isSocial) {
+      if (step === 1 && (!formData.clientName || !formData.projectName || !formData.phone)) {
+        toast.error('يرجى ملء هذا الحقل المطلوب.');
+        return false;
+      }
+      if (step === 3 && (!formData.socialDetails.platforms.length || !formData.socialDetails.productsServices)) {
+        toast.error('يرجى اختيار خيار واحد على الأقل للمتابعة.');
+        return false;
+      }
+      if (step === 4 && (!formData.socialDetails.postIdeas)) {
+        toast.error('يرجى ملء هذا الحقل المطلوب.');
+        return false;
+      }
+    } else {
+      if (step === 1 && (!formData.clientName || !formData.projectName || !formData.phone)) {
+        toast.error('يرجى ملء هذا الحقل المطلوب.');
+        return false;
+      }
+      if (step === 3 && !formData.logoDetails.logoType) {
+        toast.error('يرجى اختيار خيار واحد على الأقل للمتابعة.');
+        return false;
+      }
+    }
+    return true;
+  };
+
+
+
+
+  // ─── توليد وتحميل PDF (API-first + محلي كـ Fallback) ─────────────────
+  const downloadPDF = async () => {
+    let loadingToast: string | undefined;
+    try {
+      setIsGeneratingPdf(true);
+      loadingToast = toast.loading('جاري تجهيز الطلب، يرجى الانتظار...', {
+        style: { background: '#1a1a1a', color: '#fff', border: '1px solid #333' }
+      });
+
+      // Try server API first with a 30-second timeout
+      let response: Response;
+      let rawText: string;
+      try {
+        const controller = new AbortController();
+        const timeoutId  = setTimeout(() => controller.abort(), 30_000);
+
+        let finalFormData = { ...formData };
+        
+        // Populate designStyle base64 if it exists for the active domain
+        const activeDesignStyle = isSocial ? finalFormData.socialDetails.designStyle : finalFormData.logoDetails.designStyle;
+        if (activeDesignStyle) {
+          const styleObj = DESIGN_STYLES.find(s => s.id === activeDesignStyle);
+          if (styleObj && styleObj.img) {
+            try {
+              const res = await fetch(styleObj.img);
+              const blob = await res.blob();
+              const base64 = await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              });
+              // We pass it in a special field
+              finalFormData.designStyleImageBase64 = base64;
+              finalFormData.designStyleName = styleObj.name;
+            } catch (e) {
+              console.warn("Failed to convert design style image to base64", e);
+            }
+          }
+        }
+
+        response = await fetch('/api/generate-brief-pdf', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ formData: finalFormData }),
+          signal:  controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        // Read raw text first — JSON.parse on empty string causes the "Unexpected end" error
+        rawText = await response.text();
+        if (!rawText || rawText.trim() === '') {
+          throw new Error('empty_response');
+        }
+      } catch (fetchError: any) {
+        throw fetchError; // Rethrow to be caught by the outer catch
+      }
+
+      const result = JSON.parse(rawText);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || errorData.error || 'Server Error');
+        throw new Error(result.details || result.error || `Server ${response.status}`);
       }
-
-      const result = await response.json();
-
       if (!result.pdf) {
-        throw new Error('No PDF data received');
+        throw new Error('no_pdf_data');
       }
 
-      // تحويل Base64 إلى Blob
-      const pdfBytes = Uint8Array.from(atob(result.pdf), c => c.charCodeAt(0));
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-
-      // تحميل الملف
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.fileName || `Brief_${formData.projectName || 'Project'}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      console.log('[Frontend] ✅ PDF downloaded successfully!');
-
-      // تفعيل حالة "تم التحميل" لإظهار زر الإرسال
       setIsPdfDownloaded(true);
-
-      toast.success('✅ تم تحميل ملف PDF بنجاح! تم إرسال نسخة للمصمم', {
-        duration: 4000,
-        style: {
-          background: '#1a1a1a',
-          color: '#fff',
-          border: '1px solid #ccff00',
-        },
-        iconTheme: {
-          primary: '#ccff00',
-          secondary: '#1a1a1a',
-        },
+      if (loadingToast) toast.dismiss(loadingToast);
+      
+      toast.success('تم إرسال معلومات مشروعك بنجاح!', {
+        duration: 5000,
+        style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
       });
-
-      // الانتقال مباشرة لشاشة النجاح لأن البيانات أُرسلت بالفعل
+      
       setIsSuccess(true);
 
-    } catch (error: any) {
-      const errorMessage = error?.message || error?.toString() || 'Unknown error';
-      console.error('[Frontend] ❌ PDF Generation Error:', errorMessage);
-
-      toast.error(`حدث خطأ أثناء توليد PDF: ${errorMessage.substring(0, 100)}`, {
-        duration: 7000,
-        style: {
-          background: '#1a1a1a',
-          color: '#fff',
-          border: '1px solid #ff0000',
-        },
-      });
+    } catch (apiError: any) {
+      if (loadingToast) toast.dismiss(loadingToast);
+      
+      toast.error(
+        <div dir="rtl" className="flex flex-col gap-1 text-sm">
+          <p className="font-bold text-red-500">❌ عذراً، فشلت عملية الإرسال!</p>
+          <p>يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
+          <p className="text-xs text-gray-400 mt-1">السبب: {apiError?.message?.substring(0, 100) || 'غير معروف'}</p>
+        </div>,
+        {
+          duration: 7000,
+          style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ff0000', minWidth: '300px' },
+        }
+      );
     } finally {
       setIsGeneratingPdf(false);
     }
   };
 
-  // دالة إرسال البيانات (لم تعد مستخدمة - كل شيء يتم في downloadPDF)
-  const sendFormData = async () => {
-    // هذه الدالة لم تعد مستخدمة لأن كل شيء يتم عند تحميل الـ PDF
-    setIsSuccess(true);
-  };
-
-  // معالجة التنقل بين الخطوات والإرسال النهائي
+  // ─── التعامل مع الإرسال ──────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 4) {
-      setStep(step + 1);
-    } else if (isPdfDownloaded) {
-      // الإرسال بعد تحميل PDF
-      const shouldProceed = window.confirm(
-        "📧 سيتم إرسال تفاصيل المشروع إلى المصمم عبر البريد الإلكتروني\n" +
-        "📱 وإرسال نسخة عبر التليقرام\n\n" +
-        "هل تود المتابعة؟"
-      );
-      if (shouldProceed) {
-        sendFormData();
+    if (validateStep()) {
+      if (step < 5) {
+        setStep(step + 1);
+      } else if (isPdfDownloaded) {
+        setIsSuccess(true);
       }
+    } else {
+      // التوجيه السلس لأول حقل فارغ مع تأثير وميض أحمر خفيف
+      setTimeout(() => {
+        const firstInvalid = formRef.current?.querySelector('input:invalid, textarea:invalid, input[required][value=""]') as HTMLElement;
+        if (firstInvalid) {
+          firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstInvalid.classList.add('ring-2', 'ring-red-500', 'animate-pulse');
+          setTimeout(() => firstInvalid.classList.remove('ring-2', 'ring-red-500', 'animate-pulse'), 2000);
+        } else {
+          formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
   };
 
-  // شاشة النجاح
-  if (isSuccess) {
-    return <SuccessView resetForm={resetForm} />;
-  }
+  // ─── حالة النجاح ─────────────────────────────────────────────────────
+  if (isSuccess) return <SuccessView resetForm={resetForm} />;
 
-  // شاشة التحميل المحسنة
-  if (isSubmitting) {
-    return (
-      <div className="py-24 bg-brand-black font-sans relative overflow-hidden select-none min-h-screen flex items-center justify-center">
-        <div className="w-full max-w-lg mx-auto px-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 text-center">
-            {/* أيقونة متحركة */}
-            <div className="relative w-24 h-24 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-brand-lime border-t-transparent rounded-full animate-spin"></div>
-              <div className="absolute inset-4 bg-brand-lime/10 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-brand-lime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-            </div>
-
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">جاري إعداد ملف المشروع...</h3>
-            <p className="text-gray-500 mb-8">قد تستغرق هذه العملية حتى 15 ثانية</p>
-
-            {/* شريط التقدم */}
-            <div className="w-full bg-gray-100 rounded-full h-2 mb-8 overflow-hidden">
-              <div className="bg-brand-lime h-full rounded-full animate-pulse" style={{ width: '60%', animation: 'loading 2s ease-in-out infinite' }}></div>
-            </div>
-
-            {/* ملاحظات مهمة */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-right">
-              <h4 className="font-bold text-yellow-800 mb-2 flex items-center gap-2 justify-end">
-                <span>ملاحظات مهمة</span>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </h4>
-              <ul className="text-sm text-yellow-700 space-y-2">
-                <li className="flex items-start gap-2 justify-end">
-                  <span>سيتم إنشاء ملف PDF احترافي بتصميم عالي الجودة</span>
-                  <span>📄</span>
-                </li>
-                <li className="flex items-start gap-2 justify-end">
-                  <span>سيصل المصمم نسخة عبر البريد والتليقرام</span>
-                  <span>📧</span>
-                </li>
-                <li className="flex items-start gap-2 justify-end">
-                  <span>لا تغلق الصفحة حتى اكتمال العملية</span>
-                  <span>⚠️</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // ─── الخطوات الحالية بالاسم ──────────────────────────────────────────
+  const STEP_TITLES = isSocial
+    ? ['معلومات العميل', 'الهوية اللونية (Colors)', 'المنصات والنشاط', 'تفاصيل ومحتوى البوستات', 'مراجعة الطلب']
+    : ['المعلومات الأساسية', 'الهوية اللونية (Colors)', 'النمط والتفضيلات', 'تفاصيل المشروع', 'مراجعة الطلب'];
 
   return (
     <div className="py-24 bg-brand-black font-sans relative overflow-hidden select-none">
 
-      {/* نافذة استعادة البيانات المحفوظة */}
-      {showRestorePrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center" dir="rtl">
-            <div className="w-16 h-16 bg-brand-lime/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-brand-lime" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">وجدنا بيانات محفوظة!</h3>
-            <p className="text-gray-500 mb-6">
-              يبدو أنك كنت تملأ استمارة سابقاً. هل تريد استعادة البيانات المحفوظة؟
-            </p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={handleDiscardSavedData}
-                className="px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl font-bold transition-all"
-              >
-                البدء من جديد
-              </button>
-              <button
-                onClick={handleRestoreData}
-                className="px-6 py-3 bg-brand-lime text-black hover:bg-lime-400 rounded-xl font-bold transition-all shadow-lg"
-              >
-                استعادة البيانات
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      <div className="w-full max-w-7xl mx-auto md:pr-4 lg:pr-8 xl:pr-12 relative z-10">
 
-        <div className="text-center mb-16">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+        {/* العنوان */}
+        <div className="text-center mb-10">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">ابدأ مشروعك</h2>
           <p className="text-gray-400 text-lg">دعنا نحول رؤيتك إلى واقع ملموس</p>
         </div>
 
-        {/* شريط التقدم (Step Indicator) */}
-        <div ref={formRef} className="flex justify-between items-center max-w-2xl mx-auto mb-16 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-brand-gray -z-10 rounded-full"></div>
-          <div
-            className="absolute top-1/2 right-0 h-1 bg-brand-lime -z-10 rounded-full transition-all duration-500"
-            style={{ width: `${((step - 1) / 3) * 100}%` }}
-          ></div>
-
-          {[
-            { num: 1, label: 'المعلومات' },
-            { num: 2, label: 'النمط' },
-            { num: 3, label: 'التفاصيل' },
-            { num: 4, label: 'مراجعة' }
-          ].map((s) => (
-            <div key={s.num} className="flex flex-col items-center gap-3">
-              <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-4 transition-all duration-300 z-10 
-                ${step >= s.num ? 'bg-brand-lime border-brand-lime text-black shadow-[0_0_15px_rgba(204,255,0,0.5)]' : 'bg-brand-dark border-brand-gray text-gray-500'}`}
-              >
-                {step > s.num ? '✓' : s.num}
+        {/* بانر الباقة المختارة أو Placeholder */}
+        {selectedPackage ? (
+          <div className="max-w-2xl mx-auto mb-10 bg-brand-lime/10 border border-brand-lime/40 rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-brand-lime/20 p-2.5 rounded-lg">
+                <Package size={22} className="text-brand-lime" />
               </div>
-              <span className={`text-sm font-bold transition-colors ${step >= s.num ? 'text-brand-lime' : 'text-gray-500'}`}>
-                {s.label}
-              </span>
+              <div>
+                <p className="text-xs text-brand-lime/70 font-bold uppercase tracking-widest">
+                  {isSocial ? 'باقة سوشيال ميديا' : 'باقة الشعار / الهوية'}
+                </p>
+                <p className="text-white font-bold text-lg">{selectedPackage.name}</p>
+                <p className="text-gray-400 text-sm">{selectedPackage.price.toLocaleString('en-US')} د.ع</p>
+              </div>
             </div>
-          ))}
-        </div>
+            <button
+              type="button"
+              onClick={onClearPackage}
+              className="text-gray-500 hover:text-white transition-colors p-1.5 hover:bg-white/10 rounded-lg"
+              title="إزالة الاختيار"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        ) : (
+          <div className="max-w-2xl mx-auto mb-10 bg-brand-dark border border-white/10 rounded-2xl p-6 text-center">
+            <Package size={32} className="text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-400 font-bold mb-1">لم تختر باقة بعد</p>
+            <p className="text-gray-600 text-sm mb-4">يرجى اختيار الباقة المناسبة أولاً للحصول على استمارة مخصصة لاحتياجاتك.</p>
+            <a
+              href="#packages"
+              className="inline-flex items-center gap-2 bg-brand-lime text-black font-bold px-6 py-2.5 rounded-xl hover:bg-white transition-colors text-sm"
+            >
+              اختر باقتك الآن
+              <ArrowRight size={16} />
+            </a>
+          </div>
+        )}
+        {selectedPackage && (
+          <div ref={formRef} className="flex justify-between items-center max-w-2xl mx-auto mb-8 sm:mb-16 relative animate-fadeIn px-2 sm:px-0">
+            <div className="absolute top-1/2 left-0 w-full h-0.5 sm:h-1 bg-brand-gray -z-10 rounded-full" />
+            <div
+              className="absolute top-1/2 right-0 h-0.5 sm:h-1 bg-brand-lime -z-10 rounded-full transition-all duration-500"
+              style={{ width: `${((step - 1) / 4) * 100}%` }}
+            />
+            {STEPS.map((label, i) => {
+              const num = i + 1;
+              const isCurrent = step === num;
+              return (
+                <div key={num} className="flex flex-col items-center gap-1.5 sm:gap-3">
+                  <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-xl font-bold border-2 sm:border-4 transition-all duration-300 z-10
+                    ${step >= num ? 'bg-brand-lime border-brand-lime text-black shadow-[0_0_15px_rgba(204,255,0,0.5)]' : 'bg-brand-dark border-brand-gray text-gray-500'}`}
+                  >
+                    {step > num ? '✓' : num}
+                  </div>
+                  <span className={`text-[10px] sm:text-sm font-bold transition-colors ${
+                    isCurrent ? 'text-brand-lime font-extrabold block' : 'hidden sm:block text-gray-500'
+                  }`}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* نموذج الإدخال */}
-        <div className="bg-white rounded-[2.5rem] shadow-2xl p-6 md:p-12 relative z-20 mx-4 md:mx-auto">
+        {selectedPackage && (
+        <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl p-3.5 py-5 sm:p-8 md:p-12 relative z-20 w-full max-w-5xl mx-auto animate-fadeIn">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" autoComplete="on" noValidate>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Header: Client Toggle */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6 border-b border-gray-100 pb-8">
+            {/* رأس الخطوة */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 sm:mb-8 gap-4 sm:gap-6 border-b border-gray-100 pb-6 sm:pb-8">
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {step === 1 && 'المعلومات الأساسية'}
-                  {step === 2 && 'النمط والتفضيلات'}
-                  {step === 3 && 'تفاصيل المشروع'}
-                  {step === 4 && 'مراجعة الطلب'}
-                </h3>
-                <p className="text-gray-500">الخطوة {step} من 4</p>
+                <div className="flex flex-col gap-1 mb-1 sm:mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                    {STEP_TITLES[step - 1]}
+                  </h3>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  الخطوة {step} من 5
+                  {isSocial && <span className="mr-2 text-[10px] sm:text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">سوشيال ميديا</span>}
+                  {!isSocial && selectedPackage && <span className="mr-2 text-[10px] sm:text-xs bg-brand-lime/20 text-gray-700 px-2 py-0.5 rounded-full font-bold">شعار / هوية</span>}
+                </p>
               </div>
 
-              {/* خيار العميل (جديد / سابق) - يظهر فقط في الخطوة 1 */}
+              {/* حالة العميل (جديد / سابق) - يظهر في الخطوة 1 فقط */}
               {step === 1 && (
-                <div className="bg-gray-100 p-1.5 rounded-xl inline-flex relative">
-                  <div
-                    className={`absolute inset-y-1.5 w-1/2 bg-white rounded-lg shadow-sm transition-all duration-300 ease-out border border-gray-200 ${formData.clientStatus === 'current' ? 'right-1.5' : 'right-[calc(50%-0.375rem)]'}`}
-                  ></div>
-                  <button
-                    type="button"
-                    onClick={() => updateFormData({ clientStatus: 'current' })}
-                    className={`relative z-10 px-8 py-3 rounded-lg font-bold transition-colors ${formData.clientStatus === 'current' ? 'text-black' : 'text-gray-500'}`}
-                  >
+                <div className="bg-gray-100 p-1 rounded-xl inline-flex relative">
+                  <div className={`absolute inset-y-1 w-1/2 bg-white rounded-lg shadow-sm transition-all duration-300 ease-out border border-gray-200
+                    ${formData.clientStatus === 'current' ? 'right-1' : 'right-[calc(50%-0.25rem)]'}`}
+                  />
+                  <button type="button" onClick={() => updateFormData({ clientStatus: 'current' })}
+                    className={`relative z-10 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-base rounded-lg font-bold transition-colors ${formData.clientStatus === 'current' ? 'text-black' : 'text-gray-500'}`}>
                     عميل سابق
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => updateFormData({ clientStatus: 'new' })}
-                    className={`relative z-10 px-8 py-3 rounded-lg font-bold transition-colors ${formData.clientStatus === 'new' ? 'text-black' : 'text-gray-500'}`}
-                  >
+                  <button type="button" onClick={() => updateFormData({ clientStatus: 'new' })}
+                    className={`relative z-10 px-4 sm:px-8 py-2 sm:py-3 text-xs sm:text-base rounded-lg font-bold transition-colors ${formData.clientStatus === 'new' ? 'text-black' : 'text-gray-500'}`}>
                     عميل جديد
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Step Components */}
-            {step === 1 && <StepInfo formData={formData} updateFormData={updateFormData} />}
-            {step === 2 && <StepStyle formData={formData} updateFormData={updateFormData} />}
-            {step === 3 && <StepDetails formData={formData} updateFormData={updateFormData} />}
-            {step === 4 && <StepReview formData={formData} removeUploadedFile={removeUploadedFile} />}
+            {/* ==========================================
+                محتوى الخطوات — مسار الشعار / الهوية
+            ========================================== */}
+            {!isSocial && step === 1 && <StepInfo    formData={formData} updateFormData={updateFormData} />}
+            {!isSocial && step === 2 && <StepColorPalette formData={formData} updateDomainData={updateLogoData} />}
+            {!isSocial && step === 3 && <StepStyle   logoDetails={formData.logoDetails} updateLogoDetails={updateLogoData} />}
+            {!isSocial && step === 4 && (
+              <StepDetails
+                logoDetails={formData.logoDetails}
+                updateLogoDetails={updateLogoData}
+              />
+            )}
+            {!isSocial && step === 5 && (
+              <StepReview formData={formData} removeUploadedFile={removeUploadedFile} />
+            )}
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between items-center pt-10 mt-10 border-t border-gray-100/10">
+            {/* ==========================================
+                محتوى الخطوات — مسار السوشيال ميديا
+            ========================================== */}
+            {isSocial && step === 1 && <StepInfo    formData={formData} updateFormData={updateFormData} />}
+            {isSocial && step === 2 && <StepColorPalette formData={formData} updateDomainData={updateSocialData} />}
+            {isSocial && step === 3 && (
+              <SocialStepPlatforms
+                socialData={formData.socialDetails}
+                updateSocialData={updateSocialData}
+                companyName={formData.companyName}
+                updateFormData={updateFormData}
+                projectType={formData.projectType}
+              />
+            )}
+            {isSocial && step === 4 && (
+              <SocialStepContent
+                socialData={formData.socialDetails}
+                updateSocialData={updateSocialData}
+              />
+            )}
+            {isSocial && step === 5 && (
+              <SocialStepReview formData={formData} selectedPackage={selectedPackage} removeUploadedFile={removeUploadedFile} />
+            )}
+
+            {/* ==========================================
+                أزرار التنقل
+            ========================================== */}
+            <div className="flex flex-row justify-between items-center pt-6 sm:pt-10 mt-6 sm:mt-10 border-t border-gray-100 gap-2 sm:gap-4">
+
               {step > 1 ? (
                 <button
                   type="button"
                   onClick={() => setStep(step - 1)}
                   className="flex items-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 px-6 py-3 rounded-xl transition-all font-bold"
                 >
-                  <ArrowRight className="ml-2 w-5 h-5" /> {step === 4 ? 'تعديل البيانات' : 'السابق'}
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                  {step === 5 ? 'تعديل البيانات' : 'السابق'}
                 </button>
-              ) : <div></div>}
-
-              {step < 4 ? (
-                <Button
-                  type="submit"
-                  className="bg-brand-lime text-black hover:bg-lime-400 px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  {step === 3 ? 'مراجعة' : 'التالي'} <ArrowLeft className="mr-2 w-5 h-5" />
-                </Button>
               ) : (
-                /* زر واحد يتغير حسب الحالة */
-                !isPdfDownloaded ? (
-                  /* زر تحميل PDF */
-                  <button
-                    type="button"
-                    onClick={downloadPDF}
-                    disabled={isGeneratingPdf}
-                    className={`flex items-center gap-3 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all ${isGeneratingPdf ? 'opacity-75 cursor-wait' : ''}`}
-                  >
-                    <Download className="w-6 h-6" />
-                    {isGeneratingPdf ? 'جاري إنشاء الملف...' : 'تحميل ملف PDF'}
-                  </button>
-                ) : (
-                  /* زر إرسال للمصمم */
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`flex items-center gap-3 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all animate-pulse ${isSubmitting ? 'opacity-75 cursor-wait animate-none' : ''}`}
-                  >
-                    <Send className="w-6 h-6" />
-                    {isSubmitting ? 'جاري الإرسال...' : 'إرسال للمصمم'}
-                  </Button>
-                )
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetForm();
+                    toast.success('تم تفريغ الحقول بنجاح');
+                  }}
+                  className="flex items-center text-gray-400 hover:text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg transition-all text-sm font-semibold"
+                >
+                  إعادة تعيين الاستمارة
+                </button>
+              )}
+
+              {step < 5 ? (
+                <button
+                  type="submit"
+                  className="flex items-center justify-center gap-2 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all group w-full md:w-auto"
+                >
+                  {step === 4 ? 'مراجعة' : 'التالي'}
+                  <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={downloadPDF}
+                  disabled={isGeneratingPdf}
+                  className={`flex items-center justify-center gap-3 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:shadow-lime-300/20 transition-all w-full md:w-auto ${isGeneratingPdf ? 'opacity-75 cursor-wait' : ''}`}
+                >
+                  <Send className="w-6 h-6" />
+                  {isGeneratingPdf ? 'جاري الإرسال...' : 'إرسال المشروع / التأكيد'}
+                </button>
               )}
             </div>
           </form>
         </div>
+        )}
       </div>
     </div>
   );

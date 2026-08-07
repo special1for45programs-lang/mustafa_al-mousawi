@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# منع فهرسة لوحة التحكم والمسارات الحساسة
+Disallow: /admin/
+Disallow: /admin
+
+Sitemap: https://mustafa-al-mousawi.web.app/sitemap.xml

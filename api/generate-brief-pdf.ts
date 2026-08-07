@@ -10,19 +10,23 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-// Type for form data
-interface BriefFormData {
-  clientStatus: 'new' | 'current';
-  date: string;
-  clientName: string;
-  companyName: string;
-  phone: string;
-  email: string;
-  projectName: string;
-  projectDescription: string;
-  projectType: string;
+// Type for social media form data
+export interface SocialDetails {
   favoriteColors: string;
-  logoType: string;
+  designStyle: string;
+  postsPatternImages: string[];
+  platforms: string[];
+  businessType: string;
+  productsServices: string;
+  postIdeas: string;
+  visualStyle: 'modern' | 'formal' | 'luxury' | 'bold' | '';
+  additionalNotes: string;
+}
+
+export interface LogoDetails {
+  favoriteColors: string;
+  designStyle: string;
+  logoType: 'text' | 'symbolic' | 'innovative' | 'double' | 'arabic' | '';
   moodboard: string[];
   applications: Record<string, boolean>;
   otherApplication: string;
@@ -34,8 +38,29 @@ interface BriefFormData {
   };
   startDate: string;
   deadline: string;
-  budget: string;
   notes: string;
+}
+
+// Type for form data
+interface BriefFormData {
+  clientStatus: 'new' | 'current';
+  date: string;
+  clientName: string;
+  companyName: string;
+  phone: string;
+  email: string;
+  projectName: string;
+  projectDescription: string;
+  projectType: string;
+
+  briefType: 'logo' | 'social' | '';
+  logoDetails: LogoDetails;
+  socialDetails: SocialDetails;
+
+  // Dynamic multi-category fields
+  briefCategory?: 'logo' | 'branding' | 'social_posts' | 'social_plans';
+  selectedPackageName?: string;
+  selectedPackagePrice?: number;
 }
 
 // Application labels mapping
@@ -57,14 +82,65 @@ const APP_LABELS: Record<string, string> = {
   menu: 'قائمة طعام'
 };
 
+// ==========================================
+// Build dynamic Telegram caption based on brief type
+// ==========================================
+function buildTelegramCaption(formData: BriefFormData): string {
+  const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
+
+  const header = isSocial
+    ? `📱 طلب سوشيال ميديا جديد!`
+    : `🚀 مشروع جديد!`;
+
+  const base = [
+    header,
+    ``,
+    `👤 العميل: ${formData.clientName}`,
+    `🏢 الشركة: ${formData.companyName}`,
+    `📞 الهاتف: ${formData.phone || '—'}`,
+    formData.email ? `📧 البريد: ${formData.email}` : '',
+  ];
+
+  if (formData.selectedPackageName) {
+    base.push(`📦 الباقة: ${formData.selectedPackageName}`);
+    if (formData.selectedPackagePrice) {
+      base.push(`💰 السعر: ${formData.selectedPackagePrice.toLocaleString('en-US')} د.ع`);
+    }
+  }
+
+  if (isSocial && formData.socialDetails) {
+    const sd = formData.socialDetails;
+    base.push(``);
+    base.push(`📊 تفاصيل السوشيال:`);
+    if (sd.platforms?.length) base.push(`📱 المنصات: ${sd.platforms.join(', ')}`);
+    if (sd.productsServices)   base.push(`🛡️ النشاط: ${sd.productsServices.substring(0, 150)}`);
+    if (sd.postIdeas)          base.push(`💡 أفكار: ${sd.postIdeas.substring(0, 200)}`);
+    if (sd.visualStyle)        base.push(`🎨 الأسلوب: ${sd.visualStyle}`);
+    if (sd.additionalNotes)    base.push(`📝 ملاحظات: ${sd.additionalNotes.substring(0, 150)}`);
+  } else {
+    // Logo / Branding path
+    const logo = formData.logoDetails;
+    if (formData.projectName)        base.push(`\n📋 المشروع: ${formData.projectName}`);
+    if (formData.projectType)        base.push(`🏢 مجال العمل: ${formData.projectType}`);
+    if (logo.deadline)           base.push(`⏰ موعد التسليم: ${logo.deadline}`);
+  }
+
+  return base.filter(Boolean).join('\n');
+}
+
 // Generate HTML template for PDF
 function generatePdfHTML(formData: BriefFormData): string {
-  const selectedApps = Object.entries(formData.applications)
+  const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
+
+  const logo = formData.logoDetails || {} as any;
+  const sd = formData.socialDetails || {} as any;
+
+  const selectedApps = Object.entries(logo.applications || {})
     .filter(([_, v]) => v)
     .map(([k, _]) => APP_LABELS[k] || k);
 
-  if (formData.otherApplication) {
-    selectedApps.push(formData.otherApplication);
+  if (logo.otherApplication) {
+    selectedApps.push(logo.otherApplication);
   }
 
   const logoTypeLabels: Record<string, string> = {
@@ -367,10 +443,12 @@ function generatePdfHTML(formData: BriefFormData): string {
           <div class="field-label">اسم المشروع</div>
           <div class="field-value large">${formData.projectName || '-'}</div>
         </div>
+        ${!isSocial ? `
         <div class="field" style="margin-top: 15px;">
           <div class="field-label">نبذة عن المشروع</div>
           <div class="field-value multiline">${formData.projectDescription || 'لا يوجد وصف'}</div>
         </div>
+        ` : ''}
         <div class="grid" style="margin-top: 15px;">
           <div class="field">
             <div class="field-label">المجال</div>
@@ -378,12 +456,47 @@ function generatePdfHTML(formData: BriefFormData): string {
           </div>
           <div class="field">
             <div class="field-label">الألوان المفضلة</div>
-            <div class="field-value">${formData.favoriteColors || '-'}</div>
+            <div class="field-value">${isSocial ? sd.favoriteColors || '-' : logo.favoriteColors || '-'}</div>
           </div>
         </div>
       </div>
       
-      <!-- المواصفات والجدول -->
+      ${isSocial && sd ? `
+      <!-- تفاصيل السوشيال ميديا -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-indicator"></div>
+          <div class="section-title">تفاصيل السوشيال ميديا</div>
+        </div>
+        <div class="field">
+          <div class="field-label">المنصات المستهدفة</div>
+          <div class="tags">
+            ${sd.platforms?.map((p: string) => `<span class="tag">${p}</span>`).join('') || '<span class="empty-tag">-</span>'}
+          </div>
+        </div>
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">المنتجات / الخدمات</div>
+          <div class="field-value multiline">${sd.productsServices || '-'}</div>
+        </div>
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">أفكار البوستات</div>
+          <div class="field-value multiline">${sd.postIdeas || '-'}</div>
+        </div>
+        <div class="grid" style="margin-top: 15px;">
+          <div class="field">
+            <div class="field-label">الأسلوب البصري</div>
+            <div class="field-value">${sd.visualStyle || '-'}</div>
+          </div>
+        </div>
+        ${sd.additionalNotes ? `
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">ملاحظات إضافية للسوشيال</div>
+          <div class="field-value multiline">${sd.additionalNotes}</div>
+        </div>
+        ` : ''}
+      </div>
+      ` : `
+      <!-- المواصفات والجدول (تصميم شعار) -->
       <div class="section">
         <div class="section-header">
           <div class="section-indicator"></div>
@@ -392,18 +505,14 @@ function generatePdfHTML(formData: BriefFormData): string {
         <div class="grid">
           <div class="field">
             <div class="field-label">نوع الشعار</div>
-            <div class="field-value">${logoTypeLabels[formData.logoType] || formData.logoType || '-'}</div>
-          </div>
-          <div class="field">
-            <div class="field-label">الميزانية</div>
-            <div class="field-value budget">${formData.budget}$</div>
+            <div class="field-value">${logoTypeLabels[logo.logoType] || logo.logoType || '-'}</div>
           </div>
         </div>
         <div class="field" style="margin-top: 15px;">
           <div class="field-label">التطبيقات المطلوبة</div>
           <div class="tags">
             ${selectedApps.length > 0
-      ? selectedApps.map(app => `<span class="tag">${app}</span>`).join('')
+      ? selectedApps.map((app: string) => `<span class="tag">${app}</span>`).join('')
       : '<span class="empty-tag">لم يتم اختيار تطبيقات</span>'
     }
           </div>
@@ -411,40 +520,71 @@ function generatePdfHTML(formData: BriefFormData): string {
         <div class="grid" style="margin-top: 15px;">
           <div class="field">
             <div class="field-label">تاريخ البدء</div>
-            <div class="field-value">${formData.startDate || '-'}</div>
+            <div class="field-value">${logo.startDate || '-'}</div>
           </div>
           <div class="field">
             <div class="field-label">تاريخ التسليم</div>
-            <div class="field-value">${formData.deadline || '-'}</div>
+            <div class="field-value">${logo.deadline || '-'}</div>
           </div>
         </div>
       </div>
+      `}
       
-      ${formData.moodboard && formData.moodboard.length > 0 ? `
-      <!-- المرفقات / الصور -->
+      ${(formData as any).designStyleImageBase64 || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) ? `
+      <!-- المراجع البصرية -->
       <div class="section">
         <div class="section-header">
           <div class="section-indicator"></div>
-          <div class="section-title">المرفقات (${formData.moodboard.length})</div>
+          <div class="section-title">المراجع البصرية</div>
         </div>
-        <div class="images-gallery">
-          ${formData.moodboard.map((img: string, index: number) => `
+        
+        ${(formData as any).designStyleImageBase64 ? `
+        <div class="field" style="margin-bottom: 20px;">
+          <div class="field-label">النمط التصميمي المختار: ${(formData as any).designStyleName || (isSocial ? sd.designStyle : logo.designStyle)}</div>
+          <div class="images-gallery" style="grid-template-columns: 180px;">
             <div class="gallery-image">
-              <img src="${img}" alt="مرفق ${index + 1}">
+              <img src="${(formData as any).designStyleImageBase64}" alt="Design Style">
             </div>
-          `).join('')}
+          </div>
         </div>
+        ` : ''}
+      
+        ${logo.moodboard && logo.moodboard.length > 0 ? `
+        <div class="field">
+          <div class="field-label">الصور المرفقة (${logo.moodboard.length})</div>
+          <div class="images-gallery">
+            ${logo.moodboard.map((img: string, index: number) => `
+              <div class="gallery-image">
+                <img src="${img}" alt="مرفق ${index + 1}">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        ${sd.postsPatternImages && sd.postsPatternImages.length > 0 ? `
+        <div class="field">
+          <div class="field-label">أنماط المنشورات (${sd.postsPatternImages.length})</div>
+          <div class="images-gallery">
+            ${sd.postsPatternImages.map((img: string, index: number) => `
+              <div class="gallery-image">
+                <img src="${img}" alt="نمط ${index + 1}">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
       </div>
       ` : ''}
       
-      ${formData.notes ? `
+      ${logo.notes ? `
       <!-- ملاحظات -->
       <div class="section">
         <div class="section-header">
           <div class="section-indicator"></div>
           <div class="section-title">ملاحظات إضافية</div>
         </div>
-        <div class="notes-box">${formData.notes}</div>
+        <div class="notes-box">${logo.notes}</div>
       </div>
       ` : ''}
       
@@ -457,7 +597,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
         </svg>
       </div>
-      <span class="instagram-handle">@mustafa.al_moossawi</span>
+      <span class="instagram-handle">@mustafa.al_mousawi</span>
     </div>
   </div>
 </body>
@@ -572,7 +712,10 @@ async function sendPdfToTelegram(
 
 // Generate email HTML
 function generateEmailHTML(formData: BriefFormData): string {
-  const selectedApps = Object.entries(formData.applications)
+  const logo = formData.logoDetails || {} as any;
+  const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
+
+  const selectedApps = Object.entries(logo.applications || {})
     .filter(([_, v]) => v)
     .map(([k, _]) => APP_LABELS[k] || k)
     .join('، ');
@@ -589,7 +732,7 @@ function generateEmailHTML(formData: BriefFormData): string {
       <div style="padding: 30px;">
         
         <div style="background: #f9fafb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-          <h2 style="color: #d4ff00; background: #000; padding: 10px 15px; border-radius: 8px; margin: -20px -20px 15px -20px; font-size: 16px;">📋 ${formData.projectName}</h2>
+          <h2 style="color: #d4ff00; background: #000; padding: 10px 15px; border-radius: 8px; margin: -20px -20px 15px -20px; font-size: 16px;">📋 ${formData.projectName || 'طلب سوشيال ميديا'}</h2>
           <table width="100%" style="border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>العميل:</strong></td>
@@ -611,15 +754,16 @@ function generateEmailHTML(formData: BriefFormData): string {
         </div>
 
         <div style="background: rgba(212, 255, 0, 0.1); border: 1px solid #d4ff00; border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 20px;">
-          <span style="font-size: 24px; font-weight: bold;">${formData.budget}$</span>
+          <span style="font-size: 24px; font-weight: bold;">${formData.selectedPackagePrice ? `${formData.selectedPackagePrice.toLocaleString('en-US')} د.ع` : 'لم يحدد'}</span>
           <br>
-          <span style="color: #666; font-size: 12px;">الميزانية</span>
+          <span style="color: #666; font-size: 12px;">الميزانية / السعر</span>
         </div>
 
         <p style="color: #666; line-height: 1.8;">${formData.projectDescription || 'لا يوجد وصف'}</p>
 
-        ${selectedApps ? `<p style="margin-top: 15px;"><strong>التطبيقات:</strong> ${selectedApps}</p>` : ''}
-        ${formData.notes ? `<div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 15px;"><strong>ملاحظات:</strong> ${formData.notes}</div>` : ''}
+        ${!isSocial && selectedApps ? `<p style="margin-top: 15px;"><strong>التطبيقات:</strong> ${selectedApps}</p>` : ''}
+        ${!isSocial && logo.notes ? `<div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 15px;"><strong>ملاحظات:</strong> ${logo.notes}</div>` : ''}
+        ${isSocial && formData.socialDetails?.additionalNotes ? `<div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 15px;"><strong>ملاحظات:</strong> ${formData.socialDetails.additionalNotes}</div>` : ''}
 
       </div>
 
@@ -632,15 +776,159 @@ function generateEmailHTML(formData: BriefFormData): string {
   `;
 }
 
+
+// ============================================================
+//  SECURITY LAYER 1 — CORS Origin Whitelist
+// ============================================================
+const ALLOWED_ORIGINS = new Set([
+  'https://mustafa-al-mousawi.web.app',
+  'https://www.mustafa-al-mousawi.web.app',
+  // Add any custom domain here when registered, e.g.:
+  // 'https://www.mustafa-design.com',
+]);
+
+/** Returns the allowed origin string if the request origin is permitted, else null. */
+function resolveAllowedOrigin(req: VercelRequest): string | null {
+  const origin = (req.headers['origin'] ?? '') as string;
+  const referer = (req.headers['referer'] ?? '') as string;
+
+  // Always allow in local development
+  if (origin === 'http://localhost:5173' || referer.startsWith('http://localhost:5173')) {
+    return 'http://localhost:5173';
+  }
+
+  if (ALLOWED_ORIGINS.has(origin)) return origin;
+
+  // Fallback: check referer host against whitelist
+  try {
+    const refererHost = new URL(referer).origin;
+    if (ALLOWED_ORIGINS.has(refererHost)) return refererHost;
+  } catch {
+    // invalid referer URL — ignore
+  }
+
+  return null;
+}
+
+// ============================================================
+//  SECURITY LAYER 2 — In-Memory Rate Limiter
+// ============================================================
+interface RateRecord { count: number; resetAt: number }
+const rateLimitMap = new Map<string, RateRecord>();
+
+const RATE_LIMIT_MAX    = 5;           // max submissions per window
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour in ms
+
+function checkRateLimit(ip: string): { limited: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { limited: false, retryAfterSec: 0 };
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    const retryAfterSec = Math.ceil((record.resetAt - now) / 1000);
+    return { limited: true, retryAfterSec };
+  }
+
+  record.count++;
+  return { limited: false, retryAfterSec: 0 };
+}
+
+// ============================================================
+//  SECURITY LAYER 3 — Server-Side Payload Validator
+// ============================================================
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// ~4 MB expressed as Base64 character count (Base64 ≈ 1.37× raw bytes)
+const MAX_BASE64_CHARS = Math.ceil(4 * 1024 * 1024 * 1.37);
+
+interface ValidationResult { valid: boolean; error?: string }
+
+function validatePayload(formData: unknown): ValidationResult {
+  if (!formData || typeof formData !== 'object') {
+    return { valid: false, error: 'البيانات المُرسَلة غير صالحة.' };
+  }
+
+  const fd = formData as Record<string, unknown>;
+
+  // ── Required string fields ──────────────────────────────────
+  for (const field of ['clientName', 'phone', 'briefType'] as const) {
+    if (!fd[field] || typeof fd[field] !== 'string' || !(fd[field] as string).trim()) {
+      return { valid: false, error: `الحقل المطلوب "${field}" مفقود أو فارغ.` };
+    }
+  }
+
+  // ── briefType enum ───────────────────────────────────────────
+  if (!['logo', 'social'].includes(fd['briefType'] as string)) {
+    return { valid: false, error: 'نوع الطلب (briefType) غير صالح.' };
+  }
+
+  // ── Optional email format ────────────────────────────────────
+  if (fd['email'] && typeof fd['email'] === 'string' && fd['email'].trim()) {
+    if (!EMAIL_REGEX.test(fd['email'] as string)) {
+      return { valid: false, error: 'صيغة البريد الإلكتروني غير صحيحة.' };
+    }
+  }
+
+  // ── Base64 size guards (prevents memory crash / payload injection) ──
+  const logoDetails = fd['logoDetails'] as Record<string, unknown> | undefined;
+  const socialDetails = fd['socialDetails'] as Record<string, unknown> | undefined;
+
+  // Check inspirationImage on both paths
+  for (const details of [logoDetails, socialDetails]) {
+    if (!details) continue;
+    const img = details['inspirationImage'];
+    if (typeof img === 'string' && img.startsWith('data:') && img.length > MAX_BASE64_CHARS) {
+      return { valid: false, error: 'حجم صورة الاستلهام يتجاوز الحد المسموح به (4MB).' };
+    }
+  }
+
+  // Check moodboard array items
+  if (logoDetails && Array.isArray(logoDetails['moodboard'])) {
+    for (const item of logoDetails['moodboard'] as unknown[]) {
+      if (typeof item === 'string' && item.startsWith('data:') && item.length > MAX_BASE64_CHARS) {
+        return { valid: false, error: 'إحدى صور التصور المبدئي تتجاوز الحد المسموح به (4MB).' };
+      }
+    }
+  }
+
+  // Check postsPatternImages for social path
+  if (socialDetails && Array.isArray(socialDetails['postsPatternImages'])) {
+    for (const item of socialDetails['postsPatternImages'] as unknown[]) {
+      if (typeof item === 'string' && item.startsWith('data:') && item.length > MAX_BASE64_CHARS) {
+        return { valid: false, error: 'إحدى صور النماذج تتجاوز الحد المسموح به (4MB).' };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+// ============================================================
+//  MAIN HANDLER
+// ============================================================
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers
+
+  // ── CORS: resolve and enforce origin whitelist ──────────────
+  const allowedOrigin = resolveAllowedOrigin(req);
+
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Vary', 'Origin');
+  } else {
+    // Unknown origin — reject immediately (handles CSRF)
+    return res.status(403).json({ error: 'Access denied: origin not permitted.' });
+  }
+
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
+    res.status(204).end();
     return;
   }
 
@@ -648,65 +936,88 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // ── Rate Limiting ───────────────────────────────────────────
+  const clientIp =
+    ((req.headers['x-forwarded-for'] as string) ?? '').split(',')[0].trim() ||
+    (req.socket?.remoteAddress ?? 'unknown');
+
+  const { limited, retryAfterSec } = checkRateLimit(clientIp);
+  if (limited) {
+    res.setHeader('Retry-After', String(retryAfterSec));
+    return res.status(429).json({
+      error: 'لقد تجاوزت الحد المسموح به من الطلبات. يرجى المحاولة لاحقاً.',
+      retryAfterSeconds: retryAfterSec,
+    });
+  }
+
+  // ── Payload Validation ──────────────────────────────────────
+  const { formData } = (req.body ?? {}) as { formData?: unknown };
+
+  if (!formData) {
+    return res.status(400).json({ error: 'المعلومات المطلوبة غير مكتملة (formData مفقود).' });
+  }
+
+  const validation = validatePayload(formData);
+  if (!validation.valid) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  // ── Business Logic (unchanged) ──────────────────────────────
   try {
-    const { formData } = req.body as { formData: BriefFormData };
-
-    if (!formData) {
-      return res.status(400).json({ error: 'Missing formData' });
-    }
-
-    const { projectName, clientName, companyName } = formData;
+    const brief = formData as BriefFormData;
+    const { projectName } = brief;
 
     console.log('[API] 🚀 Processing project:', projectName);
 
     // Step 1: Generate PDF
     console.log('[API] 📄 Generating PDF with Puppeteer...');
-    const html = generatePdfHTML(formData);
+    const html = generatePdfHTML(brief);
     const pdfBuffer = await generatePdfWithPuppeteer(html);
-    const pdfFileName = `Brief_${projectName || 'Project'}.pdf`;
+
+    const pdfFileName = brief.briefCategory?.startsWith('social')
+      ? `Social_${brief.companyName || brief.clientName || 'Brief'}.pdf`
+      : `Brief_${brief.projectName || brief.companyName || 'Project'}.pdf`;
 
     console.log('[API] ✅ PDF generated, size:', pdfBuffer.length, 'bytes');
 
     // Step 2: Send to Telegram
-    const telegramCaption = `🚀 مشروع جديد!\n\n📋 ${projectName}\n👤 العميل: ${clientName}\n🏢 الشركة: ${companyName}\n💰 الميزانية: ${formData.budget}$`;
+    const telegramCaption = buildTelegramCaption(brief);
     await sendPdfToTelegram(pdfBuffer, pdfFileName, telegramCaption);
 
-    // Step 3: Send Email (only to designer, not client)
+    // Step 3: Send Email (designer only)
     if (process.env.RESEND_API_KEY) {
       try {
         console.log('[API] 📧 Sending email to designer...');
-
         await resend.emails.send({
           from: 'onboarding@resend.dev',
-          to: ['mustafahaidar0955@gmail.com'], // Only designer email
+          to: ['mustafahaidar0955@gmail.com'],
           subject: `📋 مشروع جديد: ${projectName}`,
-          html: generateEmailHTML(formData),
+          html: generateEmailHTML(brief),
           attachments: [{
             filename: pdfFileName,
             content: pdfBuffer.toString('base64'),
           }],
         });
-
         console.log('[API] ✅ Email sent successfully!');
       } catch (emailError: any) {
         console.error('[API] ❌ Email Error:', emailError.message);
-        // Don't fail if email fails
+        // Non-fatal — continue
       }
     }
 
-    // Step 4: Return PDF to client for download
+    // Step 4: Return PDF to client
     return res.status(200).json({
       success: true,
       message: 'تم إنشاء وإرسال الملف بنجاح!',
       pdf: pdfBuffer.toString('base64'),
-      fileName: pdfFileName
+      fileName: pdfFileName,
     });
 
   } catch (error: any) {
     console.error('[API] ❌ Error:', error);
     return res.status(500).json({
       error: 'Internal Server Error',
-      details: error.message
+      details: error.message,
     });
   }
 }

@@ -13,27 +13,12 @@ const SuccessView: React.FC<SuccessViewProps> = ({ resetForm }) => {
                 <div className="w-24 h-24 bg-brand-lime/10 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-brand-lime">
                     <Check size={48} className="text-brand-lime" />
                 </div>
-                <h2 className="text-4xl font-bold text-white mb-6">تم إرسال الطلب بنجاح!</h2>
-
-                {/* تفاصيل ما تم */}
-                <div className="bg-brand-black/50 rounded-xl p-4 mb-6 text-right">
-                    <div className="flex items-center gap-3 mb-3">
-                        <span className="text-brand-lime text-xl">📥</span>
-                        <span className="text-gray-300">تم تحميل ملف PDF على جهازك</span>
-                    </div>
-                    <div className="flex items-center gap-3 mb-3">
-                        <span className="text-brand-lime text-xl">📧</span>
-                        <span className="text-gray-300">تم إرسال نسخة للمصمم عبر البريد</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-brand-lime text-xl">📱</span>
-                        <span className="text-gray-300">تم إرسال نسخة عبر التليقرام</span>
-                    </div>
-                </div>
-
-                <p className="text-gray-400 mb-10 text-lg leading-relaxed">
-                    سنقوم بمراجعة طلبك والرد عليك في أقرب وقت ممكن.
+                <h2 className="text-3xl font-bold text-white mb-6">تم استلام معلومات مشروعك بنجاح! 🚀</h2>
+                
+                <p className="text-gray-300 mb-10 text-lg leading-relaxed bg-brand-black/50 p-6 rounded-xl border border-white/5">
+                    يقوم مصطفى حالياً بمراجعة التفاصيل، وسيتم التواصل معك مباشرة عبر الواتسآب/التليجرام لمشاركة نسخة الملف والبدء بالعمل.
                 </p>
+                
                 <div className="flex flex-col gap-4 w-full">
                     <Button
                         onClick={resetForm}

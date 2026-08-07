@@ -28,10 +28,10 @@ const InteractiveBackgroundLogo: React.FC = () => {
 
         // Load images
         const imgFrame = new Image();
-        imgFrame.src = (BRAND_LOGOS as any).frame;
+        imgFrame.src = BRAND_LOGOS.frame;
 
         const imgS1 = new Image();
-        imgS1.src = (BRAND_LOGOS as any).black;
+        imgS1.src = BRAND_LOGOS.black;
 
         const initParticles = () => {
             particles = [];

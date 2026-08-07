@@ -48,7 +48,7 @@ export const BRAND_LOGOS = {
     frame: "/Images/logoFrame.png",
 };
 
-export const PROFILE_IMAGE = "/Images/mustafaAlMussawi.jpg";
+export const PROFILE_IMAGE = "/Images/mustafaAlMussawi.webp";
 
 // Load logo examples dynamically from folders
 // @ts-ignore

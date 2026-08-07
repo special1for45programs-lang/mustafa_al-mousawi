@@ -1,25 +1,41 @@
-import React from 'react';
-
-
+import React, { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import GlassSidebar from './components/GlassSidebar';
 import FixedLogo from './components/FixedLogo';
 import ErrorBoundary from './components/ErrorBoundary';
+import Navbar from './components/Navbar'; // Eager Load
+import Hero from './components/Hero'; // Eager Load
 import { Toaster } from 'react-hot-toast';
 import { ArrowUp, Loader2 } from 'lucide-react';
-import { useState, useEffect, Suspense, lazy } from 'react';
 
-// Lazy load components for better performance
-const Navbar = lazy(() => import('./components/Navbar'));
+// Lazy load below-the-fold components for better performance
 const Footer = lazy(() => import('./components/Footer'));
-const Hero = lazy(() => import('./components/Hero'));
 const Portfolio = lazy(() => import('./components/Portfolio'));
+const Packages = lazy(() => import('./components/Packages'));
 const Process = lazy(() => import('./components/Process'));
 const BriefForm = lazy(() => import('./components/BriefForm'));
 const Resume = lazy(() => import('./components/Resume'));
 
+// نوع الباقة المختارة الذي يُمرَّر من Packages إلى BriefForm
+export interface SelectedPackage {
+  id: string;
+  name: string;
+  nameEn: string;
+  price: number;
+  type: 'logo' | 'branding' | 'social';
+  category?: 'logo' | 'branding' | 'social_posts' | 'social_plans';
+}
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center w-full h-64">
+    <Loader2 className="w-10 h-10 text-brand-lime animate-spin" />
+  </div>
+);
+
 // المكون الرئيسي للتطبيق (Single Page Application Layout)
 const App: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  // الباقة التي اختارها العميل — تُمرَّر من Packages إلى BriefForm
+  const [selectedPackage, setSelectedPackage] = useState<SelectedPackage | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,50 +49,55 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const LoadingFallback = () => (
-    <div className="flex items-center justify-center w-full h-64">
-      <Loader2 className="w-10 h-10 text-brand-lime animate-spin" />
-    </div>
-  );
+  // عند اختيار باقة: تحديث الحالة ثم التمرير لقسم الاستمارة
+  const handlePackageSelect = useCallback((pkg: SelectedPackage) => {
+    setSelectedPackage(pkg);
+    setTimeout(() => {
+      const briefSection = document.getElementById('brief');
+      if (briefSection) {
+        briefSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }, []);
 
   return (
     <ErrorBoundary>
       <Toaster position="top-center" />
       <div className="min-h-screen bg-brand-black flex flex-col relative overflow-x-hidden">
 
-
-
-
-
-
-        {/* Sidebar - Desktop Only */}
+        {/* Sidebar - Desktop Only (Eager) */}
         <div className="hidden md:block">
           <GlassSidebar />
         </div>
 
-        {/* Fixed Logo - Desktop Only */}
+        {/* Fixed Logo - Desktop Only (Eager) */}
         <div className="hidden md:block">
           <FixedLogo />
         </div>
 
-        {/* Navbar - Mobile Only */}
+        {/* Navbar - Mobile Only (Eager) */}
         <div className="md:hidden">
-          <Suspense fallback={null}>
-            <Navbar />
-          </Suspense>
+          <Navbar />
         </div>
 
         {/* المحتوى الرئيسي */}
         <main className="flex-grow z-10 relative">
-          <Suspense fallback={<LoadingFallback />}>
-            {/* قسم الهيرو (البداية) */}
-            <section id="home">
-              <Hero />
-            </section>
+          
+          {/* قسم الهيرو (البداية) - محمل فوراً */}
+          <section id="home">
+            <Hero />
+          </section>
 
+          {/* الأقسام السفلية محملة متأخراً مع Suspense الخاص بها */}
+          <Suspense fallback={<LoadingFallback />}>
             {/* قسم الأعمال */}
             <section id="portfolio">
               <Portfolio />
+            </section>
+
+            {/* قسم الباقات والأسعار */}
+            <section id="packages">
+              <Packages onPackageSelect={handlePackageSelect} />
             </section>
 
             {/* قسم السيرة الذاتية */}
@@ -89,9 +110,9 @@ const App: React.FC = () => {
               <Process />
             </section>
 
-            {/* قسم الاستمارة وبدء المشروع */}
+            {/* قسم الاستمارة — يظهر محتواه الكامل عند اختيار باقة */}
             <section id="brief">
-              <BriefForm />
+              <BriefForm selectedPackage={selectedPackage} onClearPackage={() => setSelectedPackage(null)} />
             </section>
           </Suspense>
         </main>
@@ -104,8 +125,10 @@ const App: React.FC = () => {
         {/* زر الصعود للأعلى */}
         <button
           onClick={scrollToTop}
-          className={`fixed bottom-8 left-8 z-40 p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-            }`}
+          aria-label="Scroll to top"
+          className={`fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-30 hidden sm:flex items-center justify-center p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 ${
+            showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+          }`}
         >
           <ArrowUp size={24} />
         </button>

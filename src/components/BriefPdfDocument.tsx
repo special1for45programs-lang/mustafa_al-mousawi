@@ -165,15 +165,6 @@ const styles = StyleSheet.create({
         border: '1px solid #e5e7eb',
         minHeight: 60
     },
-    fieldValueBudget: {
-        fontWeight: 700,
-        color: '#000000',
-        backgroundColor: 'rgba(212, 255, 0, 0.1)',
-        border: '1px solid #d4ff00',
-        padding: 10,
-        borderRadius: 8,
-        textAlign: 'center'
-    },
     ltr: {
         direction: 'ltr'
     },
@@ -284,11 +275,7 @@ const styles = StyleSheet.create({
     }
 });
 
-interface BriefPdfDocumentProps {
-    formData: BriefFormData;
-}
-
-const BriefPdfDocument: React.FC<BriefPdfDocumentProps> = ({ formData }) => {
+const BriefPdfDocument = ({ formData }: { formData: any }) => {
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -368,15 +355,9 @@ const BriefPdfDocument: React.FC<BriefPdfDocumentProps> = ({ formData }) => {
                             <View style={styles.sectionIndicator} />
                             <Text style={styles.sectionTitle}>المواصفات والجدول</Text>
                         </View>
-                        <View style={styles.grid}>
-                            <View style={styles.gridItem}>
-                                <Text style={styles.fieldLabel}>نوع الشعار</Text>
-                                <Text style={styles.fieldValue}>{formData.logoType}</Text>
-                            </View>
-                            <View style={styles.gridItem}>
-                                <Text style={styles.fieldLabel}>الميزانية</Text>
-                                <Text style={styles.fieldValueBudget}>{formData.budget}$</Text>
-                            </View>
+                        <View style={[styles.fullWidth, { marginBottom: 15 }]}>
+                            <Text style={styles.fieldLabel}>نوع الشعار</Text>
+                            <Text style={styles.fieldValue}>{formData.logoType}</Text>
                         </View>
                         <View style={[styles.fullWidth, { marginBottom: 15, marginTop: 15 }]}>
                             <Text style={styles.fieldLabel}>التطبيقات المطلوبة</Text>
@@ -443,7 +424,7 @@ const BriefPdfDocument: React.FC<BriefPdfDocumentProps> = ({ formData }) => {
                 <View style={styles.footer} fixed>
                     <View style={styles.footerLeft}>
                         <View style={styles.instagramIcon} />
-                        <Text style={styles.instagramText}>mustafa.al_moossawi</Text>
+                        <Text style={styles.instagramText}>mustafa_al_moussawi</Text>
                     </View>
                 </View>
 

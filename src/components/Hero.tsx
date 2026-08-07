@@ -1,11 +1,27 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from './ui/Button';
-import { ASSETS } from '../constants';
+import { ASSETS, RESUME_DATA } from '../constants';
+import { getResumeData } from '../lib/firestore';
 
 // مكون الواجهة الرئيسية (Hero Section)
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [heroData, setHeroData] = useState<any>(RESUME_DATA);
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const data = await getResumeData();
+        if (data) {
+          setHeroData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching hero data:', error);
+      }
+    };
+    fetchHeroData();
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -43,40 +59,41 @@ const Hero: React.FC = () => {
       <div className="absolute top-20 right-1/3 w-4 h-4 bg-brand-lime rounded-full animate-pulse opacity-60"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="flex flex-col-reverse md:flex-row items-center gap-12 lg:gap-20">
+        <div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-4 lg:gap-16">
 
           {/* العمود الأيمن (النصوص) - في وضع RTL يظهر يميناً */}
-          <div className="flex-1 text-right">
+          <div className="w-full md:w-[55%] lg:w-[60%] text-right">
             <div className="inline-block mb-6 overflow-hidden">
               <span className="py-2 px-4 rounded-full bg-brand-lime/10 text-brand-lime border border-brand-lime/20 text-sm font-bold tracking-wider uppercase animate-fadeIn inline-block transform hover:scale-105 transition-transform cursor-default">
-                مصطفى الموسوي
+                {heroData.name}
               </span>
             </div>
 
-            <h1 className="font-sans text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-relaxed lg:leading-loose mb-8 tracking-tight animate-fadeIn delay-100">
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-7xl font-bold text-white leading-tight lg:leading-loose mb-6 sm:mb-8 tracking-tight animate-fadeIn delay-100">
               نصمم <span className="text-brand-lime relative inline-block group">
-                هويات
+                شعارات
                 {/* خط تجميلي تحت الكلمة */}
                 <svg className="absolute w-full h-3 -bottom-1 right-0 text-brand-lime opacity-40 group-hover:opacity-100 transition-opacity duration-500" viewBox="0 0 100 10" preserveAspectRatio="none">
                   <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="none" className="path-animate" />
                 </svg>
-              </span> <br />
-              تترك أثراً دائماً.
+              </span>{' '}&amp;{' '}<br />
+              هويات تترك أثراً.
             </h1>
 
-            <p className="text-xl text-gray-400 max-w-2xl mb-12 leading-loose font-light animate-fadeIn delay-200">
-              أنا لا أصمم شعارات فحسب. أنا أحول أفكار العمل المجردة إلى أنظمة بصرية أيقونية تجذب الانتباه وترفع قيمة علامتك التجارية في السوق.
+            <p className="text-lg md:text-xl text-gray-400 max-w-2xl mb-10 leading-loose font-light animate-fadeIn delay-200">
+              متخصص في تصميم الشعارات والهويات البصرية المتكاملة — من البوستات والاشتراكات الشهرية إلى الإعلانات والمطبوعات. أحوّل أفكارك إلى حضور بصري قوي يرفع قيمة علامتك في السوق.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 animate-fadeIn delay-300">
-              <a href="#brief">
-                <Button variant="primary" size="lg" className="group w-full sm:w-auto bg-brand-lime text-black hover:bg-white border-none font-bold px-10 py-4 text-lg shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] transition-all duration-300">
+              {/* الزر الرئيسي يوجه للباقات أولاً */}
+              <a href="#packages">
+                <Button variant="primary" size="lg" className="group w-full sm:w-auto bg-brand-lime text-black hover:bg-white border-none font-bold px-8 py-3 lg:px-10 lg:py-4 text-base lg:text-lg shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] transition-all duration-300">
                   ابدأ مشروعك
                   <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </a>
               <a href="#portfolio">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto hover:text-brand-lime hover:border-brand-lime px-10 py-4 text-lg backdrop-blur-sm bg-white/5 border-white/10">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto hover:text-brand-lime hover:border-brand-lime px-8 py-3 lg:px-10 lg:py-4 text-base lg:text-lg backdrop-blur-sm bg-white/5 border-white/10">
                   شاهد الأعمال
                 </Button>
               </a>
@@ -84,7 +101,7 @@ const Hero: React.FC = () => {
           </div>
 
           {/* العمود الأيسر (الصورة الشخصية) */}
-          <div className="flex-1 relative w-full max-w-lg md:max-w-none animate-fadeIn delay-150 perspective-1000">
+          <div className="w-full md:w-[45%] lg:w-[40%] relative max-w-lg md:max-w-none animate-fadeIn delay-150 perspective-1000">
             {/* إطارات زخرفية خلف الصورة */}
             <div
               className="absolute inset-0 border-2 border-brand-lime rounded-2xl transform translate-x-4 translate-y-4 opacity-50 hidden md:block transition-transform duration-500 hover:translate-x-6 hover:translate-y-6"
@@ -95,7 +112,7 @@ const Hero: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity"></div>
               <img
                 src={ASSETS.profile}
-                alt="Mustafa Al Moussawi"
+                alt="Mustafa Al Mousawi"
                 loading="eager"
                 fetchPriority="high"
                 className="w-full h-full object-cover filter contrast-110 grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110"

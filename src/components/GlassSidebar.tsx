@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Briefcase, FileText, Cpu, Mail, PenTool } from 'lucide-react';
+import { Home, Briefcase, FileText, Cpu, Tag, PenTool } from 'lucide-react';
 
 const GlassSidebar: React.FC = () => {
     const [activeSection, setActiveSection] = useState('home');
@@ -8,7 +8,7 @@ const GlassSidebar: React.FC = () => {
     // Scroll spy to update active section
     useEffect(() => {
         const handleScroll = () => {
-            const sections = ['home', 'portfolio', 'resume', 'process', 'brief'];
+        const sections = ['home', 'portfolio', 'packages', 'resume', 'process', 'brief'];
 
             // Find the section currently in view
             // We look for the one that takes up the most screen space or is at the top
@@ -35,6 +35,7 @@ const GlassSidebar: React.FC = () => {
     const menuItems = [
         { id: 'home', icon: Home, label: 'الرئيسية' },
         { id: 'portfolio', icon: Briefcase, label: 'أعمالي' },
+        { id: 'packages', icon: Tag, label: 'الباقات' },
         { id: 'resume', icon: FileText, label: 'السيرة الذاتية' },
         { id: 'process', icon: Cpu, label: 'طريقة العمل' },
         { id: 'brief', icon: PenTool, label: 'ابدأ مشروعك' },

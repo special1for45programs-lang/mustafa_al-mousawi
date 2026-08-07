@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Custom hook for automatically saving form data to localStorage
@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
  * @param delay - debounce delay in milliseconds (default: 1000)
  */
 export const useFormAutosave = <T,>(key: string, data: T, delay: number = 1000) => {
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     useEffect(() => {
@@ -19,6 +20,7 @@ export const useFormAutosave = <T,>(key: string, data: T, delay: number = 1000) 
         timeoutRef.current = setTimeout(() => {
             try {
                 localStorage.setItem(key, JSON.stringify(data));
+                setLastSaved(new Date());
                 console.log(`✅ Form autosaved to ${key}`);
             } catch (error) {
                 console.error('Failed to autosave form data:', error);
@@ -32,6 +34,8 @@ export const useFormAutosave = <T,>(key: string, data: T, delay: number = 1000) 
             }
         };
     }, [key, data, delay]);
+
+    return lastSaved;
 };
 
 /**

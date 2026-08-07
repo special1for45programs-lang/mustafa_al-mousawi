@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Share2, Mail, Link as LinkIcon, Check } from 'lucide-react';
 import { PROJECTS } from '../constants';
+import { getPortfolioProjects } from '../lib/firestore';
 import { Project } from '../types';
 import { Button } from './ui/Button';
 
@@ -8,6 +9,28 @@ import { Button } from './ui/Button';
 const Portfolio: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null); // حالة المشروع المختار للعرض في النافذة المنبثقة
   const [isCopied, setIsCopied] = useState(false); // حالة نسخ الرابط
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await getPortfolioProjects();
+        if (data && data.length > 0) {
+          setProjects(data as Project[]);
+        } else {
+          setProjects(PROJECTS);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setProjects(PROJECTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProjects();
+  }, []);
 
   // تأثير لإدارة زر الرجوع في المتصفح/الهاتف
   React.useEffect(() => {
@@ -96,32 +119,44 @@ const Portfolio: React.FC = () => {
         </div>
 
         {/* شبكة عرض المشاريع */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PROJECTS.map((project) => (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-8">
+          {loading ? (
+            Array.from({ length: 6 }).map((_, index) => (
+              <div key={`skeleton-${index}`} className="group block perspective-1000 animate-pulse">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-900 mb-3 sm:mb-5 border border-white/5"></div>
+                <div className="h-4 sm:h-6 bg-neutral-900 rounded w-3/4 mb-2"></div>
+                <div className="h-3 sm:h-4 bg-neutral-900 rounded w-1/2"></div>
+              </div>
+            ))
+          ) : (
+            projects.map((project) => (
             <div
               key={project.id}
               onClick={() => openProject(project)}
               className="group cursor-pointer block perspective-1000"
             >
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-900 mb-5 border border-white/5 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(204,255,0,0.15)] group-hover:border-brand-lime/30 transform group-hover:-translate-y-2">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl sm:rounded-2xl bg-neutral-900 mb-3 sm:mb-5 border border-white/5 transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(204,255,0,0.15)] group-hover:border-brand-lime/30 transform group-hover:-translate-y-2">
                 <img
                   src={project.thumbnail}
                   alt={project.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4">
-                  <span className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100 bg-brand-lime text-black px-8 py-3 rounded-full font-bold shadow-lg hover:bg-white hover:scale-105">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-2 sm:gap-4 p-2 text-center">
+                  <span className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100 bg-brand-lime text-black px-4 sm:px-8 py-1.5 sm:py-3 rounded-full text-xs sm:text-base font-bold shadow-lg hover:bg-white hover:scale-105">
                     عرض المشروع
                   </span>
-                  <p className="text-white text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-200 opacity-0 group-hover:opacity-100">
+                  <p className="text-white text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-200 opacity-0 group-hover:opacity-100 hidden sm:block">
                     {project.category}
                   </p>
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-brand-lime transition-colors pl-2 border-l-4 border-transparent group-hover:border-brand-lime">{project.title}</h3>
-              <p className="text-sm text-gray-500 pl-3">{project.category}</p>
+              <h3 className="text-sm sm:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-brand-lime transition-colors pl-2 border-l-2 sm:border-l-4 border-transparent group-hover:border-brand-lime truncate">{project.title}</h3>
+              <p className="text-xs sm:text-sm text-gray-500 pl-3 truncate">{project.category}</p>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -170,6 +205,8 @@ const Portfolio: React.FC = () => {
                 <img
                   src={selectedProject.heroImage}
                   alt={selectedProject.title}
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-90"></div>
@@ -201,7 +238,14 @@ const Portfolio: React.FC = () => {
 
                   <div className="grid grid-cols-1 gap-8 pt-4">
                     {selectedProject.gallery.map((img, idx) => (
-                      <img key={idx} src={img} alt="Project Detail" className="rounded-xl w-full h-auto object-cover border border-white/5 shadow-lg hover:shadow-2xl transition-all duration-500" />
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`Project Detail ${idx + 1}`}
+                        loading="lazy"
+                        decoding="async"
+                        className="rounded-xl w-full h-auto object-cover border border-white/5 shadow-lg hover:shadow-2xl transition-all duration-500"
+                      />
                     ))}
                   </div>
                 </div>

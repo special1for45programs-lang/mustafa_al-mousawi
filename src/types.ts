@@ -12,30 +12,38 @@ export interface Project {
   deliverables: string[]; // قائمة المخرجات المسلمة للعميل
 }
 
-// تعريف هيكل بيانات استمارة بدء المشروع (Brief Form)
-export interface BriefFormData {
-  // الصفحة 2: معلومات العميل والمشروع
-  clientStatus: 'new' | 'current'; // حالة العميل (جديد أم سابق)
-  date: string;
-  clientName: string; // أساسي
-  companyName: string; // أساسي
-  phone: string;
-  email: string;
+// ==========================================
+// تصنيف نوع الطلب
+// ==========================================
+export type BriefCategory = 'logo' | 'branding' | 'social_posts' | 'social_plans';
 
-  projectName: string; // أساسي
-  projectDescription: string; // أساسي
-  projectType: string;
+// ==========================================
+// بيانات مسار السوشيال ميديا
+// ==========================================
+export interface SocialDetails {
   favoriteColors: string;
+  inspirationImage: string;
+  designStyle: string;
+  postsPatternImages: string[];
+  platforms: string[];
+  businessType: string;
+  productsServices: string;
+  postIdeas: string;
+  visualStyle: 'modern' | 'formal' | 'luxury' | 'bold' | '';
+  additionalNotes: string;
+}
 
-  // الصفحة 3: تفضيلات الشعار
-  logoType: 'text' | 'symbolic' | 'innovative' | 'double' | 'arabic';
-  moodboard: string[]; // الصور المرفقة كـ Base64 strings (max 5)
-
-  // الصفحة 4: التطبيقات والجدول الزمني
-  // تم تحويلها إلى سجل مرن لاستيعاب القائمة الموسعة
+// ==========================================
+// بيانات مسار الشعار والهوية
+// ==========================================
+export interface LogoDetails {
+  favoriteColors: string;
+  inspirationImage: string;
+  designStyle: string;
+  logoType: 'text' | 'symbolic' | 'innovative' | 'double' | 'arabic' | '';
+  moodboard: string[];
   applications: Record<string, boolean>;
-  otherApplication: string; // حقل نصي للتطبيقات الإضافية
-
+  otherApplication: string;
   paperSizes: {
     dl: boolean;
     a5: boolean;
@@ -44,12 +52,122 @@ export interface BriefFormData {
   };
   startDate: string;
   deadline: string;
-  budget: '20-50' | '50-100' | '100-150' | '150-200' | '200-500';
   notes: string;
+}
+
+// ==========================================
+// البيانات الأساسية المشتركة
+// ==========================================
+export interface BaseBriefData {
+  clientStatus: 'new' | 'current';
+  date: string;
+  clientName: string;
+  companyName: string;
+  phone: string;
+  email: string;
+
+  projectName: string;
+  projectDescription: string;
+  projectType: string;
+
+  briefCategory?: BriefCategory;
+  selectedPackageName?: string;
+  selectedPackagePrice?: number;
+}
+
+// ==========================================
+// الهيكل الجامع للاستمارة
+// ==========================================
+export interface BriefFormData extends BaseBriefData {
+  briefType: 'logo' | 'social' | '';
+  logoDetails: LogoDetails;
+  socialDetails: SocialDetails;
+  designStyleImageBase64?: string;
+  designStyleName?: string;
 }
 
 // تعريف عنصر التنقل في القائمة العلوية
 export interface NavItem {
   label: string; // النص الظاهر
   path: string; // الرابط (ID القسم)
+}
+
+// ==========================================
+// أنواع بيانات الباقات والأسعار
+// ==========================================
+
+export interface LogoPackage {
+  id: string;
+  name: string;           // الاسم العربي (مثل: الاقتصادية)
+  nameEn: string;         // الاسم الإنجليزي (مثل: LITE)
+  price: number;          // السعر بالدينار العراقي
+  category: 'logo';       // تصنيف صريح
+  target: string;         // الفئة المستهدفة
+  benefit: string;        // الفائدة (تكتب باللون الأخضر)
+  badge?: string;         // شارة اختيارية (مثل: الأكثر طلباً)
+  isPopular?: boolean;    // هل هي الأكثر طلباً؟
+  isFeatured?: boolean;   // هل هي المميزة/الأغلى؟
+  features: string[];     // قائمة المخرجات (المحتوى)
+  deliveries: string[];   // صيغ الملفات المسلّمة (PNG, SVG...)
+  revisions: number | string; // عدد التعديلات
+  deliveryDays: string;   // مدة التسليم
+}
+
+export interface BrandingPackage {
+  name: string;
+  category: 'branding';   // تصنيف صريح
+  originalPrice: number;  // السعر القديم (مشطوب)
+  currentPrice: number;   // السعر الحالي
+  savings: number;        // قيمة التوفير
+  target?: string;        // الفئة المستهدفة (اختياري)
+  benefit: string;        // الفائدة الأساسية
+  features: string[];     // قائمة الميزات المشمولة
+  bonuses: string[];      // الهدايا المجانية
+  revisions: number | string;
+  deliveryDays: string;
+}
+
+export interface SocialPost {
+  quantity: number;       // عدد البوستات
+  price: number;          // السعر بالدينار
+  savings?: number;       // قيمة التوفير مقارنة بالسعر الفردي
+  category: 'social_posts'; // تصنيف صريح
+}
+
+export interface SocialPlan {
+  id: string;
+  name: string;           // الاسم العربي (مثل: حضور)
+  nameEn: string;         // الاسم الإنجليزي
+  price: number;          // السعر الشهري بالدينار
+  category: 'social_plans'; // تصنيف صريح
+  benefit: string;        // הפائدة
+  postsPerMonth: number;
+  storiesPerMonth: number;
+  extras: string[];       // مميزات إضافية (تنسيق الحساب، جدولة النشر، إلخ)
+  isPopular?: boolean;
+}
+
+export interface PackageTerm {
+  icon: string; // Emoji character
+  text: string;
+}
+
+export interface PackagesData {
+  logoDesign: LogoPackage[];
+  branding: BrandingPackage;
+  socialMedia: {
+    individualPosts: SocialPost[];
+    monthlyPlans: SocialPlan[];
+  };
+  terms: PackageTerm[];
+}
+
+// ==========================================
+// أنواع بيانات لوحة التحكم
+// ==========================================
+
+export interface BriefRequestRecord extends BriefFormData {
+  id: string;
+  submittedAt: string;    // ISO string
+  status: 'new' | 'in_progress' | 'completed' | 'archived';
 }
