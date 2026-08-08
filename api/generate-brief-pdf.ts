@@ -135,6 +135,18 @@ function generatePdfHTML(formData: BriefFormData): string {
   const logo = formData.logoDetails || {} as any;
   const sd = formData.socialDetails || {} as any;
 
+  // Resolve inspiration images for social: prefer inspirationImages[], fall back to inspirationImage
+  const socialInspirationImages: string[] =
+    isSocial
+      ? (sd.inspirationImages && sd.inspirationImages.length > 0
+          ? sd.inspirationImages
+          : sd.inspirationImage ? [sd.inspirationImage] : [])
+      : [];
+
+  const hasInspirationImages = isSocial
+    ? socialInspirationImages.length > 0
+    : (logo.favoriteColors === 'image_inspiration' && logo.inspirationImage);
+
   const selectedApps = Object.entries(logo.applications || {})
     .filter(([_, v]) => v)
     .map(([k, _]) => APP_LABELS[k] || k);
@@ -144,9 +156,18 @@ function generatePdfHTML(formData: BriefFormData): string {
   }
 
   const logoTypeLabels: Record<string, string> = {
-    'text': 'شعار نصي',
-    'icon': 'شعار أيقوني',
-    'combined': 'شعار مدمج'
+    'text':       'شعار نصي',
+    'symbolic':   'شعار رمزي',
+    'innovative': 'شعار مبتكر',
+    'double':     'شعار مزدوج',
+    'arabic':     'شعار بالخط العربي',
+  };
+
+  const visualStyleLabels: Record<string, string> = {
+    'modern': '✨ حديث ومودرن',
+    'formal': '🏐️ رسمي ورصين',
+    'luxury': '👑 فاخر ومريح',
+    'bold':   '⚡ جريء وعالي التباين',
   };
 
   return `
@@ -209,36 +230,42 @@ function generatePdfHTML(formData: BriefFormData): string {
     .content {
       flex: 1;
       padding: 30px 40px;
+      background: #fdfdfd;
     }
     
     /* Section */
     .section {
-      margin-bottom: 25px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 40px;
+      border: 1px solid #f3f4f6;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
     }
     
     .section:last-child {
-      border-bottom: none;
+      margin-bottom: 0;
     }
     
     .section-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f3f4f6;
     }
     
     .section-indicator {
-      width: 4px;
-      height: 22px;
+      width: 6px;
+      height: 32px;
       background: #d4ff00;
-      border-radius: 10px;
+      border-radius: 9999px;
     }
     
     .section-title {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 20px;
+      font-weight: 400;
       color: #111827;
     }
     
@@ -246,8 +273,8 @@ function generatePdfHTML(formData: BriefFormData): string {
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 15px;
+      gap: 24px;
+      margin-bottom: 24px;
     }
     
     .grid-full {
@@ -256,50 +283,51 @@ function generatePdfHTML(formData: BriefFormData): string {
     
     /* Field */
     .field {
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
     
     .field-label {
-      font-size: 10px;
+      font-size: 14px;
       font-weight: 700;
       color: #9ca3af;
-      margin-bottom: 5px;
-      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
     }
     
     .field-value {
       background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-weight: 600;
-      color: #1a1a1a;
-      min-height: 20px;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
     }
     
     .field-value.large {
-      font-size: 16px;
-      padding: 12px 15px;
+      font-size: 18px;
     }
     
     .field-value.multiline {
-      min-height: 60px;
+      min-height: 80px;
       line-height: 1.8;
-      font-weight: 500;
-      color: #374151;
+      align-items: flex-start;
+      white-space: pre-wrap;
     }
     
     .field-value.budget {
       background: rgba(212, 255, 0, 0.15);
       border: 1px solid #d4ff00;
+      justify-content: center;
       text-align: center;
-      font-size: 14px;
-      color: #000;
     }
     
     .field-value.ltr {
       direction: ltr;
-      text-align: left;
+      justify-content: flex-end;
     }
     
     /* Tags */
@@ -308,34 +336,41 @@ function generatePdfHTML(formData: BriefFormData): string {
       flex-wrap: wrap;
       gap: 8px;
       background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 12px;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      padding: 16px;
     }
     
     .tag {
       background: #ffffff;
-      border: 1px solid #d1d5db;
+      border: 1px solid #e5e7eb;
       color: #374151;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
     
     .empty-tag {
       color: #9ca3af;
       font-style: italic;
+      font-weight: 700;
+      font-size: 14px;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      border: none;
     }
     
     /* Notes */
     .notes-box {
       background: #fef3c7;
       border: 1px solid #fde68a;
-      border-radius: 10px;
-      padding: 15px;
+      border-radius: 12px;
+      padding: 16px;
       color: #78350f;
-      font-weight: 500;
+      font-weight: 600;
       line-height: 1.8;
     }
     
@@ -343,11 +378,11 @@ function generatePdfHTML(formData: BriefFormData): string {
     .images-gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 15px;
+      gap: 16px;
       background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
-      padding: 15px;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      padding: 16px;
     }
     
     .gallery-image {
@@ -355,6 +390,7 @@ function generatePdfHTML(formData: BriefFormData): string {
       overflow: hidden;
       border: 1px solid #e5e7eb;
       background: white;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
     
     .gallery-image img {
@@ -431,6 +467,12 @@ function generatePdfHTML(formData: BriefFormData): string {
             <div class="field-value ltr">${formData.email || '-'}</div>
           </div>
         </div>
+        ${formData.selectedPackageName ? `
+        <div class="field" style="margin-top: 8px;">
+          <div class="field-label">الباقة المختارة</div>
+          <div class="field-value budget">${formData.selectedPackageName}${formData.selectedPackagePrice ? ` &mdash; ${formData.selectedPackagePrice.toLocaleString('en-US')} د.ع` : ''}</div>
+        </div>
+        ` : ''}
       </div>
       
       <!-- تفاصيل المشروع -->
@@ -456,7 +498,20 @@ function generatePdfHTML(formData: BriefFormData): string {
           </div>
           <div class="field">
             <div class="field-label">الألوان المفضلة</div>
-            <div class="field-value">${isSocial ? sd.favoriteColors || '-' : logo.favoriteColors || '-'}</div>
+            <div class="field-value">
+              ${(isSocial ? sd.favoriteColors : logo.favoriteColors) === 'image_inspiration' 
+                ? 'صورة ملحقة (انظر قسم المراجع البصرية)' 
+                : (isSocial ? sd.favoriteColors : logo.favoriteColors)?.includes('#') 
+                  ? `<div class="tags" style="display: flex; gap: 8px;">
+                       ${(isSocial ? sd.favoriteColors : logo.favoriteColors).split('، ').map((c: string) => `
+                         <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #eee; border-radius: 6px;">
+                           <div style="width: 14px; height: 14px; border-radius: 50%; background-color: ${c}; border: 1px solid #ddd;"></div>
+                           <span style="font-size: 11px;">${c}</span>
+                         </div>
+                       `).join('')}
+                     </div>`
+                  : (isSocial ? sd.favoriteColors || '-' : logo.favoriteColors || '-')}
+            </div>
           </div>
         </div>
       </div>
@@ -484,8 +539,12 @@ function generatePdfHTML(formData: BriefFormData): string {
         </div>
         <div class="grid" style="margin-top: 15px;">
           <div class="field">
-            <div class="field-label">الأسلوب البصري</div>
-            <div class="field-value">${sd.visualStyle || '-'}</div>
+            <div class="field-label">الأسلوب البصري للمنشورات</div>
+            <div class="field-value">${visualStyleLabels[sd.visualStyle] || sd.visualStyle || '-'}</div>
+          </div>
+          <div class="field">
+            <div class="field-label">نمط التصميم المختار</div>
+            <div class="field-value">${(formData as any).designStyleName || sd.designStyle || '-'}</div>
           </div>
         </div>
         ${sd.additionalNotes ? `
@@ -530,22 +589,50 @@ function generatePdfHTML(formData: BriefFormData): string {
       </div>
       `}
       
-      ${(formData as any).designStyleImageBase64 || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) ? `
+      ${(formData as any).designStyleImageBase64 || (formData as any).logoTypeImageBase64 || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) || (!isSocial && logo.designStyle) || hasInspirationImages ? `
       <!-- المراجع البصرية -->
       <div class="section">
         <div class="section-header">
           <div class="section-indicator"></div>
-          <div class="section-title">المراجع البصرية</div>
+          <div class="section-title">المراجع البصرية والأنماط</div>
         </div>
         
-        ${(formData as any).designStyleImageBase64 ? `
+        ${hasInspirationImages ? `
+        <div class="field" style="margin-bottom: 20px;">
+          <div class="field-label">${isSocial ? `صور النمط المسبق المرفوعة (${socialInspirationImages.length}):` : 'صورة الاستلهام اللوني:'}</div>
+          <div class="images-gallery" style="grid-template-columns: repeat(auto-fill, minmax(${isSocial ? 120 : 180}px, 1fr)); margin-top: 10px;">
+            ${isSocial
+              ? socialInspirationImages.map((src: string, i: number) => `
+                <div class="gallery-image" style="position: relative;">
+                  <img src="${src}" alt="مرجع ${i + 1}" style="width:100%;height:120px;object-fit:cover;">
+                  ${i === 0 ? `<span style="position:absolute;top:4px;right:4px;background:#d4ff00;color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;">رئيسية</span>` : ''}
+                </div>`).join('')
+              : `<div class="gallery-image"><img src="${logo.inspirationImage}" alt="Inspiration"></div>`}
+          </div>
+        </div>
+        ` : ''}
+
+        ${!isSocial && (formData as any).logoTypeImageBase64 ? `
+        <div class="field" style="margin-bottom: 20px;">
+          <div class="field-label">نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</div>
+          <div class="images-gallery" style="grid-template-columns: 120px; margin-top: 10px;">
+            <div class="gallery-image" style="padding: 10px; background: #fff; border: 1px solid #eee;">
+              <img src="${(formData as any).logoTypeImageBase64}" alt="Logo Type" style="object-fit: contain;">
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        
+        ${(!isSocial && logo.designStyle) || (formData as any).designStyleImageBase64 ? `
         <div class="field" style="margin-bottom: 20px;">
           <div class="field-label">النمط التصميمي المختار: ${(formData as any).designStyleName || (isSocial ? sd.designStyle : logo.designStyle)}</div>
-          <div class="images-gallery" style="grid-template-columns: 180px;">
+          ${(formData as any).designStyleImageBase64 ? `
+          <div class="images-gallery" style="grid-template-columns: 180px; margin-top: 10px;">
             <div class="gallery-image">
               <img src="${(formData as any).designStyleImageBase64}" alt="Design Style">
             </div>
           </div>
+          ` : ''}
         </div>
         ` : ''}
       

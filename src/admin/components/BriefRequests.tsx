@@ -82,6 +82,20 @@ const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
         </div>
       )}
 
+      {(req as any).designStyleImageBase64 && (
+        <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
+          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">النمط التصميمي المختار ({(req as any).designStyleName || sd.designStyle})</span>
+          <img src={(req as any).designStyleImageBase64} alt="Design Style" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+        </div>
+      )}
+
+      {sd.favoriteColors === 'image_inspiration' && sd.inspirationImage && (
+        <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
+          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">صورة الاستلهام اللوني</span>
+          <img src={sd.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+        </div>
+      )}
+
       {sd.additionalNotes && <InfoRow label="ملاحظات إضافية" value={sd.additionalNotes} />}
 
       {/* صور مرجعية */}
@@ -384,7 +398,25 @@ const BriefRequests: React.FC = () => {
                         <InfoRow label="الألوان المفضلة" value={logo.favoriteColors} />
                         <InfoRow label="الموعد النهائي"  value={logo.deadline} />
                         <InfoRow label="النمط التصميمي"  value={VISUAL_STYLE_LABELS[logo.designStyle] || logo.designStyle} />
-                        <InfoRow label="نوع الشعار"      value={logo.logoType} />
+                        <InfoRow label="نوع الشعار"      value={(selectedReq as any).logoTypeName || logo.logoType} />
+                      </div>
+
+                      {/* صور الاستلهام وأنواع الشعار */}
+                      <div className="flex flex-wrap gap-4 mt-4">
+                        {(selectedReq as any).logoTypeImageBase64 && (
+                          <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 w-fit">
+                            <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">نوع الشعار المختار</span>
+                            <div className="bg-white p-2 rounded-lg inline-block">
+                              <img src={(selectedReq as any).logoTypeImageBase64} alt="Logo Type" className="w-24 h-24 object-contain" />
+                            </div>
+                          </div>
+                        )}
+                        {logo.favoriteColors === 'image_inspiration' && logo.inspirationImage && (
+                          <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 w-fit">
+                            <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">صورة الاستلهام اللوني</span>
+                            <img src={logo.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+                          </div>
+                        )}
                       </div>
                       {selectedReq.projectDescription && (
                         <div>

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { LogoDetails } from '../../types';
 import { LOGO_TYPE_EXAMPLES } from '../../constants';
 import { Upload, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface StepStyleProps {
     logoDetails: LogoDetails;
@@ -62,11 +63,15 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
         const file = e.target.files?.[0];
         if (file) {
             if (logoDetails.moodboard.length >= 5) {
-                alert("لقد وصلت للحد الأقصى (5 صور). يرجى حذف صورة قبل إضافة أخرى.");
+                toast.error("لقد وصلت للحد الأقصى (5 صور). يرجى حذف صورة قبل إضافة أخرى.");
                 return;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                alert("حجم الملف كبير جداً. يرجى اختيار صورة أقل من 10 ميجابايت.");
+            if (!file.type.startsWith('image/')) {
+                toast.error("الرجاء رفع ملف صورة صالح (JPEG، PNG، إلخ).");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error("حجم الصورة كبير جداً. الحد الأقصى هو 5 ميجابايت.");
                 return;
             }
 
@@ -77,7 +82,7 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
                 updateLogoDetails({ moodboard: [...logoDetails.moodboard, compressedImage] });
             } catch (error) {
                 console.error('[Moodboard] Compression failed:', error);
-                alert("فشل في معالجة الصورة. يرجى المحاولة مرة أخرى.");
+                toast.error("فشل في معالجة الصورة. يرجى المحاولة مرة أخرى.");
             }
         }
         if (fileInputRef.current) fileInputRef.current.value = '';

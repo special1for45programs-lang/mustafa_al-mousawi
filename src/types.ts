@@ -23,6 +23,7 @@ export type BriefCategory = 'logo' | 'branding' | 'social_posts' | 'social_plans
 export interface SocialDetails {
   favoriteColors: string;
   inspirationImage: string;
+  inspirationImages: string[];       // صور النمط المسبق (متعددة حتى 10)
   designStyle: string;
   postsPatternImages: string[];
   platforms: string[];
@@ -84,6 +85,8 @@ export interface BriefFormData extends BaseBriefData {
   socialDetails: SocialDetails;
   designStyleImageBase64?: string;
   designStyleName?: string;
+  logoTypeImageBase64?: string;
+  logoTypeName?: string;
 }
 
 // تعريف عنصر التنقل في القائمة العلوية

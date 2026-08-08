@@ -50,8 +50,13 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
 
   // Fallbacks
   const dsKey = sd?.designStyle ?? '';
-  const moodboardArray: string[] = sd?.postsPatternImages ?? [];
   const designStyleObj = DESIGN_STYLES.find(s => s.id === dsKey);
+
+  // Multi-image: use inspirationImages array; fall back to single inspirationImage for old data
+  const inspirationImagesArray: string[] =
+    sd?.inspirationImages && sd.inspirationImages.length > 0
+      ? sd.inspirationImages
+      : sd?.inspirationImage ? [sd.inspirationImage] : [];
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -84,9 +89,17 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
             <Row label="مجال العمل"        value={formData.projectType} />
             <div className="space-y-1">
                 <span className="text-sm font-bold text-gray-400 block">الهوية اللونية</span>
-                {sd?.favoriteColors === 'image_inspiration' && sd?.inspirationImage ? (
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-center min-h-[52px]">
-                        <img src={sd.inspirationImage} className="w-24 h-24 object-cover rounded-lg border border-zinc-300 shadow-sm" alt="استلهام الألوان" />
+                {sd?.favoriteColors === 'image_inspiration' && inspirationImagesArray.length > 0 ? (
+                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {inspirationImagesArray.map((src, i) => (
+                                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 shadow-sm bg-white">
+                                    <img src={src} alt={`مرجع لوني ${i + 1}`} className="w-full h-full object-cover" />
+                                    {i === 0 && <span className="absolute top-1 right-1 bg-brand-lime text-brand-black text-[9px] font-bold px-1 py-0.5 rounded-full">رئيسية</span>}
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">{inspirationImagesArray.length} صورة مرجعية</p>
                     </div>
                 ) : sd?.favoriteColors === 'designer_choice' ? (
                     <div className="font-bold text-gray-800 text-lg bg-gray-50 p-3 rounded-xl border border-gray-100 min-h-[52px] flex items-center">
@@ -148,26 +161,6 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
                   )}
               </div>
 
-              {/* Moodboard */}
-              <div className="space-y-2">
-                  <span className="text-sm font-bold text-gray-400 block">صور التصور المبدئي ({moodboardArray.length})</span>
-                  {moodboardArray.length === 0 ? (
-                      <p className="font-bold text-gray-400 italic text-sm bg-gray-50 p-3 rounded-xl border border-gray-100">لم يتم تحديد هذا الخيار</p>
-                  ) : (
-                      <div className="flex flex-wrap gap-3">
-                          {moodboardArray.map((img: string, index: number) => (
-                              <div key={index} className="relative group overflow-hidden border border-zinc-200 rounded-lg aspect-square bg-white w-20 h-20 sm:w-24 sm:h-24">
-                                  <img src={img} alt={`Moodboard ${index + 1}`} className="w-full h-full object-cover" />
-                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                      <button type="button" onClick={(e) => removeUploadedFile && removeUploadedFile(e, index)} className="bg-red-500 text-white p-1.5 sm:p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg transform hover:scale-105">
-                                          <X size={16} className="sm:w-5 sm:h-5" />
-                                      </button>
-                                  </div>
-                              </div>
-                          ))}
-                      </div>
-                  )}
-              </div>
           </div>
       </div>
 

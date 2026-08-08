@@ -3,7 +3,7 @@ import { ArrowRight, ArrowLeft, Download, Send, Package, X } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { Button } from './ui/Button';
 import { BriefFormData, SocialDetails, LogoDetails, BaseBriefData } from '../types';
-import { APPLICATION_OPTIONS } from '../constants';
+import { APPLICATION_OPTIONS, LOGO_TYPE_EXAMPLES } from '../constants';
 import { DESIGN_STYLES } from '../utils/designConstants';
 import { SelectedPackage } from '../App';
 
@@ -14,10 +14,10 @@ import StepStyle   from './brief-steps/StepStyle';
 import StepDetails from './brief-steps/StepDetails';
 import StepReview  from './brief-steps/StepReview';
 
-// مكونات الخطوات — سوشيال ميديا (جديدة)
 import SocialStepPlatforms from './brief-steps/SocialStepPlatforms';
 import SocialStepContent   from './brief-steps/SocialStepContent';
 import SocialStepReview    from './brief-steps/SocialStepReview';
+import { DesignStylesTab } from './brief-steps/DesignStylesTab';
 
 import SuccessView from './brief-steps/SuccessView';
 
@@ -28,6 +28,7 @@ import SuccessView from './brief-steps/SuccessView';
 const getInitialSocialData = (): SocialDetails => ({
   favoriteColors:   '',
   inspirationImage: '',
+  inspirationImages: [],
   designStyle:      '',
   postsPatternImages: [],
   platforms:        [],
@@ -79,7 +80,7 @@ const isSocialType = (pkg: SelectedPackage | null): boolean =>
 
 // تسميات الخطوات حسب المسار
 const LOGO_STEPS  = ['المعلومات', 'الهوية اللونية', 'الأسلوب', 'التفاصيل', 'مراجعة'];
-const SOCIAL_STEPS = ['المعلومات', 'الهوية اللونية', 'المنصات', 'البوستات', 'مراجعة'];
+const SOCIAL_STEPS = ['المعلومات', 'النمط والألوان', 'المنصات', 'البوستات', 'مراجعة'];
 
 // ==========================================
 // Props
@@ -251,24 +252,46 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
 
         let finalFormData = { ...formData };
         
-        // Populate designStyle base64 if it exists for the active domain
-        const activeDesignStyle = isSocial ? finalFormData.socialDetails.designStyle : finalFormData.logoDetails.designStyle;
-        if (activeDesignStyle) {
-          const styleObj = DESIGN_STYLES.find(s => s.id === activeDesignStyle);
-          if (styleObj && styleObj.img) {
-            try {
-              const res = await fetch(styleObj.img);
-              const blob = await res.blob();
-              const base64 = await new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-              });
-              // We pass it in a special field
-              finalFormData.designStyleImageBase64 = base64;
-              finalFormData.designStyleName = styleObj.name;
-            } catch (e) {
-              console.warn("Failed to convert design style image to base64", e);
+        // Populate designStyle or logoType base64 if it exists for the active domain
+        if (isSocial) {
+          const activeDesignStyle = finalFormData.socialDetails.designStyle;
+          if (activeDesignStyle) {
+            const styleObj = DESIGN_STYLES.find(s => s.id === activeDesignStyle);
+            if (styleObj && styleObj.img) {
+              try {
+                const res = await fetch(styleObj.img);
+                const blob = await res.blob();
+                const base64 = await new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.readAsDataURL(blob);
+                });
+                finalFormData.designStyleImageBase64 = base64;
+                finalFormData.designStyleName = styleObj.name;
+              } catch (e) {
+                console.warn("Failed to convert design style image to base64", e);
+              }
+            }
+          }
+        } else {
+          const activeLogoType = finalFormData.logoDetails.logoType;
+          if (activeLogoType) {
+            const typeObj = LOGO_TYPE_EXAMPLES.find(t => t.id === activeLogoType);
+            if (typeObj && typeObj.images && typeObj.images.length > 0) {
+              try {
+                // Fetch the first example image of the selected logo type
+                const res = await fetch(typeObj.images[0]);
+                const blob = await res.blob();
+                const base64 = await new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.readAsDataURL(blob);
+                });
+                finalFormData.logoTypeImageBase64 = base64;
+                finalFormData.logoTypeName = typeObj.label;
+              } catch (e) {
+                console.warn("Failed to convert logo type image to base64", e);
+              }
             }
           }
         }
@@ -312,17 +335,27 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
     } catch (apiError: any) {
       if (loadingToast) toast.dismiss(loadingToast);
       
-      toast.error(
-        <div dir="rtl" className="flex flex-col gap-1 text-sm">
-          <p className="font-bold text-red-500">❌ عذراً، فشلت عملية الإرسال!</p>
-          <p>يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
-          <p className="text-xs text-gray-400 mt-1">السبب: {apiError?.message?.substring(0, 100) || 'غير معروف'}</p>
-        </div>,
-        {
-          duration: 7000,
-          style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ff0000', minWidth: '300px' },
-        }
-      );
+      // Graceful fallback for local development without backend
+      if (import.meta.env.DEV && (apiError?.message === 'empty_response' || apiError?.message?.includes('fetch') || apiError?.name === 'TypeError')) {
+        console.warn('[DEV] Fallback mode active, ignoring API failure:', apiError.message);
+        setIsSuccess(true);
+        toast.success('تم الإرسال بنجاح (وضع التطوير المحلي)', {
+          duration: 5000,
+          style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
+        });
+      } else {
+        toast.error(
+          <div dir="rtl" className="flex flex-col gap-1 text-sm">
+            <p className="font-bold text-red-500">❌ عذراً، فشلت عملية الإرسال!</p>
+            <p>يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
+            <p className="text-xs text-gray-400 mt-1">السبب: {apiError?.message?.substring(0, 100) || 'غير معروف'}</p>
+          </div>,
+          {
+            duration: 7000,
+            style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ff0000', minWidth: '300px' },
+          }
+        );
+      }
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -332,7 +365,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateStep()) {
-      if (step < 5) {
+      if (step < STEPS.length) {
         setStep(step + 1);
       } else if (isPdfDownloaded) {
         setIsSuccess(true);
@@ -357,8 +390,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
 
   // ─── الخطوات الحالية بالاسم ──────────────────────────────────────────
   const STEP_TITLES = isSocial
-    ? ['معلومات العميل', 'الهوية اللونية (Colors)', 'المنصات والنشاط', 'تفاصيل ومحتوى البوستات', 'مراجعة الطلب']
-    : ['المعلومات الأساسية', 'الهوية اللونية (Colors)', 'النمط والتفضيلات', 'تفاصيل المشروع', 'مراجعة الطلب'];
+    ? ['معلومات العميل', 'النمط والألوان', 'المنصات والنشاط', 'تفاصيل ومحتوى البوستات', 'مراجعة الطلب']
+    : ['المعلومات الأساسية', 'الهوية اللونية', 'النمط والتفضيلات', 'تفاصيل المشروع', 'مراجعة الطلب'];
 
   return (
     <div className="py-24 bg-brand-black font-sans relative overflow-hidden select-none">
@@ -416,7 +449,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
             <div className="absolute top-1/2 left-0 w-full h-0.5 sm:h-1 bg-brand-gray -z-10 rounded-full" />
             <div
               className="absolute top-1/2 right-0 h-0.5 sm:h-1 bg-brand-lime -z-10 rounded-full transition-all duration-500"
-              style={{ width: `${((step - 1) / 4) * 100}%` }}
+              style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
             />
             {STEPS.map((label, i) => {
               const num = i + 1;
@@ -453,7 +486,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
                   </h3>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-500">
-                  الخطوة {step} من 5
+                  الخطوة {step} من {STEPS.length}
                   {isSocial && <span className="mr-2 text-[10px] sm:text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">سوشيال ميديا</span>}
                   {!isSocial && selectedPackage && <span className="mr-2 text-[10px] sm:text-xs bg-brand-lime/20 text-gray-700 px-2 py-0.5 rounded-full font-bold">شعار / هوية</span>}
                 </p>
@@ -497,7 +530,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
                 محتوى الخطوات — مسار السوشيال ميديا
             ========================================== */}
             {isSocial && step === 1 && <StepInfo    formData={formData} updateFormData={updateFormData} />}
-            {isSocial && step === 2 && <StepColorPalette formData={formData} updateDomainData={updateSocialData} />}
+            {isSocial && step === 2 && (
+              <StepColorPalette formData={formData} updateDomainData={updateSocialData} />
+            )}
             {isSocial && step === 3 && (
               <SocialStepPlatforms
                 socialData={formData.socialDetails}
@@ -526,10 +561,10 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
                 <button
                   type="button"
                   onClick={() => setStep(step - 1)}
-                  className="flex items-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 px-6 py-3 rounded-xl transition-all font-bold"
+                  className="flex items-center gap-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 px-6 py-3 rounded-xl transition-all font-bold"
                 >
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                  {step === 5 ? 'تعديل البيانات' : 'السابق'}
+                  <ArrowRight className="w-5 h-5" />
+                  {step === STEPS.length ? 'تعديل البيانات' : 'السابق'}
                 </button>
               ) : (
                 <button
@@ -544,13 +579,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
                 </button>
               )}
 
-              {step < 5 ? (
+              {step < STEPS.length ? (
                 <button
                   type="submit"
                   className="flex items-center justify-center gap-2 bg-brand-lime text-black hover:bg-lime-400 font-bold px-10 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all group w-full md:w-auto"
                 >
-                  {step === 4 ? 'مراجعة' : 'التالي'}
-                  <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                  {step === STEPS.length - 1 ? 'مراجعة الطلب' : 'التالي'}
+                  <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </button>
               ) : (
                 <button

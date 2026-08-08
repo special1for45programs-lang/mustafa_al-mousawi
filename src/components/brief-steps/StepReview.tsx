@@ -106,7 +106,23 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                 </div>
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 gap-6">
-                        <Row label="نوع الشعار" value={LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.label || logo.logoType} />
+                        <div className="space-y-1">
+                            <span className="text-sm font-bold text-gray-400 block">نوع الشعار</span>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                {formData.logoTypeImageBase64 || (LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.images?.[0]) ? (
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center p-1">
+                                        <img src={formData.logoTypeImageBase64 || LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.images?.[0]} alt={formData.logoTypeName || logo.logoType} className="max-w-full max-h-full object-contain" />
+                                    </div>
+                                ) : (
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-white rounded-lg border border-gray-200 flex items-center justify-center shadow-sm">
+                                        <span className="text-gray-400 text-xs">صورة غير متوفرة</span>
+                                    </div>
+                                )}
+                                <div className="font-bold text-gray-800 text-lg">
+                                    {formData.logoTypeName || LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.label || logo.logoType}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-1">

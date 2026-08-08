@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, ExternalLink } from 'lucide-react';
 import { BriefFormData } from '../../types';
 import { DESIGN_STYLES } from '../../utils/designConstants';
@@ -13,6 +13,10 @@ export const DesignStylesTab: React.FC<DesignStylesProps> = ({ formData, updateD
     const isSocial = formData.briefType === 'social';
     const activeDomain = isSocial ? formData.socialDetails : formData.logoDetails;
     const [selectedStyle, setSelectedStyle] = useState<string>(activeDomain.designStyle || '');
+    
+    useEffect(() => {
+        setSelectedStyle(activeDomain.designStyle || '');
+    }, [activeDomain.designStyle]);
     
     const handleStyleSelect = (styleId: string) => {
         setSelectedStyle(styleId);
