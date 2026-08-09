@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, Image as ImageIcon, X, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
 import { BriefFormData } from '../../types';
+import { compressImageBase64 } from '../../utils/imageUtils';
 
 interface ImageUploaderTabProps {
     formData: BriefFormData;
@@ -23,13 +24,6 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
         : [];
 
     // ─── Single-file helpers (Logo flow) ─────────────────────────────────
-    const readFileAsBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target?.result as string);
-            reader.onerror = () => reject(new Error('read_error'));
-            reader.readAsDataURL(file);
-        });
 
     const validateFile = (file: File): string | null => {
         if (!file.type.startsWith('image/')) return 'الرجاء رفع ملف صورة صالح (JPEG، PNG، إلخ).';
@@ -43,7 +37,7 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
         const err = validateFile(file);
         if (err) { setError(err); return; }
         try {
-            const base64 = await readFileAsBase64(file);
+            const base64 = await compressImageBase64(file);
             updateDomainData({ inspirationImage: base64, favoriteColors: 'image_inspiration' });
         } catch { setError('حدث خطأ أثناء قراءة الصورة. يرجى المحاولة مرة أخرى.'); }
     };
@@ -62,7 +56,7 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
             const err = validateFile(file);
             if (err) { setError(err); continue; }
             try {
-                const base64 = await readFileAsBase64(file);
+                const base64 = await compressImageBase64(file);
                 results.push(base64);
             } catch { setError('حدث خطأ أثناء قراءة إحدى الصور.'); }
         }
@@ -71,7 +65,6 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
             updateDomainData({
                 inspirationImages: updated,
                 inspirationImage: updated[0], // keep first as legacy single
-                favoriteColors: 'image_inspiration',
             });
         }
     };
@@ -81,7 +74,6 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
         updateDomainData({
             inspirationImages: updated,
             inspirationImage: updated[0] ?? '',
-            favoriteColors: updated.length > 0 ? 'image_inspiration' : '',
         });
     };
 

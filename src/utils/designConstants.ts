@@ -29,7 +29,7 @@ export const INDUSTRY_PALETTES: IndustryPalette[] = [
     { 
         id: 'luxury', 
         label: 'عطور وفخامة', 
-        desc: 'درجات الداكن مع الذهبي والبيج لتعكس الرقي والحصرية.',
+        desc: 'الدرجات الداكنة مع الذهبي والبيج لتعكس الرقي والحصرية.',
         tags: ['عطور', 'بخور', 'فخامة', 'ملكي', 'ذهب', 'تجميل'],
         colors: ['#0A0A0A', '#1A1A1A', '#4A4A4A', '#D4AF37', '#F9F6F0'],
         pinterestQuery: 'luxury perfume branding color palette'

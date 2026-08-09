@@ -3,6 +3,7 @@ import { LogoDetails } from '../../types';
 import { LOGO_TYPE_EXAMPLES } from '../../constants';
 import { Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { compressImageBase64 } from '../../utils/imageUtils';
 
 interface StepStyleProps {
     logoDetails: LogoDetails;
@@ -14,49 +15,6 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
 
     const handleLogoTypeSelect = (id: string) => {
         updateLogoDetails({ logoType: id as LogoDetails['logoType'] });
-    };
-
-    // دالة ضغط الصور لتقليل الحجم قبل التخزين
-    const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.7): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let { width, height } = img;
-
-                    // تصغير الأبعاد مع الحفاظ على النسبة
-                    if (width > maxWidth) {
-                        height = (height * maxWidth) / width;
-                        width = maxWidth;
-                    }
-                    if (height > maxWidth) {
-                        width = (width * maxWidth) / height;
-                        height = maxWidth;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        reject(new Error('Failed to get canvas context'));
-                        return;
-                    }
-
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // تحويل لـ JPEG مضغوط
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-                    resolve(compressedBase64);
-                };
-                img.onerror = () => reject(new Error('Failed to load image'));
-                img.src = e.target?.result as string;
-            };
-            reader.onerror = () => reject(new Error('Failed to read file'));
-            reader.readAsDataURL(file);
-        });
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,8 +34,8 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
             }
 
             try {
-                // ضغط الصورة قبل التخزين
-                const compressedImage = await compressImage(file, 800, 0.7);
+                // ضغط الصورة قبل الحفظ
+                const compressedImage = await compressImageBase64(file, 1200, 0.75);
                 console.log(`[Moodboard] Original size: ${(file.size / 1024).toFixed(1)}KB, Compressed: ${(compressedImage.length / 1024).toFixed(1)}KB (Base64)`);
                 updateLogoDetails({ moodboard: [...logoDetails.moodboard, compressedImage] });
             } catch (error) {
@@ -101,7 +59,7 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
                     <div
                         key={type.id}
                         onClick={() => handleLogoTypeSelect(type.id)}
-                        className={`relative overflow-hidden cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 border-2 transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.99] flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-6 group hover:bg-white hover:shadow-xl ${logoDetails.logoType === type.id ? 'bg-white border-brand-lime shadow-[0_0_15px_rgba(204,255,0,0.3)]' : 'bg-gray-50 border-gray-200 hover:border-brand-lime/30'}`}
+                        className={`relative overflow-hidden cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 border-2 transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.99] flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-6 group hover:bg-white hover:shadow-xl ${logoDetails.logoType === type.id ? 'border-brand-lime ring-4 ring-brand-lime/20' : 'bg-gray-50 border-gray-200 hover:border-brand-lime/50'}`}
                     >
                         {/* Arabic Title + Radio (First in DOM -> Right in RTL) */}
                         <div className="flex flex-row items-center justify-center md:justify-start gap-2.5 sm:gap-3 w-full md:w-[180px] shrink-0">

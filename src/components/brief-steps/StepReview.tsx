@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react';
 import { BriefFormData } from '../../types';
-import { APPLICATION_OPTIONS, LOGO_TYPE_EXAMPLES } from '../../constants';
+import { APPLICATION_CATEGORIES, LOGO_TYPE_EXAMPLES } from '../../constants';
 import { X, Image as ImageIcon } from 'lucide-react';
 
 interface StepReviewProps {
@@ -108,19 +108,34 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                     <div className="grid grid-cols-1 gap-6">
                         <div className="space-y-1">
                             <span className="text-sm font-bold text-gray-400 block">نوع الشعار</span>
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                {formData.logoTypeImageBase64 || (LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.images?.[0]) ? (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center p-1">
-                                        <img src={formData.logoTypeImageBase64 || LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.images?.[0]} alt={formData.logoTypeName || logo.logoType} className="max-w-full max-h-full object-contain" />
-                                    </div>
-                                ) : (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-white rounded-lg border border-gray-200 flex items-center justify-center shadow-sm">
-                                        <span className="text-gray-400 text-xs">صورة غير متوفرة</span>
-                                    </div>
-                                )}
-                                <div className="font-bold text-gray-800 text-lg">
-                                    {formData.logoTypeName || LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType)?.label || logo.logoType}
-                                </div>
+                            <div className="flex flex-col gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                {(() => {
+                                    const typeObj = LOGO_TYPE_EXAMPLES.find(t => t.id === logo.logoType);
+                                    if (!typeObj) return (
+                                        <div className="font-bold text-gray-800 text-lg">
+                                            {formData.logoTypeName || logo.logoType}
+                                        </div>
+                                    );
+                                    return (
+                                        <>
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-gray-200 pb-3">
+                                                <div className="font-bold text-gray-800 text-lg">
+                                                    {formData.logoTypeName || typeObj.label}
+                                                </div>
+                                                <div className="bg-brand-lime text-black px-3 py-1 rounded-full text-xs font-bold border border-brand-lime">
+                                                    {typeObj.desc}
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {typeObj.images.slice(0, 3).map((imgUrl, i) => (
+                                                    <div key={i} className="aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center p-2">
+                                                        <img src={imgUrl} alt={`${typeObj.label} ${i + 1}`} className="w-full h-full object-contain" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -129,8 +144,15 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                         <span className="text-sm font-bold text-gray-400 block">التطبيقات المطلوبة</span>
                         <div className="flex flex-wrap gap-2 bg-gray-50 p-4 rounded-xl border border-gray-100">
                             {Object.entries(logo.applications || {}).filter(([_, v]) => v).map(([k, _]) => {
-                                const app = APPLICATION_OPTIONS.find(a => a.key === k);
-                                return <span key={k} className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-bold text-gray-700 shadow-sm">{app ? app.label.split('(')[0] : k}</span>
+                                let label = k;
+                                for (const cat of APPLICATION_CATEGORIES) {
+                                    const found = cat.items.find(a => a.key === k);
+                                    if (found) {
+                                        label = found.label.split('(')[0];
+                                        break;
+                                    }
+                                }
+                                return <span key={k} className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-bold text-gray-700 shadow-sm">{label}</span>
                             })}
                             {logo.otherApplication && <span className="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-bold text-gray-700 shadow-sm">{logo.otherApplication}</span>}
                             {Object.values(logo.applications || {}).every(v => !v) && !logo.otherApplication && <span className="text-gray-400 italic text-sm font-bold">لم يتم تحديد هذا الخيار</span>}

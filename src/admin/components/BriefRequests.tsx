@@ -102,10 +102,10 @@ const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
       {((sd as typeof req.socialDetails).postsPatternImages?.length > 0 || (sd as typeof req.logoDetails).moodboard?.length > 0) && (
         <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
           <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">الصور المرجعية</span>
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {((sd as typeof req.socialDetails).postsPatternImages ?? (sd as typeof req.logoDetails).moodboard ?? []).map((src: string, i: number) => (
               <img key={i} src={src} alt={`ref-${i}`}
-                className="w-full aspect-square object-cover rounded-lg border border-white/10" />
+                className="w-full h-auto max-h-96 object-contain rounded-xl border border-white/10 bg-black/20 p-2" />
             ))}
           </div>
         </div>
@@ -403,11 +403,15 @@ const BriefRequests: React.FC = () => {
 
                       {/* صور الاستلهام وأنواع الشعار */}
                       <div className="flex flex-wrap gap-4 mt-4">
-                        {(selectedReq as any).logoTypeImageBase64 && (
+                        {(selectedReq as any).logoTypeImagesBase64 && (selectedReq as any).logoTypeImagesBase64.length > 0 && (
                           <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 w-fit">
                             <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">نوع الشعار المختار</span>
-                            <div className="bg-white p-2 rounded-lg inline-block">
-                              <img src={(selectedReq as any).logoTypeImageBase64} alt="Logo Type" className="w-24 h-24 object-contain" />
+                            <div className="flex gap-2">
+                              {(selectedReq as any).logoTypeImagesBase64.map((img: string, i: number) => (
+                                <div key={i} className="bg-white p-2 rounded-lg inline-block">
+                                  <img src={img} alt={`Logo Type ${i + 1}`} className="w-24 h-24 object-contain" />
+                                </div>
+                              ))}
                             </div>
                           </div>
                         )}

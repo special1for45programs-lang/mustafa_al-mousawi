@@ -89,19 +89,7 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
             <Row label="مجال العمل"        value={formData.projectType} />
             <div className="space-y-1">
                 <span className="text-sm font-bold text-gray-400 block">الهوية اللونية</span>
-                {sd?.favoriteColors === 'image_inspiration' && inspirationImagesArray.length > 0 ? (
-                    <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                            {inspirationImagesArray.map((src, i) => (
-                                <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 shadow-sm bg-white">
-                                    <img src={src} alt={`مرجع لوني ${i + 1}`} className="w-full h-full object-cover" />
-                                    {i === 0 && <span className="absolute top-1 right-1 bg-brand-lime text-brand-black text-[9px] font-bold px-1 py-0.5 rounded-full">رئيسية</span>}
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">{inspirationImagesArray.length} صورة مرجعية</p>
-                    </div>
-                ) : sd?.favoriteColors === 'designer_choice' ? (
+                {sd?.favoriteColors === 'designer_choice' || sd?.favoriteColors === 'متروك للمصمم' ? (
                     <div className="font-bold text-gray-800 text-lg bg-gray-50 p-3 rounded-xl border border-gray-100 min-h-[52px] flex items-center">
                         تُترك الخيارات للمصمم 🎨
                     </div>
@@ -160,7 +148,23 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
                       </div>
                   )}
               </div>
-
+              
+              {/* Inspiration Images */}
+              {inspirationImagesArray.length > 0 && (
+                  <div className="space-y-2 mt-6">
+                      <span className="text-sm font-bold text-gray-400 block">صور النمط المسبق / الاستلهام</span>
+                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              {inspirationImagesArray.map((src, i) => (
+                                  <div key={i} className="relative rounded-xl overflow-hidden border border-zinc-200 shadow-sm bg-white p-2">
+                                      <img src={src} alt={`مرجع ${i + 1}`} className="w-full h-auto max-h-[400px] object-contain rounded-lg" />
+                                      {i === 0 && <span className="absolute top-4 right-4 bg-brand-lime text-brand-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">رئيسية</span>}
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  </div>
+              )}
           </div>
       </div>
 

@@ -65,21 +65,29 @@ interface BriefFormData {
 
 // Application labels mapping
 const APP_LABELS: Record<string, string> = {
-  businessCard: 'بطاقة عمل',
-  letterHead: 'ورق المراسلات',
+  businessCard: 'الكروت الشخصية',
+  letterHead: 'ورق الخطابات الرسمي',
   envelope: 'الظرف',
   folder: 'ملف الأوراق',
-  socialMedia: 'قوالب السوشيال ميديا',
-  profilePic: 'صور البروفايل',
-  packaging: 'علب وتغليف',
+  stamp: 'الختم الرسمي',
+  packaging: 'علب وتغليف المنتجات',
   bag: 'أكياس التسوق',
-  signage: 'لافتات',
-  uniform: 'زي موحد',
-  stamp: 'ختم',
-  sticker: 'ستيكر',
-  website: 'موقع إلكتروني',
-  vehicle: 'مركبة',
-  menu: 'قائمة طعام'
+  sticker: 'ملصقات',
+  productTags: 'ليبل وبطاقات المنتجات',
+  thankYouCards: 'بطاقات الشكر والتقييم',
+  menu: 'قائمة الطعام',
+  cups: 'أكواب القهوة والمشروبات',
+  napkins: 'مناديل ومفارش الطاولات',
+  socialMedia: 'قوالب منشورات السوشيال ميديا',
+  profilePic: 'صور الحسابات',
+  website: 'واجهة الموقع الإلكتروني',
+  emailSignature: 'توقيع البريد الإلكتروني',
+  powerpoint: 'قوالب عروض PowerPoint',
+  companyProfile: 'بروفايل الشركة التعريفى (PDF)',
+  signage: 'لوحة المحل واللافتات الخارجية',
+  vehicle: 'تصميم وتغليف سيارات الشركة',
+  uniform: 'زي الموظفين',
+  rollups: 'رول أب وستاندات المعارض'
 };
 
 // ==========================================
@@ -589,7 +597,7 @@ function generatePdfHTML(formData: BriefFormData): string {
       </div>
       `}
       
-      ${(formData as any).designStyleImageBase64 || (formData as any).logoTypeImageBase64 || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) || (!isSocial && logo.designStyle) || hasInspirationImages ? `
+      ${(formData as any).designStyleImageBase64 || ((formData as any).logoTypeImagesBase64 && (formData as any).logoTypeImagesBase64.length > 0) || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) || (!isSocial && logo.designStyle) || hasInspirationImages ? `
       <!-- المراجع البصرية -->
       <div class="section">
         <div class="section-header">
@@ -600,25 +608,30 @@ function generatePdfHTML(formData: BriefFormData): string {
         ${hasInspirationImages ? `
         <div class="field" style="margin-bottom: 20px;">
           <div class="field-label">${isSocial ? `صور النمط المسبق المرفوعة (${socialInspirationImages.length}):` : 'صورة الاستلهام اللوني:'}</div>
-          <div class="images-gallery" style="grid-template-columns: repeat(auto-fill, minmax(${isSocial ? 120 : 180}px, 1fr)); margin-top: 10px;">
+          <div class="images-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 10px;">
             ${isSocial
               ? socialInspirationImages.map((src: string, i: number) => `
-                <div class="gallery-image" style="position: relative;">
-                  <img src="${src}" alt="مرجع ${i + 1}" style="width:100%;height:120px;object-fit:cover;">
-                  ${i === 0 ? `<span style="position:absolute;top:4px;right:4px;background:#d4ff00;color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;">رئيسية</span>` : ''}
+                <div class="gallery-image" style="position: relative; background: #f9fafb; padding: 12px; border: 1px solid #eee; border-radius: 8px;">
+                  <img src="${src}" alt="مرجع ${i + 1}" style="width:100%; height:auto; max-height: 400px; object-fit:contain; border-radius: 4px;">
+                  ${i === 0 ? `<span style="position:absolute;top:8px;right:8px;background:#d4ff00;color:#000;font-size:10px;font-weight:700;padding:4px 8px;border-radius:999px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);">رئيسية</span>` : ''}
                 </div>`).join('')
               : `<div class="gallery-image"><img src="${logo.inspirationImage}" alt="Inspiration"></div>`}
           </div>
         </div>
         ` : ''}
 
-        ${!isSocial && (formData as any).logoTypeImageBase64 ? `
+        ${!isSocial && (formData as any).logoTypeImagesBase64 && (formData as any).logoTypeImagesBase64.length > 0 ? `
         <div class="field" style="margin-bottom: 20px;">
-          <div class="field-label">نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</div>
-          <div class="images-gallery" style="grid-template-columns: 120px; margin-top: 10px;">
-            <div class="gallery-image" style="padding: 10px; background: #fff; border: 1px solid #eee;">
-              <img src="${(formData as any).logoTypeImageBase64}" alt="Logo Type" style="object-fit: contain;">
-            </div>
+          <div class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</span>
+            ${(formData as any).logoTypeDesc ? `<span style="font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 12px; font-weight: normal; color: #666;">${(formData as any).logoTypeDesc}</span>` : ''}
+          </div>
+          <div class="images-gallery" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; gap: 10px;">
+            ${(formData as any).logoTypeImagesBase64.map((img: string) => `
+              <div class="gallery-image" style="padding: 10px; background: #fff; border: 1px solid #eee; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;">
+                <img src="${img}" alt="Logo Type" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              </div>
+            `).join('')}
           </div>
         </div>
         ` : ''}

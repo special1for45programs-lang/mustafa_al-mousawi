@@ -3,7 +3,7 @@ import { ArrowRight, ArrowLeft, Download, Send, Package, X } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { Button } from './ui/Button';
 import { BriefFormData, SocialDetails, LogoDetails, BaseBriefData } from '../types';
-import { APPLICATION_OPTIONS, LOGO_TYPE_EXAMPLES } from '../constants';
+import { APPLICATION_CATEGORIES, LOGO_TYPE_EXAMPLES } from '../constants';
 import { DESIGN_STYLES } from '../utils/designConstants';
 import { SelectedPackage } from '../App';
 
@@ -45,7 +45,7 @@ const getInitialLogoData = (): LogoDetails => ({
   designStyle:      '',
   logoType:         'text',
   moodboard:        [],
-  applications:     APPLICATION_OPTIONS.reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
+  applications:     APPLICATION_CATEGORIES.flatMap(c => c.items).reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
   otherApplication: '',
   paperSizes:       { dl: false, a5: false, a4: false, a3: false },
   startDate:        '',
@@ -88,12 +88,13 @@ const SOCIAL_STEPS = ['المعلومات', 'النمط والألوان', 'ال
 interface BriefFormProps {
   selectedPackage: SelectedPackage | null;
   onClearPackage: () => void;
+  onUpgradePackage?: (pkg: SelectedPackage) => void;
 }
 
 // ==========================================
 // المكوّن الرئيسي
 // ==========================================
-const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }) => {
+const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, onUpgradePackage }) => {
   const [step, setStep]               = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess]     = useState(false);
@@ -110,6 +111,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
 
   // ─── إعادة الضبط عند تغيير الباقة المختارة ────────────────────────────
   useEffect(() => {
+    // Only reset if there's a package and we haven't just loaded a draft that matches it.
+    // To keep it simple, we just do the reset. The draft toast will override this if clicked.
     if (selectedPackage) {
       const resolvedCategory = selectedPackage.category
         ?? (selectedPackage.type === 'social'
@@ -117,18 +120,69 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
                 ? 'social_plans' : 'social_posts')
             : selectedPackage.type) as BriefFormData['briefCategory'];
 
-      // HARD RESET of the state to avoid bleeding
-      setFormData({
+      setFormData(prev => ({
         ...getInitialFormData(),
         briefType:            selectedPackage.type === 'social' ? 'social' : 'logo',
         briefCategory:        resolvedCategory,
         selectedPackageName:  selectedPackage.name,
         selectedPackagePrice: selectedPackage.price,
-      });
+      }));
       setStep(1);
       setIsPdfDownloaded(false);
     }
   }, [selectedPackage?.id]);
+
+  // ─── استعادة المسودة من localStorage ──────────────────────────────────
+  useEffect(() => {
+    const draft = localStorage.getItem('brief_form_draft');
+    if (draft) {
+      const toastId = toast((t) => (
+        <div className="flex flex-col gap-3 font-cairo" dir="rtl">
+          <p className="font-bold text-gray-800 m-0 text-sm">يوجد مسودة محفوظة مسبقاً، هل تريد استعادتها؟</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                try {
+                  const parsed = JSON.parse(draft);
+                  setFormData(parsed);
+                  toast.success('تم استعادة المسودة بنجاح!');
+                } catch (e) {
+                  console.error('Failed to parse draft', e);
+                }
+                toast.dismiss(t.id);
+              }}
+              className="bg-brand-lime hover:bg-lime-400 transition-colors text-black font-bold px-4 py-2 rounded-lg text-sm"
+            >
+              استعادة المسودة
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('brief_form_draft');
+                toast.dismiss(t.id);
+              }}
+              className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 font-bold px-4 py-2 rounded-lg text-sm"
+            >
+              تجاهل
+            </button>
+          </div>
+        </div>
+      ), { duration: Infinity, position: 'top-center' });
+
+      // Clean up toast on unmount to prevent duplicates in React Strict Mode
+      return () => { toast.dismiss(toastId); };
+    }
+  }, []);
+
+  // ─── حفظ المسودة في localStorage عند التغيير ────────────────────────
+  useEffect(() => {
+    if (!isSuccess && formData) {
+      try {
+        localStorage.setItem('brief_form_draft', JSON.stringify(formData));
+      } catch (e) {
+        console.warn('localStorage limit reached, unable to save draft', e);
+      }
+    }
+  }, [formData, isSuccess]);
 
   // ─── التمرير عند تغيير الخطوة ─────────────────────────────────────────
   useEffect(() => {
@@ -279,18 +333,22 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
             const typeObj = LOGO_TYPE_EXAMPLES.find(t => t.id === activeLogoType);
             if (typeObj && typeObj.images && typeObj.images.length > 0) {
               try {
-                // Fetch the first example image of the selected logo type
-                const res = await fetch(typeObj.images[0]);
-                const blob = await res.blob();
-                const base64 = await new Promise<string>((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve(reader.result as string);
-                  reader.readAsDataURL(blob);
-                });
-                finalFormData.logoTypeImageBase64 = base64;
+                const fetchedImages = await Promise.all(
+                  typeObj.images.slice(0, 3).map(async (imgUrl) => {
+                    const res = await fetch(imgUrl);
+                    const blob = await res.blob();
+                    return new Promise<string>((resolve) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => resolve(reader.result as string);
+                      reader.readAsDataURL(blob);
+                    });
+                  })
+                );
+                finalFormData.logoTypeImagesBase64 = fetchedImages;
                 finalFormData.logoTypeName = typeObj.label;
+                finalFormData.logoTypeDesc = typeObj.desc;
               } catch (e) {
-                console.warn("Failed to convert logo type image to base64", e);
+                console.warn("Failed to convert logo type images to base64", e);
               }
             }
           }
@@ -330,7 +388,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
         style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
       });
       
-      setIsSuccess(true);
+        setIsSuccess(true);
+        localStorage.removeItem('brief_form_draft');
 
     } catch (apiError: any) {
       if (loadingToast) toast.dismiss(loadingToast);
@@ -338,7 +397,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
       // Graceful fallback for local development without backend
       if (import.meta.env.DEV && (apiError?.message === 'empty_response' || apiError?.message?.includes('fetch') || apiError?.name === 'TypeError')) {
         console.warn('[DEV] Fallback mode active, ignoring API failure:', apiError.message);
-        setIsSuccess(true);
+          setIsSuccess(true);
+        localStorage.removeItem('brief_form_draft');
         toast.success('تم الإرسال بنجاح (وضع التطوير المحلي)', {
           duration: 5000,
           style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
@@ -368,7 +428,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
       if (step < STEPS.length) {
         setStep(step + 1);
       } else if (isPdfDownloaded) {
-        setIsSuccess(true);
+          setIsSuccess(true);
+        localStorage.removeItem('brief_form_draft');
       }
     } else {
       // التوجيه السلس لأول حقل فارغ مع تأثير وميض أحمر خفيف
@@ -520,6 +581,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage }
               <StepDetails
                 logoDetails={formData.logoDetails}
                 updateLogoDetails={updateLogoData}
+                selectedPackage={selectedPackage}
+                onUpgradePackage={onUpgradePackage}
               />
             )}
             {!isSocial && step === 5 && (

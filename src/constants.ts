@@ -126,23 +126,55 @@ export const PROJECTS: Project[] = [
   }
 ];
 
-// قائمة التطبيقات الموسعة
-export const APPLICATION_OPTIONS = [
-  { key: 'businessCard', label: 'الكروت الشخصية (Business Cards)' },
-  { key: 'letterHead', label: 'ورق المراسلات (Letterhead)' },
-  { key: 'envelope', label: 'الظرف (Envelope)' },
-  { key: 'folder', label: 'ملف الأوراق (Folder)' },
-  { key: 'socialMedia', label: 'قوالب السوشيال ميديا (Social Media Kit)' },
-  { key: 'profilePic', label: 'صور البروفايل (Profile Pictures)' },
-  { key: 'packaging', label: 'علب وتغليف (Packaging)' },
-  { key: 'bag', label: 'أكياس التسوق (Shopping Bag)' },
-  { key: 'signage', label: 'لافتات خارجية (Signage/Billboard)' },
-  { key: 'uniform', label: 'زي الموظفين (Uniforms/T-shirts)' },
-  { key: 'stamp', label: 'ختم (Stamp/Seal)' },
-  { key: 'sticker', label: 'ملصقات (Stickers)' },
-  { key: 'website', label: 'واجهة موقع إلكتروني (Website UI)' },
-  { key: 'vehicle', label: 'تغليف سيارات (Vehicle Wrap)' },
-  { key: 'menu', label: 'قائمة طعام (Menu)' },
+export const APPLICATION_CATEGORIES = [
+  {
+    title: 'المطبوعات الرسمية والمكتب',
+    items: [
+      { key: 'businessCard', label: 'الكروت الشخصية' },
+      { key: 'letterHead', label: 'ورق الخطابات الرسمي' },
+      { key: 'envelope', label: 'الظرف' },
+      { key: 'folder', label: 'ملف الأوراق' },
+      { key: 'stamp', label: 'الختم الرسمي' }
+    ]
+  },
+  {
+    title: 'التغليف والمنتجات',
+    items: [
+      { key: 'packaging', label: 'علب وتغليف المنتجات' },
+      { key: 'bag', label: 'أكياس التسوق' },
+      { key: 'sticker', label: 'ملصقات' },
+      { key: 'productTags', label: 'ليبل وبطاقات المنتجات' },
+      { key: 'thankYouCards', label: 'بطاقات الشكر والتقييم' }
+    ]
+  },
+  {
+    title: 'المطاعم والمقاهي',
+    items: [
+      { key: 'menu', label: 'قائمة الطعام' },
+      { key: 'cups', label: 'أكواب القهوة والمشروبات' },
+      { key: 'napkins', label: 'مناديل ومفارش الطاولات' }
+    ]
+  },
+  {
+    title: 'الرقمي والسوشيال ميديا',
+    items: [
+      { key: 'socialMedia', label: 'قوالب منشورات السوشيال ميديا' },
+      { key: 'profilePic', label: 'صور الحسابات' },
+      { key: 'website', label: 'واجهة الموقع الإلكتروني' },
+      { key: 'emailSignature', label: 'توقيع البريد الإلكتروني' },
+      { key: 'powerpoint', label: 'قوالب عروض PowerPoint' },
+      { key: 'companyProfile', label: 'بروفايل الشركة التعريفى (PDF)' }
+    ]
+  },
+  {
+    title: 'اللوحات والتجهيزات الميدانية',
+    items: [
+      { key: 'signage', label: 'لوحة المحل واللافتات الخارجية' },
+      { key: 'vehicle', label: 'تصميم وتغليف سيارات الشركة' },
+      { key: 'uniform', label: 'زي الموظفين' },
+      { key: 'rollups', label: 'رول أب وستاندات المعارض' }
+    ]
+  }
 ];
 
 export const LOGO_TYPE_EXAMPLES = [

@@ -27,7 +27,7 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
         if (activeDomain.favoriteColors === 'متروك للمصمم') {
             setIsDesignerSelected(true);
             setActiveTab('designer');
-        } else if (activeDomain.favoriteColors === 'image_inspiration') {
+        } else if (!isSocial && activeDomain.favoriteColors === 'image_inspiration') {
             setIsDesignerSelected(false);
             setActiveTab('upload');
         } else if (activeDomain.favoriteColors) {
@@ -64,14 +64,14 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
             updateDomainData({ favoriteColors: 'متروك للمصمم' });
         } else if (tab === 'upload') {
             setIsDesignerSelected(false);
-            if (activeDomain.inspirationImage) {
+            if (!isSocial && activeDomain.inspirationImage) {
                 updateDomainData({ favoriteColors: 'image_inspiration' });
             }
         } else if (tab === 'styles') {
             setIsDesignerSelected(false);
         } else {
             setIsDesignerSelected(false);
-            if (activeDomain.favoriteColors === 'متروك للمصمم' || activeDomain.favoriteColors === 'image_inspiration') {
+            if (activeDomain.favoriteColors === 'متروك للمصمم' || (!isSocial && activeDomain.favoriteColors === 'image_inspiration')) {
                 updateDomainData({ favoriteColors: palette.length > 0 ? palette.join('، ') : '' });
             }
         }
@@ -204,14 +204,14 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
                             <LayoutTemplate className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">أنماط التصميم</span>
                         </button>
                     )}
-                    <button type="button" onClick={() => handleTabChange('upload')} className={`flex-1 py-2.5 sm:py-3 px-1 sm:px-3 text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all rounded-lg sm:rounded-xl ${activeTab === 'upload' ? 'text-brand-lime bg-brand-dark border-b-2 border-brand-lime shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <UploadCloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">{isSocial ? 'نمط مسبق' : 'رفع صورة استلهام'}</span>
-                    </button>
                     {!isSocial && (
                         <button type="button" onClick={() => handleTabChange('presets')} className={`flex-1 py-2.5 sm:py-3 px-1 sm:px-3 text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all rounded-lg sm:rounded-xl ${activeTab === 'presets' ? 'text-brand-lime bg-brand-dark border-b-2 border-brand-lime shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                             <LayoutTemplate className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">لوحات جاهزة</span>
                         </button>
                     )}
+                    <button type="button" onClick={() => handleTabChange('upload')} className={`flex-1 py-2.5 sm:py-3 px-1 sm:px-3 text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all rounded-lg sm:rounded-xl ${activeTab === 'upload' ? 'text-brand-lime bg-brand-dark border-b-2 border-brand-lime shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
+                        <UploadCloud className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">{isSocial ? 'نمط مسبق' : 'رفع صورة استلهام'}</span>
+                    </button>
                     <button type="button" onClick={() => handleTabChange('wheel')} className={`flex-1 py-2.5 sm:py-3 px-1 sm:px-3 text-[11px] sm:text-sm font-bold flex items-center justify-center gap-1 sm:gap-2 transition-all rounded-lg sm:rounded-xl ${activeTab === 'wheel' ? 'text-brand-lime bg-brand-dark border-b-2 border-brand-lime shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                         <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> <span className="truncate">عجلة الألوان</span>
                     </button>
@@ -272,7 +272,7 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
 
             {/* --- BOTTOM SECTION: DYNAMIC SWATCHES PALETTE --- */}
             {activeTab !== 'styles' && (
-            <div className={`w-full transition-all duration-500 ${(isDesignerSelected || activeTab === 'upload') ? 'opacity-40 grayscale blur-[2px] pointer-events-none' : 'opacity-100'}`}>
+            <div className={`w-full transition-all duration-500 ${(isDesignerSelected || (!isSocial && activeTab === 'upload')) ? 'opacity-40 grayscale blur-[2px] pointer-events-none' : 'opacity-100'}`}>
                 <div className="flex items-center justify-between mb-4 px-2">
                     <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
                         <div className="bg-zinc-900 p-1.5 rounded-lg text-lime-400 shadow-sm inline-flex items-center justify-center">

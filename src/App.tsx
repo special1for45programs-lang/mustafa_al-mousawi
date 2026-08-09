@@ -112,7 +112,7 @@ const App: React.FC = () => {
 
             {/* قسم الاستمارة — يظهر محتواه الكامل عند اختيار باقة */}
             <section id="brief">
-              <BriefForm selectedPackage={selectedPackage} onClearPackage={() => setSelectedPackage(null)} />
+              <BriefForm selectedPackage={selectedPackage} onClearPackage={() => setSelectedPackage(null)} onUpgradePackage={handlePackageSelect} />
             </section>
           </Suspense>
         </main>
