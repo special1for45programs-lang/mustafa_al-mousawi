@@ -224,11 +224,18 @@ function getPackageTerms(formData: BriefFormData) {
 }
 
 // Generate HTML template for PDF
-function generatePdfHTML(formData: BriefFormData): string {
+function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
   const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
-
   const logo = formData.logoDetails || {} as any;
   const sd = formData.socialDetails || {} as any;
+
+  // Resolve image URLs correctly (handle data URI, absolute URL, and relative paths)
+  const resolveImgSrc = (img: string) => {
+    if (!img || img.startsWith('data:')) return img;
+    if (img.startsWith('http://') || img.startsWith('https://')) return img;
+    const base = baseUrl ? (baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl) : '';
+    return `${base}${img.startsWith('/') ? img : '/' + img}`;
+  };
 
   // Resolve inspiration images for social: prefer inspirationImages[], fall back to inspirationImage
   const socialInspirationImages: string[] =
@@ -721,7 +728,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           </div>
           <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: center;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
-              <img src="${img}" style="width: 120px; height: 120px; object-fit: contain !important; background-color: #f8f9fa; border-radius: 8px; padding: 5px; border: 1px solid #eee;" />
+              <img src="${resolveImgSrc(img)}" style="width: 120px; height: 120px; object-fit: contain !important; background-color: #f8f9fa; border-radius: 8px; padding: 5px; border: 1px solid #eee;" />
             `).join('')}
           </div>
         </div>
@@ -733,7 +740,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           ${(formData as any).designStyleImageBase64 ? `
           <div class="images-gallery" style="display: grid; grid-template-columns: 180px; margin-top: 10px; gap: 10px;">
             <div class="gallery-image">
-              <img src="${(formData as any).designStyleImageBase64}" alt="Design Style" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
+              <img src="${resolveImgSrc((formData as any).designStyleImageBase64)}" alt="Design Style" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
             </div>
           </div>
           ` : ''}
@@ -1214,7 +1221,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Step 1: Generate PDF
     console.log('[API] 📄 Generating PDF with Puppeteer...');
-    const html = generatePdfHTML(brief);
+    const html = generatePdfHTML(brief, baseUrl);
     const pdfBuffer = await generatePdfWithPuppeteer(html);
 
     const pdfFileName = brief.briefCategory?.startsWith('social')

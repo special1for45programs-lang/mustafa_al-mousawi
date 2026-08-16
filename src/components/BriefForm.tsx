@@ -290,19 +290,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           if (activeDesignStyle) {
             const styleObj = DESIGN_STYLES.find(s => s.id === activeDesignStyle);
             if (styleObj && styleObj.img) {
-              try {
-                const res = await fetch(styleObj.img);
-                const blob = await res.blob();
-                const base64 = await new Promise<string>((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve(reader.result as string);
-                  reader.readAsDataURL(blob);
-                });
-                finalFormData.designStyleImageBase64 = base64;
-                finalFormData.designStyleName = styleObj.name;
-              } catch (e) {
-                console.warn("Failed to convert design style image to base64", e);
-              }
+              finalFormData.designStyleImageBase64 = styleObj.img;
+              finalFormData.designStyleName = styleObj.name;
             }
           }
         } else {
@@ -310,24 +299,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           if (activeLogoType) {
             const typeObj = LOGO_TYPE_EXAMPLES.find(t => t.id === activeLogoType);
             if (typeObj && typeObj.images && typeObj.images.length > 0) {
-              try {
-                const fetchedImages = await Promise.all(
-                  typeObj.images.slice(0, 3).map(async (imgUrl) => {
-                    const res = await fetch(imgUrl);
-                    const blob = await res.blob();
-                    return new Promise<string>((resolve) => {
-                      const reader = new FileReader();
-                      reader.onloadend = () => resolve(reader.result as string);
-                      reader.readAsDataURL(blob);
-                    });
-                  })
-                );
-                finalFormData.logoTypeImagesBase64 = fetchedImages;
-                finalFormData.logoTypeName = typeObj.label;
-                finalFormData.logoTypeDesc = typeObj.desc;
-              } catch (e) {
-                console.warn("Failed to convert logo type images to base64", e);
-              }
+              finalFormData.logoTypeImagesBase64 = typeObj.images.slice(0, 3);
+              finalFormData.logoTypeName = typeObj.label;
+              finalFormData.logoTypeDesc = typeObj.desc;
             }
           }
         }
