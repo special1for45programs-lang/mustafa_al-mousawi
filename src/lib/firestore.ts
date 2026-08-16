@@ -1,27 +1,7 @@
 import { collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from './firebase';
-import type { Project, BriefFormData } from '../types';
-
-export const getPortfolioProjects = async (): Promise<Project[]> => {
-  const querySnapshot = await getDocs(collection(db, 'portfolio'));
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-};
-
-export const addProject = async (data: Omit<Project, 'id'>): Promise<string> => {
-  const docRef = await addDoc(collection(db, 'portfolio'), data);
-  return docRef.id;
-};
-
-export const updateProject = async (id: string, data: Partial<Project>): Promise<void> => {
-  const docRef = doc(db, 'portfolio', id);
-  await updateDoc(docRef, data);
-};
-
-export const deleteProject = async (id: string): Promise<void> => {
-  const docRef = doc(db, 'portfolio', id);
-  await deleteDoc(docRef);
-};
+import type { BriefFormData } from '../types';
 
 export const getResumeData = async (): Promise<any> => {
   const docRef = doc(db, 'resume', 'data');
@@ -51,11 +31,36 @@ export const updatePackagesData = async (data: any): Promise<void> => {
   await setDoc(docRef, data, { merge: true });
 };
 
+export const getResourcesData = async (): Promise<any> => {
+  const docRef = doc(db, 'resources', 'data');
+  const docSnap = await getDoc(docRef);
+  return docSnap.exists() ? docSnap.data() : null;
+};
+
+export const updateResourcesData = async (data: any): Promise<void> => {
+  const docRef = doc(db, 'resources', 'data');
+  await setDoc(docRef, data, { merge: true });
+};
+
 export type BriefRequestWithId = BriefFormData & { id: string; submittedAt: Timestamp; status: 'new' | 'in_progress' | 'completed' | 'archived' };
 
 export const getBriefRequests = async (): Promise<BriefRequestWithId[]> => {
   const querySnapshot = await getDocs(collection(db, 'briefRequests'));
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BriefRequestWithId));
+};
+
+export const addBriefRequest = async (data: any): Promise<string> => {
+  const docRef = await addDoc(collection(db, 'briefRequests'), {
+    ...data,
+    submittedAt: Timestamp.now(),
+    status: 'new'
+  });
+  return docRef.id;
+};
+
+export const updateBriefImages = async (id: string, fileIds: string[]): Promise<void> => {
+  const docRef = doc(db, 'briefRequests', id);
+  await updateDoc(docRef, { telegramFileIds: fileIds });
 };
 
 export const updateBriefRequestStatus = async (id: string, status: 'new' | 'in_progress' | 'completed' | 'archived'): Promise<void> => {

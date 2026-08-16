@@ -92,11 +92,6 @@ const Hero: React.FC = () => {
                   <ArrowLeft className="mr-2 w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </a>
-              <a href="#portfolio">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto hover:text-brand-lime hover:border-brand-lime px-8 py-3 lg:px-10 lg:py-4 text-base lg:text-lg backdrop-blur-sm bg-white/5 border-white/10">
-                  شاهد الأعمال
-                </Button>
-              </a>
             </div>
           </div>
 

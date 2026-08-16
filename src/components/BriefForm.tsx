@@ -6,6 +6,8 @@ import { BriefFormData, SocialDetails, LogoDetails, BaseBriefData } from '../typ
 import { APPLICATION_CATEGORIES, LOGO_TYPE_EXAMPLES } from '../constants';
 import { DESIGN_STYLES } from '../utils/designConstants';
 import { SelectedPackage } from '../App';
+import { addBriefRequest, updateBriefImages } from '../lib/firestore';
+import { BriefFormDataSchema } from '../utils/validation';
 
 // مكونات الخطوات — شعار / هوية بصرية
 import StepInfo    from './brief-steps/StepInfo';
@@ -20,6 +22,7 @@ import SocialStepReview    from './brief-steps/SocialStepReview';
 import { DesignStylesTab } from './brief-steps/DesignStylesTab';
 
 import SuccessView from './brief-steps/SuccessView';
+import StickyOrderSummary from './brief-steps/StickyOrderSummary';
 
 // ==========================================
 // ثوابت
@@ -43,7 +46,7 @@ const getInitialLogoData = (): LogoDetails => ({
   favoriteColors:   '',
   inspirationImage: '',
   designStyle:      '',
-  logoType:         'text',
+  logoType:         '',
   moodboard:        [],
   applications:     APPLICATION_CATEGORIES.flatMap(c => c.items).reduce((acc, curr) => ({ ...acc, [curr.key]: false }), {}),
   otherApplication: '',
@@ -101,6 +104,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
   const [formData, setFormData]       = useState<BriefFormData>(getInitialFormData());
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
+  const [botTrap, setBotTrap] = useState("");
 
   const formRef       = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
@@ -111,8 +115,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
 
   // ─── إعادة الضبط عند تغيير الباقة المختارة ────────────────────────────
   useEffect(() => {
-    // Only reset if there's a package and we haven't just loaded a draft that matches it.
-    // To keep it simple, we just do the reset. The draft toast will override this if clicked.
+    // Only reset if there's a package.
     if (selectedPackage) {
       const resolvedCategory = selectedPackage.category
         ?? (selectedPackage.type === 'social'
@@ -131,58 +134,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
       setIsPdfDownloaded(false);
     }
   }, [selectedPackage?.id]);
-
-  // ─── استعادة المسودة من localStorage ──────────────────────────────────
-  useEffect(() => {
-    const draft = localStorage.getItem('brief_form_draft');
-    if (draft) {
-      const toastId = toast((t) => (
-        <div className="flex flex-col gap-3 font-cairo" dir="rtl">
-          <p className="font-bold text-gray-800 m-0 text-sm">يوجد مسودة محفوظة مسبقاً، هل تريد استعادتها؟</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                try {
-                  const parsed = JSON.parse(draft);
-                  setFormData(parsed);
-                  toast.success('تم استعادة المسودة بنجاح!');
-                } catch (e) {
-                  console.error('Failed to parse draft', e);
-                }
-                toast.dismiss(t.id);
-              }}
-              className="bg-brand-lime hover:bg-lime-400 transition-colors text-black font-bold px-4 py-2 rounded-lg text-sm"
-            >
-              استعادة المسودة
-            </button>
-            <button
-              onClick={() => {
-                localStorage.removeItem('brief_form_draft');
-                toast.dismiss(t.id);
-              }}
-              className="bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 font-bold px-4 py-2 rounded-lg text-sm"
-            >
-              تجاهل
-            </button>
-          </div>
-        </div>
-      ), { duration: Infinity, position: 'top-center' });
-
-      // Clean up toast on unmount to prevent duplicates in React Strict Mode
-      return () => { toast.dismiss(toastId); };
-    }
-  }, []);
-
-  // ─── حفظ المسودة في localStorage عند التغيير ────────────────────────
-  useEffect(() => {
-    if (!isSuccess && formData) {
-      try {
-        localStorage.setItem('brief_form_draft', JSON.stringify(formData));
-      } catch (e) {
-        console.warn('localStorage limit reached, unable to save draft', e);
-      }
-    }
-  }, [formData, isSuccess]);
 
   // ─── التمرير عند تغيير الخطوة ─────────────────────────────────────────
   useEffect(() => {
@@ -285,17 +236,47 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
     return true;
   };
 
-
-
-
   // ─── توليد وتحميل PDF (API-first + محلي كـ Fallback) ─────────────────
   const downloadPDF = async () => {
+    const validation = BriefFormDataSchema.safeParse(formData);
+    if (!validation.success) {
+      const missingFields = validation.error.issues.map(i => i.message).join('، ');
+      toast.error(
+        <div dir="rtl" className="flex flex-col gap-1 text-sm">
+          <p className="font-bold text-red-500">❌ يرجى إكمال الحقول التالية:</p>
+          <p className="text-gray-300">{missingFields}</p>
+        </div>,
+        { duration: 5000, style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ff0000' } }
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
     let loadingToast: string | undefined;
+
     try {
-      setIsGeneratingPdf(true);
-      loadingToast = toast.loading('جاري تجهيز الطلب، يرجى الانتظار...', {
+      loadingToast = toast.loading('جاري تجهيز بيانات المشروع...', {
         style: { background: '#1a1a1a', color: '#fff', border: '1px solid #333' }
       });
+
+      // 1. Strip base64 assets for Firestore to keep document lightweight
+      const strippedData = JSON.parse(JSON.stringify(formData));
+      delete strippedData.designStyleImageBase64;
+      delete strippedData.logoTypeImagesBase64;
+      if (strippedData.logoDetails) {
+        delete strippedData.logoDetails.inspirationImage;
+        delete strippedData.logoDetails.moodboard;
+      }
+      if (strippedData.socialDetails) {
+        delete strippedData.socialDetails.inspirationImage;
+        delete strippedData.socialDetails.inspirationImages;
+        delete strippedData.socialDetails.postsPatternImages;
+      }
+      
+      const briefId = await addBriefRequest(strippedData);
+      const baseUrl = window.location.origin;
+
+      setIsGeneratingPdf(true);
 
       // Try server API first with a 30-second timeout
       let response: Response;
@@ -357,7 +338,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         response = await fetch('/api/generate-brief-pdf', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ formData: finalFormData }),
+          body:    JSON.stringify({ formData: finalFormData, briefId, baseUrl }),
           signal:  controller.signal,
         });
         clearTimeout(timeoutId);
@@ -380,6 +361,15 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         throw new Error('no_pdf_data');
       }
 
+      // 4. Update the Firestore document with the returned Telegram fileIds
+      if (result.fileIds && result.fileIds.length > 0) {
+        try {
+          await updateBriefImages(briefId, result.fileIds);
+        } catch (e) {
+          console.warn('Failed to update brief document with fileIds', e);
+        }
+      }
+
       setIsPdfDownloaded(true);
       if (loadingToast) toast.dismiss(loadingToast);
       
@@ -388,8 +378,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
       });
       
-        setIsSuccess(true);
-        localStorage.removeItem('brief_form_draft');
+      setIsSuccess(true);
 
     } catch (apiError: any) {
       if (loadingToast) toast.dismiss(loadingToast);
@@ -397,8 +386,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
       // Graceful fallback for local development without backend
       if (import.meta.env.DEV && (apiError?.message === 'empty_response' || apiError?.message?.includes('fetch') || apiError?.name === 'TypeError')) {
         console.warn('[DEV] Fallback mode active, ignoring API failure:', apiError.message);
-          setIsSuccess(true);
-        localStorage.removeItem('brief_form_draft');
+        setIsSuccess(true);
         toast.success('تم الإرسال بنجاح (وضع التطوير المحلي)', {
           duration: 5000,
           style: { background: '#1a1a1a', color: '#fff', border: '1px solid #ccff00' },
@@ -422,14 +410,14 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
   };
 
   // ─── التعامل مع الإرسال ──────────────────────────────────────────────
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (botTrap !== "") { console.warn("Bot detected."); return; }
     if (validateStep()) {
       if (step < STEPS.length) {
         setStep(step + 1);
       } else if (isPdfDownloaded) {
-          setIsSuccess(true);
-        localStorage.removeItem('brief_form_draft');
+        setIsSuccess(true);
       }
     } else {
       // التوجيه السلس لأول حقل فارغ مع تأثير وميض أحمر خفيف
@@ -535,8 +523,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
 
         {/* نموذج الإدخال */}
         {selectedPackage && (
-        <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl p-3.5 py-5 sm:p-8 md:p-12 relative z-20 w-full max-w-5xl mx-auto animate-fadeIn">
+        <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl p-3.5 py-5 sm:p-8 md:p-12 relative z-20 w-full max-w-5xl mx-auto animate-fadeIn min-h-[650px] overflow-x-hidden">
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" autoComplete="on" noValidate>
+            <input type="text" name="contact_me_by_fax_only" value={botTrap} onChange={(e) => setBotTrap(e.target.value)} style={{ display: 'none', opacity: 0, position: 'absolute', top: '-9999px', left: '-9999px' }} tabIndex={-1} autoComplete="off" />
 
             {/* رأس الخطوة */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 sm:mb-8 gap-4 sm:gap-6 border-b border-gray-100 pb-6 sm:pb-8">
@@ -614,6 +603,15 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
             {isSocial && step === 5 && (
               <SocialStepReview formData={formData} selectedPackage={selectedPackage} removeUploadedFile={removeUploadedFile} />
             )}
+
+            {/* Sticky Order Summary Sidebar / Bottom Bar */}
+            <StickyOrderSummary 
+              formData={formData}
+              selectedPackage={selectedPackage}
+              step={step}
+              totalSteps={STEPS.length}
+              isSocial={isSocial}
+            />
 
             {/* ==========================================
                 أزرار التنقل

@@ -16,8 +16,10 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
 
     const limit = useMemo(() => {
         if (!selectedPackage) return 2;
-        if (selectedPackage.id === 'lite' || selectedPackage.id === 'startup') return 2;
-        if (selectedPackage.id === 'premium' || selectedPackage.id === 'elite') return 5;
+        if (selectedPackage.id === 'lite') return 2;
+        if (selectedPackage.id === 'startup') return 3;
+        if (selectedPackage.id === 'premium') return 5;
+        if (selectedPackage.id === 'elite' || selectedPackage.id === 'elite_pro') return 8;
         return Infinity; // Full Branding or others
     }, [selectedPackage]);
 
@@ -62,7 +64,14 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
             {/* Applications */}
             <div className="space-y-4">
                 <h3 className="text-lg font-normal text-gray-900">التطبيقات المطلوبة</h3>
-                <p className="text-gray-500 text-sm">اختر المنتجات التي تريد تطبيق الشعار عليها</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <p className="text-gray-500 text-sm">اختر المنتجات التي تريد تطبيق الشعار عليها</p>
+                    {limit < Infinity && (
+                        <div className="bg-brand-lime/10 border border-brand-lime text-brand-dark px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 w-fit">
+                            <span>متبقي لك {Math.max(0, limit - selectedCount)} من أصل {limit} تطبيقات</span>
+                        </div>
+                    )}
+                </div>
                 <div className="space-y-6">
                     {limit < Infinity && (
                         <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -97,9 +106,9 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                                         <div
                                             key={option.key}
                                             onClick={() => !isLocked && handleCheckboxChange('applications', option.key)}
-                                            className={`relative py-2 px-2.5 sm:p-3 rounded-xl border-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white 
-                                                ${isSelected ? 'border-brand-lime bg-brand-lime/5 cursor-pointer' : 
-                                                  isLocked ? 'border-gray-100 opacity-50 cursor-not-allowed' : 'border-gray-200 hover:border-gray-300 cursor-pointer'}`}
+                                            className={`relative py-2 px-2.5 sm:p-3 rounded-xl border-2 transition-all duration-300 bg-white 
+                                                ${isSelected ? 'border-brand-lime bg-brand-lime/5 cursor-pointer hover:-translate-y-1 hover:shadow-xl' : 
+                                                  isLocked ? 'border-gray-100 opacity-50 cursor-not-allowed' : 'border-gray-200 hover:border-gray-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl'}`}
                                         >
                                             <div className="flex items-center gap-2 sm:gap-3">
                                                 <div className={`w-5 h-5 sm:w-5 sm:h-5 rounded border flex items-center justify-center shrink-0 transition-colors 
@@ -114,7 +123,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                                             {isLocked && (
                                                 <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">
                                                     <Lock size={10} />
-                                                    <span className="hidden sm:inline">متاح في الهوية الشاملة</span>
+                                                    <span className="hidden lg:inline">متاح في الباقات الأعلى أو الهوية الشاملة</span>
                                                 </div>
                                             )}
                                         </div>

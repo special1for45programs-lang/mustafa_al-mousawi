@@ -1,17 +1,4 @@
 
-// تعريف هيكل بيانات المشروع في معرض الأعمال
-export interface Project {
-  id: string;
-  title: string;
-  category: string;
-  thumbnail: string; // الصورة المصغرة للمعرض
-  heroImage: string; // الصورة الكبيرة داخل التفاصيل
-  gallery: string[]; // صور إضافية للمشروع
-  challenge: string; // وصف التحدي
-  solution: string; // وصف الحل المقترح
-  deliverables: string[]; // قائمة المخرجات المسلمة للعميل
-}
-
 // ==========================================
 // تصنيف نوع الطلب
 // ==========================================
@@ -85,8 +72,19 @@ export interface BriefFormData extends BaseBriefData {
   socialDetails: SocialDetails;
   designStyleImageBase64?: string;
   designStyleName?: string;
-  logoTypeImageBase64?: string;
+  logoTypeImageBase64?: string[]; // Fixed type from string to string[]
+  logoTypeImagesBase64?: string[]; // Added this to match usage in BriefRequests.tsx
   logoTypeName?: string;
+  logoTypeDesc?: string;
+  telegramFileIds?: string[];
+}
+
+export function isSocialRequest(req: BriefFormData): boolean {
+  return req.briefType === 'social' || req.briefCategory === 'social_posts' || req.briefCategory === 'social_plans';
+}
+
+export function isLogoRequest(req: BriefFormData): boolean {
+  return req.briefType === 'logo' || req.briefCategory === 'logo' || req.briefCategory === 'branding';
 }
 
 // تعريف عنصر التنقل في القائمة العلوية

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Loader2 } from 'lucide-react';
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -86,7 +86,12 @@ const AdminLogin: React.FC = () => {
               disabled={isLoading}
               className="w-full bg-brand-lime text-black font-bold py-3 px-4 rounded-lg hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'جاري التحميل...' : 'تسجيل الدخول'}
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>جاري الدخول...</span>
+                </div>
+              ) : 'تسجيل الدخول'}
             </button>
           </form>
         </div>

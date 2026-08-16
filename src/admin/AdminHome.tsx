@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getBriefRequests, BriefRequestWithId, getPortfolioProjects } from '../lib/firestore';
-import { TrendingUp, Inbox, Clock, CheckCircle } from 'lucide-react';
+import { getBriefRequests, BriefRequestWithId } from '../lib/firestore';
+import { Inbox, Clock, CheckCircle } from 'lucide-react';
 import AdminPageWrapper from './components/AdminPageWrapper';
 
 const categoryLabels: Record<string, string> = {
@@ -35,22 +35,18 @@ const statusColors: Record<string, string> = {
 
 const AdminHome: React.FC = () => {
   const [requests, setRequests] = useState<BriefRequestWithId[]>([]);
-  const [stats, setStats] = useState({ projects: 0, newRequests: 0, inProgressRequests: 0, completedRequests: 0 });
+  const [stats, setStats] = useState({ newRequests: 0, inProgressRequests: 0, completedRequests: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projectsData, requestsData] = await Promise.all([
-          getPortfolioProjects(),
-          getBriefRequests()
-        ]);
+        const requestsData = await getBriefRequests();
         setRequests(requestsData);
         setStats({
-          projects: projectsData.length,
-          newRequests: requestsData.filter((r: any) => r.status === 'new').length,
-          inProgressRequests: requestsData.filter((r: any) => r.status === 'in_progress').length,
-          completedRequests: requestsData.filter((r: any) => r.status === 'completed').length
+          newRequests: requestsData.filter((r: BriefRequestWithId) => r.status === 'new').length,
+          inProgressRequests: requestsData.filter((r: BriefRequestWithId) => r.status === 'in_progress').length,
+          completedRequests: requestsData.filter((r: BriefRequestWithId) => r.status === 'completed').length
         });
       } catch (err) {
         console.error(err);
@@ -84,8 +80,8 @@ const AdminHome: React.FC = () => {
   // Recent 5 requests by submittedAt
   const recentRequests = [...requests]
     .sort((a, b) => {
-      const timeA = a.submittedAt?.toMillis ? a.submittedAt.toMillis() : new Date(a.submittedAt as string).getTime();
-      const timeB = b.submittedAt?.toMillis ? b.submittedAt.toMillis() : new Date(b.submittedAt as string).getTime();
+      const timeA = (a.submittedAt as any)?.toMillis ? (a.submittedAt as any).toMillis() : new Date(a.submittedAt as unknown as string).getTime();
+      const timeB = (b.submittedAt as any)?.toMillis ? (b.submittedAt as any).toMillis() : new Date(b.submittedAt as unknown as string).getTime();
       return timeB - timeA;
     })
     .slice(0, 5);
@@ -98,16 +94,7 @@ const AdminHome: React.FC = () => {
     <AdminPageWrapper title="لوحة القيادة" subtitle="نظرة عامة على أداء الموقع والطلبات">
       <div className="space-y-8 animate-fade-in" dir="rtl">
         {/* Top Stats Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
-          <div className="bg-brand-dark rounded-xl p-4 flex-1 border border-white/5 flex items-center gap-4">
-            <div className="bg-blue-500/10 p-3 rounded-lg text-blue-400">
-              <TrendingUp size={24} />
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">عدد المشاريع</p>
-              <p className="text-2xl font-bold text-white">{stats.projects}</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 shrink-0">
           <div className="bg-brand-dark rounded-xl p-4 flex-1 border border-white/5 flex items-center gap-4">
             <div className="bg-brand-lime/10 p-3 rounded-lg text-brand-lime">
               <Inbox size={24} />
@@ -191,9 +178,9 @@ const AdminHome: React.FC = () => {
         <h4 className="text-xl font-bold text-white mb-6">أحدث الطلبات</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {recentRequests.map(req => {
-            const dateStr = req.submittedAt?.toDate 
-              ? req.submittedAt.toDate().toLocaleDateString('ar-IQ') 
-              : new Date(req.submittedAt as string).toLocaleDateString('ar-IQ');
+            const dateStr = (req.submittedAt as any)?.toDate 
+              ? (req.submittedAt as any).toDate().toLocaleDateString('ar-IQ') 
+              : new Date(req.submittedAt as unknown as string).toLocaleDateString('ar-IQ');
 
             return (
               <div key={req.id} className="p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-colors">

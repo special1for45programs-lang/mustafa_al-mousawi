@@ -1,7 +1,7 @@
-import { Project, NavItem, PackagesData } from './types';
+import { NavItem, PackagesData } from './types';
 import { Type, Layers, Globe, PenTool, LayoutGrid } from 'lucide-react';
 // استيراد إعدادات الصور من ملف مركزي - لتسهيل إدارة جميع الصور في مكان واحد
-import { BRAND_LOGOS, PROFILE_IMAGE, PROJECT_GHADIRI, PROJECT_LAYAN, PROJECT_ENGINEERING, PROJECT_DRAWINGS, LOGO_EXAMPLES_BY_TYPE } from './imageConfig';
+import { BRAND_LOGOS, PROFILE_IMAGE, LOGO_EXAMPLES_BY_TYPE } from './imageConfig';
 
 // حساب سنوات الخبرة ديناميكياً بناءً على السنة الحالية
 const START_YEAR = 2019; // سنة البداية
@@ -73,109 +73,48 @@ export const RESUME_DATA = {
   ]
 };
 
-/**
- * بيانات المشاريع المعروضة في قسم الأعمال
- * 
- * لتغيير صور المشاريع، قم بتعديل ملف src/imageConfig.ts
- * حيث يمكنك استبدال الروابط بصور مشاريعك الخاصة
- */
-export const PROJECTS: Project[] = [
-  {
-    id: '1',
-    title: 'هويتي البصرية',
-    category: 'هوية شخصية',
-    thumbnail: PROJECT_GHADIRI.thumbnail,
-    heroImage: PROJECT_GHADIRI.heroImage,
-    gallery: PROJECT_GHADIRI.gallery,
-    challenge: 'بناء هوية بصرية شخصية تعكس أسلوبي كمصمم جرافيك، وتجمع بين الاحترافية والإبداع، لتكون واجهة قوية لأعمالي.',
-    solution: 'تصميم يعتمد على التباين العالي بين اللون الأسود (الفخامة) واللون الليموني (الطاقة والإبداع)، مع التركيز على الخطوط العصرية والعناصر البصرية الديناميكية التي تعكس التفكير خارج الصندوق.',
-    deliverables: ['الشعار الشخصي', 'دليل الهوية البصرية', 'تصاميم التواصل الاجتماعي', 'المطبوعات الشخصية']
-  },
-  {
-    id: '2',
-    title: 'ليان',
-    category: 'تصميم شعار',
-    thumbnail: PROJECT_LAYAN.thumbnail,
-    heroImage: PROJECT_LAYAN.heroImage,
-    gallery: PROJECT_LAYAN.gallery,
-    challenge: 'تصميم شعار لعلامة تجارية أنثوية وناعمة، ربما تختص بالمجوهرات أو الأزياء.',
-    solution: 'استخدام خط حر انسيابي باللون البرتقالي الدافئ مع عناصر زخرفية ناعمة توحي بالأنوثة والجمال.',
-    deliverables: ['الشعار', 'كيس التسوق', 'بطاقات العمل']
-  },
-  {
-    id: '3',
-    title: 'مكتب الابتكار الهندسي',
-    category: 'هوية شركات',
-    thumbnail: PROJECT_ENGINEERING.thumbnail,
-    heroImage: PROJECT_ENGINEERING.heroImage,
-    gallery: PROJECT_ENGINEERING.gallery,
-    challenge: 'بناء هوية قوية لمكتب هندسي تعكس الدقة، الحداثة، والاحترافية.',
-    solution: 'دمج الحروف A و B في شكل هندسي ثلاثي الأبعاد باللون الأزرق الداكن ليعكس الثقة والاستقرار الهندسي.',
-    deliverables: ['الشعار', 'الواجهة الخارجية', 'القرطاسية']
-  },
-  {
-    id: '4',
-    title: 'رسوماتي',
-    category: 'رسم رقمي وتقليدي',
-    thumbnail: PROJECT_DRAWINGS.thumbnail,
-    heroImage: PROJECT_DRAWINGS.heroImage,
-    gallery: PROJECT_DRAWINGS.gallery,
-    challenge: 'التعبير عن الأفكار والمشاعر من خلال الرسم الرقمي والتقليدي، وإظهار المهارات الفنية في التكوين والتشريح.',
-    solution: 'مجموعة مختارة من الرسومات التي تبرز التنوع في الأسلوب والتقنيات المستخدمة، من الاسكتشات السريعة إلى اللوحات الرقمية المكتملة.',
-    deliverables: ['لوحات رقمية', 'سكتشات', 'دراسات فنية']
-  }
-];
 
 export const APPLICATION_CATEGORIES = [
   {
-    title: 'المطبوعات الرسمية والمكتب',
-    items: [
-      { key: 'businessCard', label: 'الكروت الشخصية' },
-      { key: 'letterHead', label: 'ورق الخطابات الرسمي' },
-      { key: 'envelope', label: 'الظرف' },
-      { key: 'folder', label: 'ملف الأوراق' },
-      { key: 'stamp', label: 'الختم الرسمي' }
-    ]
-  },
-  {
-    title: 'التغليف والمنتجات',
-    items: [
-      { key: 'packaging', label: 'علب وتغليف المنتجات' },
-      { key: 'bag', label: 'أكياس التسوق' },
-      { key: 'sticker', label: 'ملصقات' },
-      { key: 'productTags', label: 'ليبل وبطاقات المنتجات' },
-      { key: 'thankYouCards', label: 'بطاقات الشكر والتقييم' }
-    ]
-  },
-  {
-    title: 'المطاعم والمقاهي',
-    items: [
-      { key: 'menu', label: 'قائمة الطعام' },
-      { key: 'cups', label: 'أكواب القهوة والمشروبات' },
-      { key: 'napkins', label: 'مناديل ومفارش الطاولات' }
-    ]
-  },
-  {
     title: 'الرقمي والسوشيال ميديا',
     items: [
-      { key: 'socialMedia', label: 'قوالب منشورات السوشيال ميديا' },
-      { key: 'profilePic', label: 'صور الحسابات' },
-      { key: 'website', label: 'واجهة الموقع الإلكتروني' },
+      { key: 'profilePic', label: 'صور الحسابات والأغلفة' },
+      { key: 'socialMedia', label: 'قوالب منشورات وستوري السوشيال ميديا' },
+      { key: 'companyProfile', label: 'بروفايل الشركة التعريفي (PDF)' },
       { key: 'emailSignature', label: 'توقيع البريد الإلكتروني' },
       { key: 'powerpoint', label: 'قوالب عروض PowerPoint' },
-      { key: 'companyProfile', label: 'بروفايل الشركة التعريفى (PDF)' }
+      { key: 'website', label: 'واجهة الموقع / التطبيق' }
+    ]
+  },
+  {
+    title: 'المطبوعات والقرطاسية التجارية',
+    items: [
+      { key: 'businessCard', label: 'كارت شخصي' },
+      { key: 'letterHead', label: 'ورقة المراسلات الرسمية A4' },
+      { key: 'envelopesFolders', label: 'أظرف وفولدرات أوراق العمل' },
+      { key: 'stampsVouchers', label: 'الأختام والسندات المالية' }
+    ]
+  },
+  {
+    title: 'التغليف والمنتجات الترويجية',
+    items: [
+      { key: 'packagingBoxesBags', label: 'أكياس وعلب التغليف' },
+      { key: 'labelsStickers', label: 'ملصقات واستيكرات' },
+      { key: 'cupsHospitality', label: 'أكواب ومناديل ومستلزمات تقديم' }
     ]
   },
   {
     title: 'اللوحات والتجهيزات الميدانية',
     items: [
       { key: 'signage', label: 'لوحة المحل واللافتات الخارجية' },
-      { key: 'vehicle', label: 'تصميم وتغليف سيارات الشركة' },
+      { key: 'rollupsExhibition', label: 'رول أب ومستندات المعارض' },
       { key: 'uniform', label: 'زي الموظفين' },
-      { key: 'rollups', label: 'رول أب وستاندات المعارض' }
+      { key: 'vehicle', label: 'تصميم وتغليف سيارات الشركة' }
     ]
   }
 ];
+
+export const APPLICATION_OPTIONS = APPLICATION_CATEGORIES.flatMap(c => c.items);
 
 export const LOGO_TYPE_EXAMPLES = [
   { id: 'text', label: 'شعار نصي', labelEn: 'TEXT LOGO', sub: 'TEXT LOGO', icon: Type, desc: 'يعتمد على الخط والتايبوغرافي', images: LOGO_EXAMPLES_BY_TYPE.text },

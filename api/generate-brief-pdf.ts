@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { z } from 'zod';
 import { Resend } from 'resend';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
@@ -93,7 +94,7 @@ const APP_LABELS: Record<string, string> = {
 // ==========================================
 // Build dynamic Telegram caption based on brief type
 // ==========================================
-function buildTelegramCaption(formData: BriefFormData): string {
+function buildTelegramCaption(formData: BriefFormData, briefId?: string, baseUrl?: string): string {
   const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
 
   const header = isSocial
@@ -131,6 +132,12 @@ function buildTelegramCaption(formData: BriefFormData): string {
     if (formData.projectName)        base.push(`\n📋 المشروع: ${formData.projectName}`);
     if (formData.projectType)        base.push(`🏢 مجال العمل: ${formData.projectType}`);
     if (logo.deadline)           base.push(`⏰ موعد التسليم: ${logo.deadline}`);
+  }
+
+  if (briefId && baseUrl) {
+    base.push(``);
+    base.push(`🔗 رابط الطلب في لوحة الأدمن:`);
+    base.push(`${baseUrl}/admin/briefs/${briefId}`);
   }
 
   return base.filter(Boolean).join('\n');
@@ -810,6 +817,55 @@ async function sendPdfToTelegram(
   }
 }
 
+async function sendPhotosToTelegram(base64Images: string[]): Promise<string[]> {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return [];
+  const fileIds: string[] = [];
+
+  for (const base64Str of base64Images) {
+    try {
+      const match = base64Str.match(/^data:image\/(\w+);base64,(.+)$/);
+      if (!match) continue;
+      
+      const ext = match[1];
+      const buffer = Buffer.from(match[2], 'base64');
+      const boundary = '----FormBoundary' + Math.random().toString(36).substring(2);
+
+      let body = '';
+      body += `--${boundary}\r\n`;
+      body += `Content-Disposition: form-data; name="chat_id"\r\n\r\n${TELEGRAM_CHAT_ID}\r\n`;
+      body += `--${boundary}\r\n`;
+      body += `Content-Disposition: form-data; name="photo"; filename="image.${ext}"\r\n`;
+      body += `Content-Type: image/${ext}\r\n\r\n`;
+
+      const textEncoder = new TextEncoder();
+      const bodyStart = textEncoder.encode(body);
+      const bodyEnd = textEncoder.encode(`\r\n--${boundary}--\r\n`);
+
+      const fullBody = new Uint8Array(bodyStart.length + buffer.length + bodyEnd.length);
+      fullBody.set(bodyStart, 0);
+      fullBody.set(buffer, bodyStart.length);
+      fullBody.set(bodyEnd, bodyStart.length + buffer.length);
+
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+        body: fullBody
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        const photos = json.result?.photo;
+        if (photos && photos.length > 0) {
+          fileIds.push(photos[photos.length - 1].file_id);
+        }
+      }
+    } catch (e) {
+      console.error('[API] ❌ Failed to upload photo to Telegram:', e);
+    }
+  }
+  return fileIds;
+}
+
 // Generate email HTML
 function generateEmailHTML(formData: BriefFormData): string {
   const logo = formData.logoDetails || {} as any;
@@ -946,66 +1002,45 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // ~4 MB expressed as Base64 character count (Base64 ≈ 1.37× raw bytes)
 const MAX_BASE64_CHARS = Math.ceil(4 * 1024 * 1024 * 1.37);
 
-interface ValidationResult { valid: boolean; error?: string }
+const safeString = z.string().trim().max(10000, "النص طويل جداً").optional();
+const base64ImageSchema = z.string().trim().max(MAX_BASE64_CHARS, "حجم الصورة يتجاوز الحد المسموح به (4MB)").optional();
+
+const ApiLogoDetailsSchema = z.object({
+  inspirationImage: base64ImageSchema,
+  moodboard: z.array(base64ImageSchema).optional(),
+}).passthrough();
+
+const ApiSocialDetailsSchema = z.object({
+  inspirationImage: base64ImageSchema,
+  inspirationImages: z.array(base64ImageSchema).optional(),
+  postsPatternImages: z.array(base64ImageSchema).optional(),
+}).passthrough();
+
+const ApiBriefSchema = z.object({
+  clientName: z.string().trim().min(2, "اسم العميل مطلوب").max(200),
+  phone: z.string().trim().min(6, "رقم الهاتف مطلوب").max(50),
+  briefType: z.enum(['logo', 'social', '']),
+  email: z.string().email("صيغة البريد الإلكتروني غير صحيحة").or(z.literal('')).optional(),
+  logoDetails: ApiLogoDetailsSchema.optional(),
+  socialDetails: ApiSocialDetailsSchema.optional(),
+  designStyleImageBase64: base64ImageSchema,
+  logoTypeImagesBase64: z.array(base64ImageSchema).optional(),
+}).passthrough();
+
+interface ValidationResult { valid: boolean; error?: string; data?: any }
 
 function validatePayload(formData: unknown): ValidationResult {
   if (!formData || typeof formData !== 'object') {
     return { valid: false, error: 'البيانات المُرسَلة غير صالحة.' };
   }
 
-  const fd = formData as Record<string, unknown>;
-
-  // ── Required string fields ──────────────────────────────────
-  for (const field of ['clientName', 'phone', 'briefType'] as const) {
-    if (!fd[field] || typeof fd[field] !== 'string' || !(fd[field] as string).trim()) {
-      return { valid: false, error: `الحقل المطلوب "${field}" مفقود أو فارغ.` };
-    }
+  const result = ApiBriefSchema.safeParse(formData);
+  if (!result.success) {
+    const errorMsg = result.error.errors.map(e => e.message).join(', ');
+    return { valid: false, error: errorMsg };
   }
 
-  // ── briefType enum ───────────────────────────────────────────
-  if (!['logo', 'social'].includes(fd['briefType'] as string)) {
-    return { valid: false, error: 'نوع الطلب (briefType) غير صالح.' };
-  }
-
-  // ── Optional email format ────────────────────────────────────
-  if (fd['email'] && typeof fd['email'] === 'string' && fd['email'].trim()) {
-    if (!EMAIL_REGEX.test(fd['email'] as string)) {
-      return { valid: false, error: 'صيغة البريد الإلكتروني غير صحيحة.' };
-    }
-  }
-
-  // ── Base64 size guards (prevents memory crash / payload injection) ──
-  const logoDetails = fd['logoDetails'] as Record<string, unknown> | undefined;
-  const socialDetails = fd['socialDetails'] as Record<string, unknown> | undefined;
-
-  // Check inspirationImage on both paths
-  for (const details of [logoDetails, socialDetails]) {
-    if (!details) continue;
-    const img = details['inspirationImage'];
-    if (typeof img === 'string' && img.startsWith('data:') && img.length > MAX_BASE64_CHARS) {
-      return { valid: false, error: 'حجم صورة الاستلهام يتجاوز الحد المسموح به (4MB).' };
-    }
-  }
-
-  // Check moodboard array items
-  if (logoDetails && Array.isArray(logoDetails['moodboard'])) {
-    for (const item of logoDetails['moodboard'] as unknown[]) {
-      if (typeof item === 'string' && item.startsWith('data:') && item.length > MAX_BASE64_CHARS) {
-        return { valid: false, error: 'إحدى صور التصور المبدئي تتجاوز الحد المسموح به (4MB).' };
-      }
-    }
-  }
-
-  // Check postsPatternImages for social path
-  if (socialDetails && Array.isArray(socialDetails['postsPatternImages'])) {
-    for (const item of socialDetails['postsPatternImages'] as unknown[]) {
-      if (typeof item === 'string' && item.startsWith('data:') && item.length > MAX_BASE64_CHARS) {
-        return { valid: false, error: 'إحدى صور النماذج تتجاوز الحد المسموح به (4MB).' };
-      }
-    }
-  }
-
-  return { valid: true };
+  return { valid: true, data: result.data };
 }
 
 // ============================================================
@@ -1052,7 +1087,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Payload Validation ──────────────────────────────────────
-  const { formData } = (req.body ?? {}) as { formData?: unknown };
+  const { formData, briefId, baseUrl } = (req.body ?? {}) as { formData?: unknown, briefId?: string, baseUrl?: string };
 
   if (!formData) {
     return res.status(400).json({ error: 'المعلومات المطلوبة غير مكتملة (formData مفقود).' });
@@ -1082,10 +1117,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('[API] ✅ PDF generated, size:', pdfBuffer.length, 'bytes');
 
     // Step 2: Send to Telegram
-    const telegramCaption = buildTelegramCaption(brief);
+    const telegramCaption = buildTelegramCaption(brief, briefId, baseUrl);
     await sendPdfToTelegram(pdfBuffer, pdfFileName, telegramCaption);
 
-    // Step 3: Send Email (designer only)
+    // Step 3: Send Photos to Telegram
+    console.log('[API] 📸 Extracting base64 images for Telegram native storage...');
+    const base64Images: string[] = [];
+    const addImg = (img: any) => { if (typeof img === 'string' && img.startsWith('data:image')) base64Images.push(img); };
+    
+    addImg((formData as any).designStyleImageBase64);
+    if (Array.isArray((formData as any).logoTypeImagesBase64)) (formData as any).logoTypeImagesBase64.forEach(addImg);
+    if (brief.logoDetails) {
+      addImg(brief.logoDetails.inspirationImage);
+      if (Array.isArray(brief.logoDetails.moodboard)) brief.logoDetails.moodboard.forEach(addImg);
+    }
+    if (brief.socialDetails) {
+      addImg(brief.socialDetails.inspirationImage);
+      if (Array.isArray(brief.socialDetails.inspirationImages)) brief.socialDetails.inspirationImages.forEach(addImg);
+      if (Array.isArray(brief.socialDetails.postsPatternImages)) brief.socialDetails.postsPatternImages.forEach(addImg);
+    }
+    
+    console.log(`[API] 📸 Found ${base64Images.length} images to upload...`);
+    const fileIds = await sendPhotosToTelegram(base64Images);
+
+    // Step 4: Send Email (designer only)
     if (process.env.RESEND_API_KEY) {
       try {
         console.log('[API] 📧 Sending email to designer...');
@@ -1106,12 +1161,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Step 4: Return PDF to client
+    // Step 5: Return PDF and File Ids to client
     return res.status(200).json({
       success: true,
       message: 'تم إنشاء وإرسال الملف بنجاح!',
       pdf: pdfBuffer.toString('base64'),
       fileName: pdfFileName,
+      fileIds: fileIds,
     });
 
   } catch (error: any) {

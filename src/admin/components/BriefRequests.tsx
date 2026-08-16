@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { getBriefRequests, updateBriefRequestStatus, deleteBriefRequest, BriefRequestWithId } from '../../lib/firestore';
+import { isSocialRequest, isLogoRequest } from '../../types';
 import { Eye, X, Instagram, TrendingUp, Star, Layers, Download, Trash2 } from 'lucide-react';
 import AdminPageWrapper from './AdminPageWrapper';
 
@@ -48,8 +49,8 @@ const InfoRow: React.FC<{ label: string; value?: string | null }> = ({ label, va
 // مكوّن قسم سوشيال ميديا داخل المودال
 // ==========================================
 const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
-  const sd = req.socialDetails ?? req.logoDetails;
-  if (!sd) return null;
+  const sd = req.socialDetails;
+  if (!sd || Object.keys(sd).length === 0) return null;
 
   return (
     <div className="space-y-4">
@@ -82,30 +83,30 @@ const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
         </div>
       )}
 
-      {(req as any).designStyleImageBase64 && (
+      {req.designStyleImageBase64 && (
         <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
-          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">النمط التصميمي المختار ({(req as any).designStyleName || sd.designStyle})</span>
-          <img src={(req as any).designStyleImageBase64} alt="Design Style" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">النمط التصميمي المختار ({req.designStyleName || sd.designStyle})</span>
+          <img src={req.designStyleImageBase64} alt="Design Style" className="w-32 h-32 object-cover rounded-lg border border-white/10" loading="lazy" />
         </div>
       )}
 
       {sd.favoriteColors === 'image_inspiration' && sd.inspirationImage && (
         <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
           <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">صورة الاستلهام اللوني</span>
-          <img src={sd.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+          <img src={sd.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" loading="lazy" />
         </div>
       )}
 
       {sd.additionalNotes && <InfoRow label="ملاحظات إضافية" value={sd.additionalNotes} />}
 
       {/* صور مرجعية */}
-      {((sd as typeof req.socialDetails).postsPatternImages?.length > 0 || (sd as typeof req.logoDetails).moodboard?.length > 0) && (
+      {(sd.postsPatternImages?.length > 0) && (
         <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
           <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">الصور المرجعية</span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {((sd as typeof req.socialDetails).postsPatternImages ?? (sd as typeof req.logoDetails).moodboard ?? []).map((src: string, i: number) => (
+            {sd.postsPatternImages.map((src: string, i: number) => (
               <img key={i} src={src} alt={`ref-${i}`}
-                className="w-full h-auto max-h-96 object-contain rounded-xl border border-white/10 bg-black/20 p-2" />
+                className="w-full h-auto max-h-96 object-contain rounded-xl border border-white/10 bg-black/20 p-2" loading="lazy" />
             ))}
           </div>
         </div>
@@ -123,6 +124,7 @@ const BriefRequests: React.FC = () => {
   const [filter, setFilter]           = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedReq, setSelectedReq] = useState<BriefRequestWithId | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -154,9 +156,9 @@ const BriefRequests: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
     try {
       await deleteBriefRequest(id);
+      setDeleteConfirmId(null);
       fetchRequests();
       if (selectedReq?.id === id) setSelectedReq(null);
     } catch (error) {
@@ -166,14 +168,15 @@ const BriefRequests: React.FC = () => {
   };
 
   // تطبيق الفلاتر
-  const filteredRequests = requests.filter(r => {
-    const statusOk   = filter === 'all'   || r.status === filter;
-    const catOk      = categoryFilter === 'all' || r.briefCategory === categoryFilter;
-    return statusOk && catOk;
-  });
+  const filteredRequests = useMemo(() => {
+    return requests.filter(r => {
+      const statusOk   = filter === 'all'   || r.status === filter;
+      const catOk      = categoryFilter === 'all' || r.briefCategory === categoryFilter;
+      return statusOk && catOk;
+    });
+  }, [requests, filter, categoryFilter]);
 
-  const isSocial = (req: BriefRequestWithId) =>
-    req.briefCategory === 'social_posts' || req.briefCategory === 'social_plans';
+
 
   const exportData = () => {
     // Placeholder export functionality
@@ -191,7 +194,7 @@ const BriefRequests: React.FC = () => {
   const exportBtn = (
     <button
       onClick={exportData}
-      className="bg-brand-gray text-white border border-white/10 px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/10 transition-colors font-semibold w-full sm:w-auto"
+      className="bg-brand-gray text-white border border-white/10 px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/10 transition-all hover:scale-[1.02] active:scale-95 focus:ring-2 focus:ring-brand-lime focus:outline-none font-semibold w-full sm:w-auto"
     >
       <Download size={20} />
       تصدير البيانات
@@ -299,19 +302,26 @@ const BriefRequests: React.FC = () => {
                         <div className="flex gap-2 justify-end">
                           <button
                             onClick={() => setSelectedReq(req)}
-                            className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition-colors"
+                            className="p-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition-all hover:scale-[1.02] active:scale-95 focus:ring-2 focus:ring-brand-lime focus:outline-none"
                             title="عرض التفاصيل"
                           >
                             <Eye size={18} />
                           </button>
-                          {req.status === 'archived' && (
+                          {req.status === 'archived' && deleteConfirmId !== req.id && (
                             <button
-                              onClick={() => handleDelete(req.id)}
-                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors"
+                              onClick={() => setDeleteConfirmId(req.id)}
+                              className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-all hover:scale-[1.02] active:scale-95 focus:ring-2 focus:ring-red-500 focus:outline-none"
                               title="حذف نهائي"
                             >
                               <Trash2 size={18} />
                             </button>
+                          )}
+                          {deleteConfirmId === req.id && (
+                            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-lg">
+                              <span className="text-red-400 text-xs font-bold">تأكيد الحذف؟</span>
+                              <button onClick={() => handleDelete(req.id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded">نعم</button>
+                              <button onClick={() => setDeleteConfirmId(null)} className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-2 py-1 rounded">إلغاء</button>
+                            </div>
                           )}
                         </div>
                       </td>
@@ -346,7 +356,7 @@ const BriefRequests: React.FC = () => {
                   })()}
                 </div>
                 <h3 className="text-xl font-bold text-white">
-                  {isSocial(selectedReq) ? selectedReq.companyName : (selectedReq.projectName || 'طلب تصميم')}
+                  {isSocialRequest(selectedReq) ? selectedReq.companyName : (selectedReq.projectName || 'طلب تصميم')}
                 </h3>
                 <p className="text-gray-400 text-sm mt-0.5">
                   {selectedReq.clientName}
@@ -383,14 +393,15 @@ const BriefRequests: React.FC = () => {
               </div>
 
               {/* ─── مسار السوشيال ميديا ─── */}
-              {isSocial(selectedReq) && (
+              {isSocialRequest(selectedReq) && (
                 <SocialDataSection req={selectedReq} />
               )}
 
               {/* ─── مسار الشعار / الهوية ─── */}
-              {!isSocial(selectedReq) && (
+              {!isSocialRequest(selectedReq) && (
                 (() => {
                   const logo = selectedReq.logoDetails;
+                  if (!logo) return null;
                   return (
                     <>
                       <div className="grid grid-cols-2 gap-3">
@@ -398,18 +409,18 @@ const BriefRequests: React.FC = () => {
                         <InfoRow label="الألوان المفضلة" value={logo.favoriteColors} />
                         <InfoRow label="الموعد النهائي"  value={logo.deadline} />
                         <InfoRow label="النمط التصميمي"  value={VISUAL_STYLE_LABELS[logo.designStyle] || logo.designStyle} />
-                        <InfoRow label="نوع الشعار"      value={(selectedReq as any).logoTypeName || logo.logoType} />
+                        <InfoRow label="نوع الشعار"      value={selectedReq.logoTypeName || logo.logoType} />
                       </div>
 
                       {/* صور الاستلهام وأنواع الشعار */}
                       <div className="flex flex-wrap gap-4 mt-4">
-                        {(selectedReq as any).logoTypeImagesBase64 && (selectedReq as any).logoTypeImagesBase64.length > 0 && (
+                        {selectedReq.logoTypeImagesBase64 && selectedReq.logoTypeImagesBase64.length > 0 && (
                           <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 w-fit">
                             <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">نوع الشعار المختار</span>
                             <div className="flex gap-2">
-                              {(selectedReq as any).logoTypeImagesBase64.map((img: string, i: number) => (
+                              {selectedReq.logoTypeImagesBase64.map((img: string, i: number) => (
                                 <div key={i} className="bg-white p-2 rounded-lg inline-block">
-                                  <img src={img} alt={`Logo Type ${i + 1}`} className="w-24 h-24 object-contain" />
+                                  <img src={img} alt={`Logo Type ${i + 1}`} className="w-24 h-24 object-contain" loading="lazy" />
                                 </div>
                               ))}
                             </div>
@@ -418,7 +429,7 @@ const BriefRequests: React.FC = () => {
                         {logo.favoriteColors === 'image_inspiration' && logo.inspirationImage && (
                           <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 w-fit">
                             <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">صورة الاستلهام اللوني</span>
-                            <img src={logo.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" />
+                            <img src={logo.inspirationImage} alt="Inspiration" className="w-32 h-32 object-cover rounded-lg border border-white/10" loading="lazy" />
                           </div>
                         )}
                       </div>

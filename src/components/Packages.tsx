@@ -46,7 +46,7 @@ const LogoCard: React.FC<{ pkg: any, onSelect: (pkg: SelectedPackage) => void }>
       <div className="p-6 flex flex-col flex-1">
         {/* الاسم والسعر */}
         <div className="mb-4">
-          <p className="text-xs font-bold tracking-widest text-brand-lime/70 mb-1 uppercase">{pkg.nameEn}</p>
+          <p className="text-xs font-bold tracking-widest text-brand-lime/70 mb-1 uppercase select-auto">{pkg.nameEn}</p>
           <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-2">{pkg.name}</h3>
           <p className="italic text-zinc-400 text-xs mb-4 leading-relaxed">{pkg.target}</p>
           <div className="flex items-baseline gap-2">
@@ -145,7 +145,7 @@ const BrandingTab: React.FC<{ onSelect: (pkg: SelectedPackage) => void }> = ({ o
         <div className="p-8 md:p-10">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
             <div>
-              <p className="text-brand-lime/70 text-xs font-bold tracking-widest uppercase mb-1">FULL BRAND IDENTITY</p>
+              <p className="text-brand-lime/70 text-xs font-bold tracking-widest uppercase mb-1 select-auto">FULL BRAND IDENTITY</p>
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">{b.name}</h3>
               {b.target && <p className="italic text-zinc-400 text-sm mb-2">{b.target}</p>}
             </div>
@@ -231,7 +231,7 @@ const SocialPlanCard: React.FC<{ plan: any, onSelect: (pkg: SelectedPackage) => 
         </div>
       )}
       <div className="p-6 flex flex-col flex-1">
-        <p className="text-xs text-brand-lime/70 font-bold tracking-widest uppercase mb-1">{plan.nameEn}</p>
+        <p className="text-xs text-brand-lime/70 font-bold tracking-widest uppercase mb-1 select-auto">{plan.nameEn}</p>
         <h4 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-2">{plan.name}</h4>
         
         <p className="text-3xl font-extrabold text-white mt-1 mb-1">{formatPrice(plan.price)}</p>

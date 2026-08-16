@@ -21,7 +21,6 @@ export const useFormAutosave = <T,>(key: string, data: T, delay: number = 1000) 
             try {
                 localStorage.setItem(key, JSON.stringify(data));
                 setLastSaved(new Date());
-                console.log(`✅ Form autosaved to ${key}`);
             } catch (error) {
                 console.error('Failed to autosave form data:', error);
             }
@@ -62,7 +61,6 @@ export const loadSavedFormData = <T,>(key: string): T | null => {
 export const clearSavedFormData = (key: string) => {
     try {
         localStorage.removeItem(key);
-        console.log(`🗑️ Cleared saved form data from ${key}`);
     } catch (error) {
         console.error('Failed to clear saved form data:', error);
     }

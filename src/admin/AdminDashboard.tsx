@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Briefcase, Package, FileText, Inbox, LogOut, ExternalLink, Menu, X, Phone, TrendingUp, Clock, CheckCircle } from 'lucide-react';
-import { getPortfolioProjects, getBriefRequests } from '../lib/firestore';
+import { Home, Package, FileText, Inbox, LogOut, ExternalLink, Menu, X, Phone, FolderDown } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
 
   const handleSignOut = async () => {
     await signOut();
@@ -17,10 +15,10 @@ const AdminDashboard: React.FC = () => {
 
   const navItems = [
     { to: '/admin', icon: Home, label: 'الرئيسية', end: true },
-    { to: '/admin/portfolio', icon: Briefcase, label: 'معرض الأعمال' },
     { to: '/admin/packages', icon: Package, label: 'الباقات والأسعار' },
     { to: '/admin/resume', icon: FileText, label: 'السيرة الذاتية' },
     { to: '/admin/contacts', icon: Phone, label: 'معلومات التواصل' },
+    { to: '/admin/resources', icon: FolderDown, label: 'مكتبة المصادر' },
     { to: '/admin/requests', icon: Inbox, label: 'الطلبات الواردة' },
   ];
 
@@ -94,8 +92,6 @@ const AdminDashboard: React.FC = () => {
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </header>
-
-
 
         <main className="flex-1">
           <div className="w-full h-full">

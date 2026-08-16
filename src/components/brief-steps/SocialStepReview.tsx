@@ -45,7 +45,6 @@ const Row = ({ label, value }: { label: string; value?: string | string[] | null
 
 
 const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedPackage, removeUploadedFile }) => {
-  if (import.meta.env.DEV) console.log('[DEV] SocialStepReview formData:', formData);
   const sd = formData.socialDetails;
 
   // Fallbacks

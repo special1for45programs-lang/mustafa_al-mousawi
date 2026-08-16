@@ -41,8 +41,6 @@ const Row = ({ label, value }: { label: string; value?: string | string[] | null
 };
 
 const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, removeUploadedFile }, ref) => {
-    if (import.meta.env.DEV) console.log('[DEV] StepReview formData:', formData);
-
 
     const logo = formData.logoDetails;
     
@@ -126,8 +124,8 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                                                     {typeObj.desc}
                                                 </div>
                                             </div>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {typeObj.images.slice(0, 3).map((imgUrl, i) => (
+                                            <div dir="ltr" className="grid grid-cols-4 gap-2">
+                                                {typeObj.images.map((imgUrl, i) => (
                                                     <div key={i} className="aspect-square bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center p-2">
                                                         <img src={imgUrl} alt={`${typeObj.label} ${i + 1}`} className="w-full h-full object-contain" />
                                                     </div>
