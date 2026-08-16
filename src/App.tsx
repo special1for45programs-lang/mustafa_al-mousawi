@@ -63,20 +63,20 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Toaster position="top-center" />
-      <div className="min-h-screen bg-brand-black flex flex-col relative overflow-x-hidden max-md:pb-24">
+      <div className="min-h-screen bg-brand-black flex flex-col relative overflow-x-hidden max-lg:pb-24">
 
         {/* Sidebar - Desktop Only (Eager) */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <GlassSidebar />
         </div>
 
         {/* Fixed Logo - Desktop Only (Eager) */}
-        <div className="hidden md:block">
+        <div className="hidden lg:block">
           <FixedLogo />
         </div>
 
         {/* Navbar - Mobile Only (Eager) */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <Navbar />
         </div>
 
@@ -126,7 +126,7 @@ const App: React.FC = () => {
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className={`fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-30 hidden sm:flex items-center justify-center p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 ${
+          className={`fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-30 hidden lg:flex items-center justify-center p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 ${
             showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
           }`}
         >

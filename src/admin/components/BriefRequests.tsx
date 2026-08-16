@@ -1,8 +1,29 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { getBriefRequests, updateBriefRequestStatus, deleteBriefRequest, BriefRequestWithId } from '../../lib/firestore';
+import { getBriefRequests, updateBriefRequestStatus, deleteBriefRequest, updateBriefRequestTerms, BriefRequestWithId } from '../../lib/firestore';
 import { isSocialRequest, isLogoRequest } from '../../types';
 import { Eye, X, Instagram, TrendingUp, Star, Layers, Download, Trash2 } from 'lucide-react';
 import AdminPageWrapper from './AdminPageWrapper';
+import { PACKAGES_DATA } from '../../constants';
+
+const getDefaultTermsForPackage = (req: BriefRequestWithId) => {
+  const isSocial = isSocialRequest(req);
+  const pkgNameEn = (req.selectedPackageName || '').toLowerCase();
+  
+  if (isSocial) {
+    return PACKAGES_DATA.dynamicTerms?.social_default || [];
+  } else {
+    if (pkgNameEn.includes('الاقتصادية') || pkgNameEn.includes('lite')) {
+      return PACKAGES_DATA.dynamicTerms?.logo_lite || [];
+    } else if (pkgNameEn.includes('النمو') || pkgNameEn.includes('startup')) {
+      return PACKAGES_DATA.dynamicTerms?.logo_startup || [];
+    } else if (pkgNameEn.includes('المتميزة') || pkgNameEn.includes('premium')) {
+       return PACKAGES_DATA.dynamicTerms?.logo_premium || [];
+    } else if (pkgNameEn.includes('النخبة') || pkgNameEn.includes('elite')) {
+       return PACKAGES_DATA.dynamicTerms?.logo_elite || [];
+    }
+    return PACKAGES_DATA.terms || [];
+  }
+};
 
 // ==========================================
 // ثوابت الحالات
@@ -125,6 +146,33 @@ const BriefRequests: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [selectedReq, setSelectedReq] = useState<BriefRequestWithId | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [editingTerms, setEditingTerms] = useState(false);
+  const [customTermsDraft, setCustomTermsDraft] = useState<{icon: string, text: string}[]>([]);
+
+  useEffect(() => {
+    if (selectedReq) {
+      setEditingTerms(false);
+      if (selectedReq.customTerms && selectedReq.customTerms.length > 0) {
+        setCustomTermsDraft(selectedReq.customTerms);
+      } else {
+        setCustomTermsDraft(getDefaultTermsForPackage(selectedReq));
+      }
+    }
+  }, [selectedReq?.id]);
+
+  const handleSaveTerms = async () => {
+    if (!selectedReq) return;
+    try {
+      await updateBriefRequestTerms(selectedReq.id, customTermsDraft);
+      const updatedReq = { ...selectedReq, customTerms: customTermsDraft };
+      setSelectedReq(updatedReq);
+      setRequests(requests.map(r => r.id === updatedReq.id ? updatedReq : r));
+      setEditingTerms(false);
+    } catch (error) {
+      console.error('Error saving terms', error);
+      alert('فشل حفظ الشروط.');
+    }
+  };
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -307,7 +355,7 @@ const BriefRequests: React.FC = () => {
                           >
                             <Eye size={18} />
                           </button>
-                          {req.status === 'archived' && deleteConfirmId !== req.id && (
+                          {deleteConfirmId !== req.id && (
                             <button
                               onClick={() => setDeleteConfirmId(req.id)}
                               className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-all hover:scale-[1.02] active:scale-95 focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -466,6 +514,93 @@ const BriefRequests: React.FC = () => {
                 })()
               )}
             </div>
+
+            {/* ==========================================
+                قسم شروط وترتيبات العمل المخصصة
+            ========================================== */}
+            <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-white font-bold text-lg flex items-center gap-2">
+                  <span className="w-1.5 h-6 bg-brand-lime rounded-full"></span>
+                  شروط وترتيبات العمل
+                </h4>
+                {!editingTerms ? (
+                  <button onClick={() => setEditingTerms(true)} className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors font-bold">
+                    تعديل الشروط المخصصة
+                  </button>
+                ) : (
+                  <div className="flex gap-2">
+                    <button onClick={handleSaveTerms} className="text-xs bg-brand-lime hover:bg-lime-400 text-black px-3 py-1.5 rounded-lg transition-colors font-bold">
+                      حفظ التغييرات
+                    </button>
+                    <button onClick={() => {
+                      setEditingTerms(false);
+                      setCustomTermsDraft(selectedReq.customTerms?.length ? selectedReq.customTerms : getDefaultTermsForPackage(selectedReq));
+                    }} className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-1.5 rounded-lg transition-colors font-bold">
+                      إلغاء
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-brand-black/50 p-4 rounded-xl border border-white/5 space-y-3">
+                {(!editingTerms ? (selectedReq.customTerms?.length ? selectedReq.customTerms : getDefaultTermsForPackage(selectedReq)) : customTermsDraft).map((term, index) => (
+                  <div key={index} className="flex items-start gap-3 bg-brand-dark p-3 rounded-lg border border-white/5">
+                    {!editingTerms ? (
+                      <>
+                        <span className="text-xl">{term.icon}</span>
+                        <span className="text-sm text-gray-300 font-medium pt-0.5 leading-relaxed">{term.text}</span>
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="text"
+                          value={term.icon}
+                          onChange={(e) => {
+                            const newDraft = customTermsDraft.map((item, i) => 
+                              i === index ? { ...item, icon: e.target.value } : item
+                            );
+                            setCustomTermsDraft(newDraft);
+                          }}
+                          className="w-12 bg-black border border-white/10 rounded-md px-2 py-1.5 text-center text-white text-sm focus:outline-none focus:border-brand-lime"
+                          placeholder="Icon"
+                        />
+                        <textarea
+                          value={term.text}
+                          onChange={(e) => {
+                            const newDraft = customTermsDraft.map((item, i) => 
+                              i === index ? { ...item, text: e.target.value } : item
+                            );
+                            setCustomTermsDraft(newDraft);
+                          }}
+                          className="flex-1 bg-black border border-white/10 rounded-md px-3 py-1.5 text-white text-sm focus:outline-none focus:border-brand-lime min-h-[60px]"
+                          placeholder="نص الشرط..."
+                        />
+                        <button
+                          onClick={() => {
+                            const newDraft = customTermsDraft.filter((_, i) => i !== index);
+                            setCustomTermsDraft(newDraft);
+                          }}
+                          className="text-red-500 hover:text-red-400 p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
+
+                {editingTerms && (
+                  <button
+                    onClick={() => setCustomTermsDraft([...customTermsDraft, { icon: '✨', text: '' }])}
+                    className="w-full mt-2 py-2 border-2 border-dashed border-white/10 hover:border-brand-lime/50 rounded-lg text-gray-400 hover:text-brand-lime transition-colors text-sm font-bold flex items-center justify-center gap-2"
+                  >
+                    <span>+</span> إضافة شرط جديد
+                  </button>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}

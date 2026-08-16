@@ -77,6 +77,7 @@ export interface BriefFormData extends BaseBriefData {
   logoTypeName?: string;
   logoTypeDesc?: string;
   telegramFileIds?: string[];
+  customTerms?: PackageTerm[];
 }
 
 export function isSocialRequest(req: BriefFormData): boolean {
@@ -161,6 +162,7 @@ export interface PackagesData {
     monthlyPlans: SocialPlan[];
   };
   terms: PackageTerm[];
+  dynamicTerms?: Record<string, PackageTerm[]>;
 }
 
 // ==========================================

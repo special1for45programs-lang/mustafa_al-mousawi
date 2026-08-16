@@ -68,6 +68,11 @@ export const updateBriefRequestStatus = async (id: string, status: 'new' | 'in_p
   await updateDoc(docRef, { status });
 };
 
+export const updateBriefRequestTerms = async (id: string, customTerms: { icon: string; text: string; }[]): Promise<void> => {
+  const docRef = doc(db, 'briefRequests', id);
+  await updateDoc(docRef, { customTerms });
+};
+
 export const deleteBriefRequest = async (id: string): Promise<void> => {
   const docRef = doc(db, 'briefRequests', id);
   await deleteDoc(docRef);

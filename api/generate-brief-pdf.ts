@@ -62,6 +62,7 @@ interface BriefFormData {
   briefCategory?: 'logo' | 'branding' | 'social_posts' | 'social_plans';
   selectedPackageName?: string;
   selectedPackagePrice?: number;
+  customTerms?: { icon: string; text: string; }[];
 }
 
 // Application labels mapping
@@ -141,6 +142,81 @@ function buildTelegramCaption(formData: BriefFormData, briefId?: string, baseUrl
   }
 
   return base.filter(Boolean).join('\n');
+}
+
+// ==========================================
+// Get Dynamic Terms for PDF based on Package
+// ==========================================
+function getPackageTerms(formData: BriefFormData) {
+  if (formData.customTerms && formData.customTerms.length > 0) {
+    return formData.customTerms;
+  }
+
+  const isSocial = formData.briefType === 'social' || formData.briefCategory === 'social_posts' || formData.briefCategory === 'social_plans';
+  const pkgName = formData.selectedPackageName || '';
+  const pkgNameEn = pkgName.toLowerCase();
+  
+  if (isSocial) {
+    if (pkgNameEn.includes('حضور') || pkgNameEn.includes('presence')) {
+      return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة الباقة الشهرية كاملة (100%) مقدماً.' },
+        { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديلين (2) لكل منشور كحد أقصى.' },
+        { icon: '📁', text: 'الملفات المستلمة: يتم تسليم التصاميم بصيغة JPEG أو PNG بجودة عالية وجاهزة للنشر.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: لا يمكن استرداد المبلغ بعد البدء في التنفيذ أو جدولة المنشورات.' },
+      ];
+    }
+    // Default social terms
+    return [
+      { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة باقات السوشيال ميديا كاملة (100%) مقدماً لتأكيد الحجز.' },
+      { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديلين (2) لكل منشور كحد أقصى ضمن الباقة.' },
+      { icon: '📁', text: 'الملفات المستلمة: يتم تسليم التصاميم بصيغة PNG أو JPEG بجودة عالية تناسب المنصات المختارة.' },
+      { icon: '🚫', text: 'سياسة الإلغاء: المبلغ غير مسترد بعد البدء بالعمل أو بعد النشر.' },
+    ];
+  } else {
+    if (pkgNameEn.includes('الاقتصادية') || pkgNameEn.includes('lite')) {
+      return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع المبلغ كاملاً (100%) مقدماً قبل البدء بالعمل لباقة الاقتصادية.' },
+        { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديل واحد (1) مجاني. التعديلات الإضافية تكون مأجورة.' },
+        { icon: '📁', text: 'الملفات المستلمة: يتم تسليم الشعار بصيغتي PNG شفافة و JPEG عالية الدقة فقط.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: المبلغ غير مسترد في حال الإلغاء بعد بدء العمل.' },
+      ];
+    } else if (pkgNameEn.includes('النمو') || pkgNameEn.includes('startup')) {
+      return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
+        { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل جولتين (2) من التعديلات المجانية.' },
+        { icon: '📁', text: 'الملفات المستلمة: تسليم الملفات الأساسية (SVG, PNG, PDF).' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+      ];
+    } else if (pkgNameEn.includes('المتميزة') || pkgNameEn.includes('premium')) {
+       return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
+        { icon: '🔄', text: 'سياسة التعديلات: مرونة في التعديلات تصل إلى 5 جولات.' },
+        { icon: '📁', text: 'الملفات المستلمة: تسليم الملفات المصدرية المفتوحة بالكامل (AI, SVG, PDF, PNG).' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+      ];
+    } else if (pkgNameEn.includes('النخبة') || pkgNameEn.includes('elite')) {
+       return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
+        { icon: '🔄', text: 'سياسة التعديلات: تعديلات غير محدودة حتى الوصول إلى الرضا التام.' },
+        { icon: '📁', text: 'الملفات المستلمة: كافة الصيغ المصدرية والشفافة مع دليل ألوان وخطوط.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+      ];
+    } else if (formData.briefCategory === 'branding') {
+      return [
+        { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
+        { icon: '🔄', text: 'سياسة التعديلات: مرونة عالية في التعديلات خلال فترة بناء الهوية البصرية.' },
+        { icon: '📁', text: 'الملفات المستلمة: تسليم كتيب الهوية (Brand Guidelines) بصيغة PDF مع جميع الملفات المصدرية.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+      ];
+    }
+    // Default logo terms
+    return [
+      { icon: '💳', text: 'نظام الدفع: يتم دفع 50% من قيمة المشروع كعربون قبل البدء، والباقي عند التسليم النهائي.' },
+      { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل 3 جولات من التعديلات المجانية.' },
+      { icon: '📁', text: 'الملفات المستلمة: يتم تسليم الأعمال بالصيغ الاحترافية (AI, PDF, PNG, JPEG) حسب الباقة.' },
+      { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال قرر العميل إلغاء المشروع بعد بدء العمل.' },
+    ];
+  }
 }
 
 // Generate HTML template for PDF
@@ -694,6 +770,22 @@ function generatePdfHTML(formData: BriefFormData): string {
         <div class="notes-box">${logo.notes}</div>
       </div>
       ` : ''}
+
+      <!-- شروط وترتيبات العمل -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-indicator" style="background: #111827;"></div>
+          <div class="section-title">شروط وترتيبات العمل</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${getPackageTerms(formData).map(term => `
+            <div style="display: flex; align-items: flex-start; gap: 12px; background: #f9fafb; padding: 12px 16px; border-radius: 12px; border: 1px solid #f3f4f6;">
+              <div style="font-size: 18px;">${term.icon}</div>
+              <div style="font-size: 13px; font-weight: 600; color: #374151; padding-top: 2px;">${term.text}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
       
     </div>
     

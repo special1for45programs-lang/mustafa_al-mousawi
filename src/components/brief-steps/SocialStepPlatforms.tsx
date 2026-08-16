@@ -1,16 +1,16 @@
 import React from 'react';
 import { SocialDetails } from '../../types';
 import {
-  FaInstagram,
-  FaFacebook,
-  FaTiktok,
-  FaXTwitter,
-  FaSnapchat,
-  FaLinkedin,
-  FaYoutube,
-  FaTelegram
-} from 'react-icons/fa6';
-import { Globe } from 'lucide-react';
+  Instagram,
+  Facebook,
+  Music, // TikTok
+  Twitter,
+  Ghost, // Snapchat
+  Linkedin,
+  Youtube,
+  Send, // Telegram
+  Globe
+} from 'lucide-react';
 
 interface SocialStepPlatformsProps {
   socialData: SocialDetails;
@@ -21,14 +21,14 @@ interface SocialStepPlatformsProps {
 }
 
 const PLATFORMS = [
-  { id: 'instagram', label: 'Instagram / إنستغرام', icon: FaInstagram, activeClass: 'border-[#E4405F] bg-[#E4405F]/10 text-[#E4405F]' },
-  { id: 'facebook',  label: 'Facebook / فيسبوك',  icon: FaFacebook, activeClass: 'border-[#1877F2] bg-[#1877F2]/10 text-[#1877F2]' },
-  { id: 'tiktok',    label: 'TikTok / تيك توك',    icon: FaTiktok, activeClass: 'border-gray-900 bg-gray-900/10 text-gray-900' },
-  { id: 'twitter',   label: 'X (تويتر)',         icon: FaXTwitter, activeClass: 'border-gray-900 bg-gray-900/10 text-gray-900' },
-  { id: 'snapchat',  label: 'Snapchat / سناب شات',  icon: FaSnapchat, activeClass: 'border-[#D97706] bg-[#D97706]/10 text-[#D97706]' },
-  { id: 'linkedin',  label: 'LinkedIn / لينكدإن',  icon: FaLinkedin, activeClass: 'border-[#0A66C2] bg-[#0A66C2]/10 text-[#0A66C2]' },
-  { id: 'youtube',   label: 'YouTube / يوتيوب',   icon: FaYoutube, activeClass: 'border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000]' },
-  { id: 'telegram',  label: 'Telegram / تيليجرام',  icon: FaTelegram, activeClass: 'border-[#26A5E4] bg-[#26A5E4]/10 text-[#26A5E4]' },
+  { id: 'instagram', label: 'Instagram / إنستغرام', icon: Instagram, activeClass: 'border-[#E4405F] bg-[#E4405F]/10 text-[#E4405F]' },
+  { id: 'facebook',  label: 'Facebook / فيسبوك',  icon: Facebook, activeClass: 'border-[#1877F2] bg-[#1877F2]/10 text-[#1877F2]' },
+  { id: 'tiktok',    label: 'TikTok / تيك توك',    icon: Music, activeClass: 'border-gray-900 bg-gray-900/10 text-gray-900' },
+  { id: 'twitter',   label: 'X (تويتر)',         icon: Twitter, activeClass: 'border-gray-900 bg-gray-900/10 text-gray-900' },
+  { id: 'snapchat',  label: 'Snapchat / سناب شات',  icon: Ghost, activeClass: 'border-[#D97706] bg-[#D97706]/10 text-[#D97706]' },
+  { id: 'linkedin',  label: 'LinkedIn / لينكدإن',  icon: Linkedin, activeClass: 'border-[#0A66C2] bg-[#0A66C2]/10 text-[#0A66C2]' },
+  { id: 'youtube',   label: 'YouTube / يوتيوب',   icon: Youtube, activeClass: 'border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000]' },
+  { id: 'telegram',  label: 'Telegram / تيليجرام',  icon: Send, activeClass: 'border-[#26A5E4] bg-[#26A5E4]/10 text-[#26A5E4]' },
 ];
 
 const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({

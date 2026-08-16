@@ -119,6 +119,9 @@ const Portfolio: React.FC = () => {
                   alt="Instagram Post" 
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
                 <div className="absolute inset-0 bg-brand-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
                   <div className="transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 flex flex-col items-center gap-4">

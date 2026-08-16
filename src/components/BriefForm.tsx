@@ -106,6 +106,11 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
   const [botTrap, setBotTrap] = useState("");
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
   const formRef       = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
 
@@ -352,11 +357,22 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         throw fetchError; // Rethrow to be caught by the outer catch
       }
 
-      const result = JSON.parse(rawText);
-
       if (!response.ok) {
-        throw new Error(result.details || result.error || `Server ${response.status}`);
+        try {
+          const errRes = JSON.parse(rawText);
+          throw new Error(errRes.details || errRes.error || `Server ${response.status}`);
+        } catch {
+          throw new Error(`Server Error ${response.status}: ${response.statusText}`);
+        }
       }
+
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch {
+        throw new Error('Failed to parse server response.');
+      }
+
       if (!result.pdf) {
         throw new Error('no_pdf_data');
       }
