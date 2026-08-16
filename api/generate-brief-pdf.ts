@@ -669,13 +669,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
           <div class="section-indicator"></div>
           <div class="section-title">المواصفات والجدول</div>
         </div>
-        <div class="grid">
-          <div class="field">
-            <div class="field-label">نوع الشعار</div>
-            <div class="field-value">${logoTypeLabels[logo.logoType] || logo.logoType || '-'}</div>
-          </div>
-        </div>
-        <div class="field" style="margin-top: 15px;">
+        <div class="field">
           <div class="field-label">التطبيقات المطلوبة</div>
           <div class="tags">
             ${selectedApps.length > 0
@@ -726,7 +720,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             <span>نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</span>
             ${(formData as any).logoTypeDesc ? `<span style="font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 12px; font-weight: normal; color: #666;">${(formData as any).logoTypeDesc}</span>` : ''}
           </div>
-          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: center;">
+          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: flex-start; direction: ltr;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
               <img src="${resolveImgSrc(img)}" style="width: 120px; height: 120px; object-fit: contain !important; background-color: #f8f9fa; border-radius: 8px; padding: 5px; border: 1px solid #eee;" />
             `).join('')}

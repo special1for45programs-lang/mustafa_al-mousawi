@@ -299,7 +299,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           if (activeLogoType) {
             const typeObj = LOGO_TYPE_EXAMPLES.find(t => t.id === activeLogoType);
             if (typeObj && typeObj.images && typeObj.images.length > 0) {
-              finalFormData.logoTypeImagesBase64 = typeObj.images.slice(0, 3);
+              finalFormData.logoTypeImagesBase64 = typeObj.images.slice(0, 4);
               finalFormData.logoTypeName = typeObj.label;
               finalFormData.logoTypeDesc = typeObj.desc;
             }
