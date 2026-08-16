@@ -491,10 +491,11 @@ function generatePdfHTML(formData: BriefFormData): string {
     
     .gallery-image img {
       width: 100%;
-      height: 100%;
       max-height: 250px;
-      display: block;
       object-fit: contain;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto;
     }
     
     /* Footer */
@@ -717,8 +718,8 @@ function generatePdfHTML(formData: BriefFormData): string {
           </div>
           <div class="images-gallery" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; gap: 10px;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
-              <div class="gallery-image" style="padding: 10px; background: #fff; border: 1px solid #eee; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;">
-                <img src="${img}" alt="Logo Type" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              <div class="gallery-image">
+                <img src="${img}" alt="Logo Type">
               </div>
             `).join('')}
           </div>
