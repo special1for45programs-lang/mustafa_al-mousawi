@@ -15,6 +15,8 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 // Type for social media form data
 export interface SocialDetails {
   favoriteColors: string;
+  inspirationImage?: string;
+  inspirationImages?: string[];
   designStyle: string;
   postsPatternImages: string[];
   platforms: string[];
@@ -27,6 +29,7 @@ export interface SocialDetails {
 
 export interface LogoDetails {
   favoriteColors: string;
+  inspirationImage?: string;
   designStyle: string;
   logoType: 'text' | 'symbolic' | 'innovative' | 'double' | 'arabic' | '';
   moodboard: string[];
@@ -702,10 +705,10 @@ function generatePdfHTML(formData: BriefFormData): string {
             ${isSocial
               ? socialInspirationImages.map((src: string, i: number) => `
                 <div class="gallery-image" style="position: relative; background: #f9fafb; padding: 12px; border: 1px solid #eee; border-radius: 8px;">
-                  <img src="${src}" alt="مرجع ${i + 1}" style="width:100%; height:auto; max-height: 400px; object-fit:contain; border-radius: 4px;">
+                  <img src="${src}" alt="مرجع ${i + 1}" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
                   ${i === 0 ? `<span style="position:absolute;top:8px;right:8px;background:#d4ff00;color:#000;font-size:10px;font-weight:700;padding:4px 8px;border-radius:999px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);">رئيسية</span>` : ''}
                 </div>`).join('')
-              : `<div class="gallery-image"><img src="${logo.inspirationImage}" alt="Inspiration"></div>`}
+              : `<div class="gallery-image"><img src="${logo.inspirationImage}" alt="Inspiration" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;"></div>`}
           </div>
         </div>
         ` : ''}
@@ -716,11 +719,9 @@ function generatePdfHTML(formData: BriefFormData): string {
             <span>نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</span>
             ${(formData as any).logoTypeDesc ? `<span style="font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 12px; font-weight: normal; color: #666;">${(formData as any).logoTypeDesc}</span>` : ''}
           </div>
-          <div class="images-gallery" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; gap: 10px;">
+          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: center;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
-              <div class="gallery-image">
-                <img src="${img}" alt="Logo Type">
-              </div>
+              <img src="${img}" style="width: 120px; height: 120px; object-fit: contain !important; background-color: #f8f9fa; border-radius: 8px; padding: 5px; border: 1px solid #eee;" />
             `).join('')}
           </div>
         </div>
@@ -732,7 +733,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           ${(formData as any).designStyleImageBase64 ? `
           <div class="images-gallery" style="display: grid; grid-template-columns: 180px; margin-top: 10px; gap: 10px;">
             <div class="gallery-image">
-              <img src="${(formData as any).designStyleImageBase64}" alt="Design Style">
+              <img src="${(formData as any).designStyleImageBase64}" alt="Design Style" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
             </div>
           </div>
           ` : ''}
@@ -745,7 +746,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           <div class="images-gallery">
             ${logo.moodboard.map((img: string, index: number) => `
               <div class="gallery-image">
-                <img src="${img}" alt="مرفق ${index + 1}">
+                <img src="${img}" alt="مرفق ${index + 1}" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
               </div>
             `).join('')}
           </div>
@@ -758,7 +759,7 @@ function generatePdfHTML(formData: BriefFormData): string {
           <div class="images-gallery">
             ${sd.postsPatternImages.map((img: string, index: number) => `
               <div class="gallery-image">
-                <img src="${img}" alt="نمط ${index + 1}">
+                <img src="${img}" alt="نمط ${index + 1}" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
               </div>
             `).join('')}
           </div>
@@ -1137,7 +1138,7 @@ function validatePayload(formData: unknown): ValidationResult {
 
   const result = ApiBriefSchema.safeParse(formData);
   if (!result.success) {
-    const errorMsg = result.error.errors.map(e => e.message).join(', ');
+    const errorMsg = result.error.issues.map(e => e.message).join(', ');
     return { valid: false, error: errorMsg };
   }
 
