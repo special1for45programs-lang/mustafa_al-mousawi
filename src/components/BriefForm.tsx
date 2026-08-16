@@ -463,17 +463,17 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
 
 
 
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 lg:px-8 relative z-10 py-0 sm:py-8">
 
         {/* العنوان */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 px-4 sm:px-0 mt-8 sm:mt-0">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">ابدأ مشروعك</h2>
           <p className="text-gray-400 text-lg">دعنا نحول رؤيتك إلى واقع ملموس</p>
         </div>
 
         {/* بانر الباقة المختارة أو Placeholder */}
         {selectedPackage ? (
-          <div className="max-w-2xl mx-auto mb-10 bg-brand-lime/10 border border-brand-lime/40 rounded-2xl p-5 flex items-center justify-between gap-4">
+          <div className="max-w-2xl mx-auto mb-10 bg-brand-lime/10 border border-brand-lime/40 rounded-2xl p-5 flex items-center justify-between gap-4 mx-4 sm:mx-auto">
             <div className="flex items-center gap-3">
               <div className="bg-brand-lime/20 p-2.5 rounded-lg">
                 <Package size={22} className="text-brand-lime" />
@@ -496,7 +496,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
             </button>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto mb-10 bg-brand-dark border border-white/10 rounded-2xl p-6 text-center">
+          <div className="max-w-2xl mx-auto mb-10 bg-brand-dark border border-white/10 rounded-2xl p-6 text-center mx-4 sm:mx-auto">
             <Package size={32} className="text-gray-600 mx-auto mb-3" />
             <p className="text-gray-400 font-bold mb-1">لم تختر باقة بعد</p>
             <p className="text-gray-600 text-sm mb-4">يرجى اختيار الباقة المناسبة أولاً للحصول على استمارة مخصصة لاحتياجاتك.</p>
@@ -510,7 +510,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           </div>
         )}
         {selectedPackage && (
-          <div ref={formRef} className="flex justify-between items-center max-w-2xl mx-auto mb-8 sm:mb-16 relative animate-fadeIn px-2 sm:px-0">
+          <div ref={formRef} className="flex justify-between items-center max-w-2xl mx-auto mb-8 sm:mb-16 relative animate-fadeIn px-6 sm:px-0">
             <div className="absolute top-1/2 left-0 w-full h-0.5 sm:h-1 bg-brand-gray -z-10 rounded-full" />
             <div
               className="absolute top-1/2 right-0 h-0.5 sm:h-1 bg-brand-lime -z-10 rounded-full transition-all duration-500"
@@ -539,7 +539,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
 
         {/* نموذج الإدخال */}
         {selectedPackage && (
-        <div className="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-2xl p-3.5 py-5 sm:p-8 md:p-12 relative z-20 w-full max-w-5xl mx-auto animate-fadeIn min-h-[650px] overflow-x-hidden">
+        <div className="bg-white rounded-none sm:rounded-3xl shadow-2xl px-4 pt-6 pb-28 sm:p-8 sm:px-10 relative z-20 w-full max-w-full sm:max-w-5xl mx-0 sm:mx-auto animate-fadeIn min-h-[650px] overflow-x-hidden">
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8" autoComplete="on" noValidate>
             <input type="text" name="contact_me_by_fax_only" value={botTrap} onChange={(e) => setBotTrap(e.target.value)} style={{ display: 'none', opacity: 0, position: 'absolute', top: '-9999px', left: '-9999px' }} tabIndex={-1} autoComplete="off" />
 

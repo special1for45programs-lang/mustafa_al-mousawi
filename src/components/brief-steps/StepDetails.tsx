@@ -106,7 +106,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                                         <div
                                             key={option.key}
                                             onClick={() => !isLocked && handleCheckboxChange('applications', option.key)}
-                                            className={`relative py-2 px-2.5 sm:p-3 rounded-xl border-2 transition-all duration-300 bg-white 
+                                            className={`relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 bg-white 
                                                 ${isSelected ? 'border-brand-lime bg-brand-lime/5 cursor-pointer hover:-translate-y-1 hover:shadow-xl' : 
                                                   isLocked ? 'border-gray-100 opacity-50 cursor-not-allowed' : 'border-gray-200 hover:border-gray-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl'}`}
                                         >
@@ -142,7 +142,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         value={logoDetails.otherApplication}
                         onChange={handleChange}
                         placeholder="أضف تطبيقات أخرى مفصولة بفاصلة..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
                     />
                 </div>
 
@@ -157,7 +157,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         name="startDate"
                         value={logoDetails.startDate}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
                     />
                 </div>
                 <div className="space-y-2">
@@ -167,7 +167,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         name="deadline"
                         value={logoDetails.deadline}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
                     />
                 </div>
             </div>
@@ -178,7 +178,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                     value={logoDetails.notes}
                     onChange={handleChange}
                     placeholder="أي تفاصيل أخرى تود إضافتها..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-24 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400 resize-none"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-24 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none"
                 ></textarea>
             </div>
 

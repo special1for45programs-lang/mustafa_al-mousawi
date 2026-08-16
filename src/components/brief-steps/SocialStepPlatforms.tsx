@@ -47,7 +47,7 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
     <div className="space-y-8 animate-fadeIn">
 
       {/* اسم الشركة / الحساب */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-800">
             اسم الشركة / الحساب <span className="text-red-500">*</span>
@@ -57,7 +57,7 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
             value={companyName}
             onChange={e => updateFormData({ companyName: e.target.value })}
             placeholder="الاسم كما يظهر في حساباتك"
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
             required
           />
         </div>
@@ -68,7 +68,7 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
             value={projectType}
             onChange={e => updateFormData({ projectType: e.target.value })}
             placeholder="مثال: مطعم، عيادة، متجر إلكتروني..."
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
           />
         </div>
       </div>
@@ -82,7 +82,7 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
           value={socialData.productsServices}
           onChange={e => updateSocialData({ productsServices: e.target.value })}
           placeholder="صف بإيجاز منتجاتك أو خدماتك، والجمهور المستهدف..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-28 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-28 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
           required
         />
       </div>
