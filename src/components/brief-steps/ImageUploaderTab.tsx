@@ -134,6 +134,7 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <button
                                         type="button"
+                                        aria-label="حذف الصورة"
                                         onClick={(e) => { e.stopPropagation(); removeSocialImage(i); }}
                                         className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg"
                                         title="إزالة الصورة"

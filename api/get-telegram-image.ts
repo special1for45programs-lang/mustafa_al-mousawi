@@ -2,7 +2,21 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
+const ALLOWED_ORIGINS = new Set([
+  'https://mustafa-al-mousawi.web.app',
+  'https://www.mustafa-al-mousawi.web.app',
+  'https://mustafa-kappa.vercel.app',
+  'https://mustafa-al-moussaw.vercel.app',
+  'https://mustafa-al-moussawi.vercel.app',
+]);
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS — restrict to known origins
+  const origin = (req.headers['origin'] ?? '') as string;
+  const allowedOrigin = ALLOWED_ORIGINS.has(origin)
+    ? origin
+    : (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : null);
+  if (allowedOrigin) res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   const fileId = req.query.file_id as string;
 
   if (!fileId || typeof fileId !== 'string' || !/^[A-Za-z0-9_-]{10,150}$/.test(fileId)) {

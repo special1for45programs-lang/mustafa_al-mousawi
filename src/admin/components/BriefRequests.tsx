@@ -193,7 +193,7 @@ const BriefRequests: React.FC = () => {
 
   useEffect(() => { fetchRequests(); }, []);
 
-  const handleStatusChange = async (id: string, status: any) => {
+  const handleStatusChange = async (id: string, status: 'new' | 'in_progress' | 'completed' | 'archived') => {
     try {
       await updateBriefRequestStatus(id, status);
       fetchRequests();
@@ -418,7 +418,7 @@ const BriefRequests: React.FC = () => {
                 <span className="text-xs text-gray-500">الحالة:</span>
                 <select
                   value={selectedReq.status}
-                  onChange={e => handleStatusChange(selectedReq.id, e.target.value)}
+                  onChange={e => handleStatusChange(selectedReq.id, e.target.value as 'new' | 'in_progress' | 'completed' | 'archived')}
                   className="bg-brand-black border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand-lime"
                 >
                   <option value="new">جديد</option>

@@ -1,12 +1,12 @@
-import imgMinimalist from '../assets/images/styles/minimalist.jpg';
-import imgModern from '../assets/images/styles/modern.jpg';
-import imgLuxury from '../assets/images/styles/luxury.jpg';
-import imgBold from '../assets/images/styles/bold.jpg';
-import imgClassic from '../assets/images/styles/classic.jpg';
-import imgAbstract from '../assets/images/styles/abstract.jpg';
-import imgFuturistic from '../assets/images/styles/futuristic.jpg';
-import imgOrganic from '../assets/images/styles/organic.jpg';
-import img3d from '../assets/images/styles/3d.jpg';
+import imgMinimalist from '@/src/assets/images/styles/minimalist.webp';
+import imgModern from '@/src/assets/images/styles/modern.webp';
+import imgLuxury from '@/src/assets/images/styles/luxury.webp';
+import imgBold from '@/src/assets/images/styles/bold.webp';
+import imgClassic from '@/src/assets/images/styles/classic.webp';
+import imgAbstract from '@/src/assets/images/styles/abstract.webp';
+import imgFuturistic from '@/src/assets/images/styles/futuristic.webp';
+import imgOrganic from '@/src/assets/images/styles/organic.webp';
+import img3d from '@/src/assets/images/styles/3d.webp';
 
 export interface IndustryPalette {
     id: string;

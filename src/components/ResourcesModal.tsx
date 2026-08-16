@@ -29,7 +29,7 @@ const ResourcesModal: React.FC<ResourcesModalProps> = ({ isOpen, onClose }) => {
       const fetchResources = async () => {
         try {
           setLoading(true);
-          const data = await getResourcesData();
+          const data = await getResourcesData() as { resources?: { id: string; title: string; type: string; url: string }[] } | null;
           if (data && data.resources) {
             setResources(data.resources);
           }
@@ -71,6 +71,7 @@ const ResourcesModal: React.FC<ResourcesModalProps> = ({ isOpen, onClose }) => {
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+            aria-label="إغلاق"
           >
             <X className="w-6 h-6" />
           </button>

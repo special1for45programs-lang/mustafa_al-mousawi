@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowRight, ArrowLeft, Download, Send, Package, X } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Send, Package, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Button } from './ui/Button';
+
 import { BriefFormData, SocialDetails, LogoDetails, BaseBriefData } from '../types';
 import { APPLICATION_CATEGORIES, LOGO_TYPE_EXAMPLES } from '../constants';
 import { DESIGN_STYLES } from '../utils/designConstants';
@@ -22,7 +22,7 @@ import SocialStepReview    from './brief-steps/SocialStepReview';
 import { DesignStylesTab } from './brief-steps/DesignStylesTab';
 
 import SuccessView from './brief-steps/SuccessView';
-import StickyOrderSummary from './brief-steps/StickyOrderSummary';
+
 
 // ==========================================
 // ثوابت
@@ -106,17 +106,15 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
   const [isPdfDownloaded, setIsPdfDownloaded] = useState(false);
   const [botTrap, setBotTrap] = useState("");
 
-  // Scroll to top when step changes
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [step]);
-
-  const formRef       = useRef<HTMLDivElement>(null);
-  const isFirstRender = useRef(true);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const isSocial = isSocialType(selectedPackage);
   const STEPS    = isSocial ? SOCIAL_STEPS : LOGO_STEPS;
 
+  // ─── مساعد: التمرير إلى أعلى قسم النموذج (يشمل العنوان وشريط الخطوات) ───────
+  const scrollFormToTop = () => {
+    document.getElementById('brief')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   // ─── إعادة الضبط عند تغيير الباقة المختارة ────────────────────────────
   useEffect(() => {
@@ -139,12 +137,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
       setIsPdfDownloaded(false);
     }
   }, [selectedPackage?.id]);
-
-  // ─── التمرير عند تغيير الخطوة ─────────────────────────────────────────
-  useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return; }
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [step]);
 
   // ─── تحديث البيانات ───────────────────────────────────────────────────
   const updateFormData = (data: Partial<BaseBriefData>) => {
@@ -353,7 +345,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         if (!rawText || rawText.trim() === '') {
           throw new Error('empty_response');
         }
-      } catch (fetchError: any) {
+      } catch (fetchError: unknown) {
         throw fetchError; // Rethrow to be caught by the outer catch
       }
 
@@ -396,12 +388,15 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
       
       setIsSuccess(true);
 
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       if (loadingToast) toast.dismiss(loadingToast);
       
+      const isDev = import.meta.env.DEV;
+      const errMsg = apiError instanceof Error ? apiError.message : String(apiError);
+      
       // Graceful fallback for local development without backend
-      if (import.meta.env.DEV && (apiError?.message === 'empty_response' || apiError?.message?.includes('fetch') || apiError?.name === 'TypeError')) {
-        console.warn('[DEV] Fallback mode active, ignoring API failure:', apiError.message);
+      if (isDev && (errMsg === 'empty_response' || errMsg.includes('fetch') || (apiError instanceof Error && apiError.name === 'TypeError'))) {
+        console.warn('[DEV] Fallback mode active, ignoring API failure:', errMsg);
         setIsSuccess(true);
         toast.success('تم الإرسال بنجاح (وضع التطوير المحلي)', {
           duration: 5000,
@@ -412,7 +407,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           <div dir="rtl" className="flex flex-col gap-1 text-sm">
             <p className="font-bold text-red-500">❌ عذراً، فشلت عملية الإرسال!</p>
             <p>يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.</p>
-            <p className="text-xs text-gray-400 mt-1">السبب: {apiError?.message?.substring(0, 100) || 'غير معروف'}</p>
+            <p className="text-xs text-gray-400 mt-1">السبب: {errMsg.substring(0, 100) || 'غير معروف'}</p>
           </div>,
           {
             duration: 7000,
@@ -432,6 +427,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
     if (validateStep()) {
       if (step < STEPS.length) {
         setStep(step + 1);
+        scrollFormToTop();
       } else if (isPdfDownloaded) {
         setIsSuccess(true);
       }
@@ -489,6 +485,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
             <button
               type="button"
               onClick={onClearPackage}
+              aria-label="إزالة الباقة"
               className="text-gray-500 hover:text-white transition-colors p-1.5 hover:bg-white/10 rounded-lg"
               title="إزالة الاختيار"
             >
@@ -620,14 +617,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
               <SocialStepReview formData={formData} selectedPackage={selectedPackage} removeUploadedFile={removeUploadedFile} />
             )}
 
-            {/* Sticky Order Summary Sidebar / Bottom Bar */}
-            <StickyOrderSummary 
-              formData={formData}
-              selectedPackage={selectedPackage}
-              step={step}
-              totalSteps={STEPS.length}
-              isSocial={isSocial}
-            />
+
 
             {/* ==========================================
                 أزرار التنقل
@@ -637,7 +627,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
               {step > 1 ? (
                 <button
                   type="button"
-                  onClick={() => setStep(step - 1)}
+                  onClick={() => { setStep(step - 1); scrollFormToTop(); }}
                   className="flex items-center gap-2 text-gray-400 hover:text-gray-900 hover:bg-gray-50 px-6 py-3 rounded-xl transition-all font-bold"
                 >
                   <ArrowRight className="w-5 h-5" />

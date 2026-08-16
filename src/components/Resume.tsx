@@ -16,11 +16,11 @@ const Resume: React.FC = () => {
         const contactData = await getSiteContactData();
         
         let mergedData = { ...RESUME_DATA };
-        if (data && Object.keys(data).length > 0) {
-          mergedData = data;
+        if (data && Object.keys(data as object).length > 0) {
+          mergedData = { ...mergedData, ...(data as typeof RESUME_DATA) };
         }
-        if (contactData && Object.keys(contactData).length > 0) {
-          mergedData.contact = contactData;
+        if (contactData && Object.keys(contactData as object).length > 0) {
+          mergedData.contact = { ...mergedData.contact, ...(contactData as typeof RESUME_DATA['contact']) };
         }
         setResumeData(mergedData);
       } catch (error) {

@@ -116,7 +116,7 @@ const PackagesEditor: React.FC = () => {
 
       {activeTab === 'logo' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {data.logoDesign.map((pkg: any, index: number) => (
+          {data.logoDesign.map((pkg: import('../../types').LogoPackage & { active?: boolean }, index: number) => (
             <div key={pkg.id} className="bg-brand-dark border border-white/10 rounded-xl p-6 relative">
               <div className="absolute top-6 left-6">
                 <StatusToggle active={pkg.active} onToggle={() => {
@@ -188,7 +188,7 @@ const PackagesEditor: React.FC = () => {
                           const newData = { ...data };
                           newData.logoDesign[index].features.splice(fIndex, 1);
                           setData(newData);
-                        }} className="text-red-500 hover:bg-red-500/10 p-2 rounded transition-colors" title="حذف"><Trash2 size={18}/></button>
+                        }} className="text-red-500 hover:bg-red-500/10 p-2 rounded transition-colors" title="حذف" aria-label="حذف"><Trash2 size={18}/></button>
                       </div>
                     ))}
                   </div>
@@ -311,7 +311,7 @@ const PackagesEditor: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.socialMedia.individualPosts.map((post: any, index: number) => (
+                  {data.socialMedia.individualPosts.map((post: import('../../types').SocialPost, index: number) => (
                     <tr key={index} className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
                       <td className="py-3 px-4 font-bold">{post.quantity} بوست</td>
                       <td className="py-3 px-4">
@@ -336,7 +336,7 @@ const PackagesEditor: React.FC = () => {
               الباقات الشهرية
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {data.socialMedia.monthlyPlans.map((plan: any, index: number) => (
+              {data.socialMedia.monthlyPlans.map((plan: import('../../types').SocialPlan & { active?: boolean }, index: number) => (
                 <div key={plan.id} className="bg-brand-dark border border-white/10 rounded-xl p-6 relative">
                   <div className="absolute top-6 left-6">
                     <StatusToggle active={plan.active} onToggle={() => {

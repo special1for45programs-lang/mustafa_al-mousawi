@@ -25,7 +25,7 @@ const TABS = [
 // ==========================================
 // Tab 1: بطاقات شعارات
 // ==========================================
-const LogoCard: React.FC<{ pkg: any, onSelect: (pkg: SelectedPackage) => void }> = ({ pkg, onSelect }) => {
+const LogoCard: React.FC<{ pkg: import('../types').LogoPackage, onSelect: (pkg: SelectedPackage) => void }> = ({ pkg, onSelect }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -214,7 +214,7 @@ const BrandingTab: React.FC<{ onSelect: (pkg: SelectedPackage) => void }> = ({ o
 // ==========================================
 // Tab 3: السوشيال ميديا
 // ==========================================
-const SocialPlanCard: React.FC<{ plan: any, onSelect: (pkg: SelectedPackage) => void }> = ({ plan, onSelect }) => {
+const SocialPlanCard: React.FC<{ plan: import('../types').SocialPlan, onSelect: (pkg: SelectedPackage) => void }> = ({ plan, onSelect }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
   return (
@@ -342,7 +342,7 @@ const SocialTab: React.FC<{ onSelect: (pkg: SelectedPackage) => void }> = ({ onS
       <div>
         <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-5 flex items-center gap-2">
           <TrendingUp size={20} className="text-brand-lime" />
-          اشتراكات إدارة السوشيال ميديا
+          الباقات الشهرية لإدارة السوشيال ميديا
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {monthlyPlans.map((plan) => (

@@ -183,7 +183,7 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                                     <div key={index} className="relative group overflow-hidden border border-zinc-200 rounded-lg aspect-square bg-white w-20 h-20 sm:w-24 sm:h-24">
                                         <img src={img} alt={`Moodboard ${index + 1}`} className="w-full h-full object-cover" />
                                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                                            <button type="button" onClick={(e) => removeUploadedFile(e, index)} className="bg-red-500 text-white p-1.5 sm:p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg transform hover:scale-105">
+                                            <button type="button" aria-label="حذف الملف" onClick={(e) => removeUploadedFile(e, index)} className="bg-red-500 text-white p-1.5 sm:p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg transform hover:scale-105">
                                                 <X size={16} className="sm:w-5 sm:h-5" />
                                             </button>
                                         </div>

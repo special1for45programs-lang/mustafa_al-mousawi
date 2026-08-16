@@ -35,8 +35,8 @@ const ResumeEditor: React.FC = () => {
     const fetchData = async () => {
       try {
         const resumeData = await getResumeData();
-        if (resumeData && Object.keys(resumeData).length > 0) {
-          setData(resumeData);
+        if (resumeData && Object.keys(resumeData as object).length > 0) {
+          setData(resumeData as ResumeData);
         } else {
           // Fallback to static constants
           setData(RESUME_DATA as ResumeData);

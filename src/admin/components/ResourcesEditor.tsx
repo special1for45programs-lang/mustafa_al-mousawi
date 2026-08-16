@@ -19,7 +19,7 @@ const ResourcesEditor: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resData = await getResourcesData();
+        const resData = await getResourcesData() as { resources: ResourceItem[] } | null;
         if (resData && resData.resources) {
           setData(resData);
         }

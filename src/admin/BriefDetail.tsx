@@ -32,7 +32,7 @@ const BriefDetail: React.FC = () => {
     fetchRequest();
   }, [id]);
 
-  const handleStatusChange = async (newStatus: any) => {
+  const handleStatusChange = async (newStatus: 'new' | 'in_progress' | 'completed' | 'archived') => {
     if (!req) return;
     try {
       await updateBriefRequestStatus(req.id, newStatus);

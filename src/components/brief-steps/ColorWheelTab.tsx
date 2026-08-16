@@ -244,6 +244,7 @@ export const ColorWheelTab: React.FC<ColorWheelTabProps> = ({
                                 <div className="flex items-center gap-2">
                                     <div 
                                         role="button"
+                                        aria-label="بحث استلهام في Pinterest"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             window.open(`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(p.pinterestQuery || (p.label + ' color palette branding'))}`, '_blank');

@@ -59,9 +59,9 @@ const Portfolio: React.FC = () => {
 
         // 5. Update the state
         setPosts(sortedPosts.slice(0, 9));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Feed error:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }

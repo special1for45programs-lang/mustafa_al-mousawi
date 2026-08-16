@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Resend } from 'resend';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
+import { pdfHeaderBase64 } from './pdfHeaderBase64';
 
 // Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -159,54 +160,54 @@ function getPackageTerms(formData: BriefFormData) {
   if (isSocial) {
     if (pkgNameEn.includes('حضور') || pkgNameEn.includes('presence')) {
       return [
-        { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة الباقة الشهرية كاملة (100%) مقدماً.' },
+        { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة الباقة كاملة (100%) مقدماً لتأكيد حجز مساحة في جدول العمل.' },
         { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديلين (2) لكل منشور كحد أقصى.' },
         { icon: '📁', text: 'الملفات المستلمة: يتم تسليم التصاميم بصيغة JPEG أو PNG بجودة عالية وجاهزة للنشر.' },
-        { icon: '🚫', text: 'سياسة الإلغاء: لا يمكن استرداد المبلغ بعد البدء في التنفيذ أو جدولة المنشورات.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: المبلغ يغطي تكاليف حجز الوقت والتحليل المبدئي، لذا نعتذر عن استرداده بعد بدء التنفيذ أو جدولة المنشورات.' },
       ];
     }
     // Default social terms
     return [
-      { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة باقات السوشيال ميديا كاملة (100%) مقدماً لتأكيد الحجز.' },
+      { icon: '💳', text: 'نظام الدفع: يتم دفع قيمة الباقة كاملة (100%) مقدماً لتأكيد حجز مساحة في جدول العمل.' },
       { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديلين (2) لكل منشور كحد أقصى ضمن الباقة.' },
       { icon: '📁', text: 'الملفات المستلمة: يتم تسليم التصاميم بصيغة PNG أو JPEG بجودة عالية تناسب المنصات المختارة.' },
-      { icon: '🚫', text: 'سياسة الإلغاء: المبلغ غير مسترد بعد البدء بالعمل أو بعد النشر.' },
+      { icon: '🚫', text: 'سياسة الإلغاء: المبلغ يغطي تكاليف حجز الوقت والتحليل المبدئي، لذا نعتذر عن استرداده بعد بدء التنفيذ أو جدولة المنشورات.' },
     ];
   } else {
     if (pkgNameEn.includes('الاقتصادية') || pkgNameEn.includes('lite')) {
       return [
-        { icon: '💳', text: 'نظام الدفع: يتم دفع المبلغ كاملاً (100%) مقدماً قبل البدء بالعمل لباقة الاقتصادية.' },
+        { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً لتأكيد الحجز، و 50% عند الاستلام النهائي.' },
         { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل تعديل واحد (1) مجاني. التعديلات الإضافية تكون مأجورة.' },
         { icon: '📁', text: 'الملفات المستلمة: يتم تسليم الشعار بصيغتي PNG شفافة و JPEG عالية الدقة فقط.' },
-        { icon: '🚫', text: 'سياسة الإلغاء: المبلغ غير مسترد في حال الإلغاء بعد بدء العمل.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
       ];
     } else if (pkgNameEn.includes('النمو') || pkgNameEn.includes('startup')) {
       return [
         { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
         { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل جولتين (2) من التعديلات المجانية.' },
         { icon: '📁', text: 'الملفات المستلمة: تسليم الملفات الأساسية (SVG, PNG, PDF).' },
-        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
       ];
     } else if (pkgNameEn.includes('المتميزة') || pkgNameEn.includes('premium')) {
        return [
         { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
         { icon: '🔄', text: 'سياسة التعديلات: مرونة في التعديلات تصل إلى 5 جولات.' },
         { icon: '📁', text: 'الملفات المستلمة: تسليم الملفات المصدرية المفتوحة بالكامل (AI, SVG, PDF, PNG).' },
-        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
       ];
     } else if (pkgNameEn.includes('النخبة') || pkgNameEn.includes('elite')) {
        return [
         { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
-        { icon: '🔄', text: 'سياسة التعديلات: تعديلات غير محدودة حتى الوصول إلى الرضا التام.' },
+        { icon: '🔄', text: 'سياسة التعديلات: تعديلات غير محدودة على المفهوم المختار وقبل الاعتماد النهائي، حتى الوصول إلى الرضا التام.' },
         { icon: '📁', text: 'الملفات المستلمة: كافة الصيغ المصدرية والشفافة مع دليل ألوان وخطوط.' },
-        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
       ];
     } else if (formData.briefCategory === 'branding') {
       return [
         { icon: '💳', text: 'نظام الدفع: يتم دفع 50% كعربون مقدماً، و 50% عند الاستلام النهائي.' },
         { icon: '🔄', text: 'سياسة التعديلات: مرونة عالية في التعديلات خلال فترة بناء الهوية البصرية.' },
         { icon: '📁', text: 'الملفات المستلمة: تسليم كتيب الهوية (Brand Guidelines) بصيغة PDF مع جميع الملفات المصدرية.' },
-        { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال الإلغاء بعد بدء العمل.' },
+        { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
       ];
     }
     // Default logo terms
@@ -214,7 +215,7 @@ function getPackageTerms(formData: BriefFormData) {
       { icon: '💳', text: 'نظام الدفع: يتم دفع 50% من قيمة المشروع كعربون قبل البدء، والباقي عند التسليم النهائي.' },
       { icon: '🔄', text: 'سياسة التعديلات: يحق للعميل 3 جولات من التعديلات المجانية.' },
       { icon: '📁', text: 'الملفات المستلمة: يتم تسليم الأعمال بالصيغ الاحترافية (AI, PDF, PNG, JPEG) حسب الباقة.' },
-      { icon: '🚫', text: 'سياسة الإلغاء: العربون غير مسترد في حال قرر العميل إلغاء المشروع بعد بدء العمل.' },
+      { icon: '🚫', text: 'سياسة الإلغاء: العربون يغطي تكاليف حجز الوقت والجهد المبدئي للبحث والتحليل، لذا نعتذر عن استرداده بعد الشروع الفعلي في العمل.' },
     ];
   }
 }
@@ -486,9 +487,10 @@ function generatePdfHTML(formData: BriefFormData): string {
     
     .gallery-image img {
       width: 100%;
-      height: auto;
+      height: 100%;
+      max-height: 250px;
       display: block;
-      object-fit: cover;
+      object-fit: contain;
     }
     
     /* Footer */
@@ -527,8 +529,8 @@ function generatePdfHTML(formData: BriefFormData): string {
 <body>
   <div class="page">
     <!-- Header -->
-    <div class="header">
-      <img src="https://mustafa-kappa.vercel.app/Images/pdf-header.png" alt="Header">
+    <div class="header" style="background-color: #000; text-align: center; border-bottom: 2px solid #d4ff00;">
+      <img src="${pdfHeaderBase64}" alt="Header" style="max-height: 120px; width: auto; margin: 0 auto;">
     </div>
     
     <!-- Content -->
@@ -1101,13 +1103,13 @@ const base64ImageSchema = z.string().trim().max(MAX_BASE64_CHARS, "حجم الص
 
 const ApiLogoDetailsSchema = z.object({
   inspirationImage: base64ImageSchema,
-  moodboard: z.array(base64ImageSchema).optional(),
+  moodboard: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
 }).passthrough();
 
 const ApiSocialDetailsSchema = z.object({
   inspirationImage: base64ImageSchema,
-  inspirationImages: z.array(base64ImageSchema).optional(),
-  postsPatternImages: z.array(base64ImageSchema).optional(),
+  inspirationImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
+  postsPatternImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
 }).passthrough();
 
 const ApiBriefSchema = z.object({
@@ -1118,7 +1120,7 @@ const ApiBriefSchema = z.object({
   logoDetails: ApiLogoDetailsSchema.optional(),
   socialDetails: ApiSocialDetailsSchema.optional(),
   designStyleImageBase64: base64ImageSchema,
-  logoTypeImagesBase64: z.array(base64ImageSchema).optional(),
+  logoTypeImagesBase64: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
 }).passthrough();
 
 interface ValidationResult { valid: boolean; error?: string; data?: any }
@@ -1181,7 +1183,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Payload Validation ──────────────────────────────────────
-  const { formData, briefId, baseUrl } = (req.body ?? {}) as { formData?: unknown, briefId?: string, baseUrl?: string };
+  const { formData, briefId, baseUrl: rawBaseUrl } = (req.body ?? {}) as { formData?: unknown, briefId?: string, baseUrl?: string };
+
+  // Validate baseUrl against the allowed-origins whitelist before embedding in Telegram captions
+  const baseUrl: string | undefined = (typeof rawBaseUrl === 'string' && ALLOWED_ORIGINS.has(rawBaseUrl))
+    ? rawBaseUrl
+    : undefined;
 
   if (!formData) {
     return res.status(400).json({ error: 'المعلومات المطلوبة غير مكتملة (formData مفقود).' });
@@ -1264,11 +1271,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fileIds: fileIds,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[API] ❌ Error:', error);
     return res.status(500).json({
-      error: 'Internal Server Error',
-      details: error.message,
+      error: 'Internal Server Error. Please try again later.',
     });
   }
 }

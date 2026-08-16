@@ -4,7 +4,7 @@ import { BriefFormData } from '../../types';
 
 interface PresetPatternTabProps {
     formData: BriefFormData;
-    updateDomainData: (data: any) => void;
+    updateDomainData: (data: import('../../types').LogoDetails | import('../../types').SocialDetails | any) => void;
 }
 
 export const PresetPatternTab: React.FC<PresetPatternTabProps> = ({ formData, updateDomainData }) => {

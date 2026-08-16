@@ -5,18 +5,18 @@ import identity4 from './imagesOfMyWorks/MyiVsualIdentity/4.jpg';
 import identity5 from './imagesOfMyWorks/MyiVsualIdentity/5.jpg';
 import identity6 from './imagesOfMyWorks/MyiVsualIdentity/6.jpg';
 import identity7 from './imagesOfMyWorks/MyiVsualIdentity/7.jpg';
-import identity8 from './imagesOfMyWorks/MyiVsualIdentity/8.jpg';
+import identity8 from './imagesOfMyWorks/MyiVsualIdentity/8.webp';
 import identity9 from './imagesOfMyWorks/MyiVsualIdentity/9.jpg';
 
-import lian1 from './imagesOfMyWorks/Lian/Artboard 1@300x-100.jpg';
-import lian2 from './imagesOfMyWorks/Lian/Artboard 2@300x-100.jpg';
-import lian3 from './imagesOfMyWorks/Lian/Artboard 3@300x-100.jpg';
-import lian4 from './imagesOfMyWorks/Lian/Artboard 4@300x-100.jpg';
-import lian5 from './imagesOfMyWorks/Lian/Artboard 5@300x-100.jpg';
-import lian6 from './imagesOfMyWorks/Lian/Artboard 6@300x-100.jpg';
-import lian7 from './imagesOfMyWorks/Lian/Artboard 7@300x-100.jpg';
-import lian8 from './imagesOfMyWorks/Lian/Artboard 8@300x-100.jpg';
-import lian9 from './imagesOfMyWorks/Lian/Artboard 9@300x-100.jpg';
+import lian1 from './imagesOfMyWorks/Lian/Artboard 1@300x-100.webp';
+import lian2 from './imagesOfMyWorks/Lian/Artboard 2@300x-100.webp';
+import lian3 from './imagesOfMyWorks/Lian/Artboard 3@300x-100.webp';
+import lian4 from './imagesOfMyWorks/Lian/Artboard 4@300x-100.webp';
+import lian5 from './imagesOfMyWorks/Lian/Artboard 5@300x-100.webp';
+import lian6 from './imagesOfMyWorks/Lian/Artboard 6@300x-100.webp';
+import lian7 from './imagesOfMyWorks/Lian/Artboard 7@300x-100.webp';
+import lian8 from './imagesOfMyWorks/Lian/Artboard 8@300x-100.webp';
+import lian9 from './imagesOfMyWorks/Lian/Artboard 9@300x-100.webp';
 
 import eng1 from './imagesOfMyWorks/EngineeringInnovationOffice/Artboard 1-20.jpg';
 import eng2 from './imagesOfMyWorks/EngineeringInnovationOffice/Artboard 2-20.jpg';
@@ -28,12 +28,12 @@ import eng7 from './imagesOfMyWorks/EngineeringInnovationOffice/Artboard 7-20.jp
 import eng8 from './imagesOfMyWorks/EngineeringInnovationOffice/Artboard 8-20.jpg';
 import eng9 from './imagesOfMyWorks/EngineeringInnovationOffice/Artboard 9-20.jpg';
 
-import draw1 from './imagesOfMyWorks/MyDrawings/2022-05-16_1652714565283.png';
-import draw2 from './imagesOfMyWorks/MyDrawings/20251202_223916.jpg';
-import draw3 from './imagesOfMyWorks/MyDrawings/٢٠٢١٠٢٢٤_١٤٤٧٠٢.jpg';
-import draw4 from './imagesOfMyWorks/MyDrawings/٢٠٢١٠٣٠١_١٧٢٤١٠.jpg';
-import draw5 from './imagesOfMyWorks/MyDrawings/٢٠٢٢٠٢١٣_٠٨٣٨١٩.jpg';
-import draw6 from './imagesOfMyWorks/MyDrawings/٢٠٢٣٠٨٢٨_١٥٣٢٠٤.jpg';
+import draw1 from './imagesOfMyWorks/MyDrawings/2022-05-16_1652714565283.webp';
+import draw2 from './imagesOfMyWorks/MyDrawings/20251202_223916.webp';
+import draw3 from './imagesOfMyWorks/MyDrawings/٢٠٢١٠٢٢٤_١٤٤٧٠٢.webp';
+import draw4 from './imagesOfMyWorks/MyDrawings/٢٠٢١٠٣٠١_١٧٢٤١٠.webp';
+import draw5 from './imagesOfMyWorks/MyDrawings/٢٠٢٢٠٢١٣_٠٨٣٨١٩.webp';
+import draw6 from './imagesOfMyWorks/MyDrawings/٢٠٢٣٠٨٢٨_١٥٣٢٠٤.webp';
 
 // ... (Metadata comments)
 
@@ -52,7 +52,7 @@ export const PROFILE_IMAGE = "/Images/mustafaAlMussawi.webp";
 
 // Load logo examples dynamically from folders
 // @ts-ignore
-const logoFiles = import.meta.glob('./assets/logos/**/*.{png,jpg,jpeg,svg,webp}', { eager: true, as: 'url' });
+const logoFiles = import.meta.glob('./assets/logos/**/*.{png,jpg,jpeg,svg,webp}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 
 const getImagesForType = (folderName: string) => {
     const images = Object.keys(logoFiles)
