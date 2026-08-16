@@ -63,7 +63,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Toaster position="top-center" />
-      <div className="min-h-screen bg-brand-black flex flex-col relative overflow-x-hidden">
+      <div className="min-h-screen bg-brand-black flex flex-col relative overflow-x-hidden max-md:pb-24">
 
         {/* Sidebar - Desktop Only (Eager) */}
         <div className="hidden md:block">

@@ -102,61 +102,43 @@ const Navbar: React.FC = () => {
             </a>
           </div>
 
-          {/* زر قائمة الموبايل (Hamburger Menu) */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-300 hover:text-brand-lime p-2 rounded-lg transition-colors focus:outline-none"
-              aria-label="Toggle Menu"
-            >
-              {isOpen ? <X size={26} className="text-brand-lime" /> : <Menu size={26} />}
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* قائمة الموبايل المنبثقة */}
-      {isOpen && (
-        <div className="md:hidden bg-zinc-950/95 backdrop-blur-xl border-b border-white/10 absolute w-full left-0 shadow-2xl animate-fadeIn" dir="rtl">
-          <div className="px-4 pt-3 pb-5 space-y-2">
-            {NAVIGATION.map((item) => {
-              const sectionId = item.path.replace('#', '');
-              const isActive = activeSection === sectionId;
-              const isBrief = item.path === '#brief';
+      {/* شريط التنقل السفلي للموبايل (Bottom Navigation Bar) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[60] flex justify-around items-center bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/10 px-2 py-3 pb-safe" dir="rtl">
+        {NAVIGATION.map((item) => {
+          const sectionId = item.path.replace('#', '');
+          const isActive = activeSection === sectionId;
+          const isBrief = item.path === '#brief';
 
-              let IconComponent = Home;
-              if (item.path === '#portfolio') IconComponent = Briefcase;
-              if (item.path === '#packages') IconComponent = Layers;
-              if (item.path === '#resume') IconComponent = FileText;
-              if (item.path === '#process') IconComponent = Compass;
-              if (item.path === '#brief') IconComponent = Sparkles;
+          let IconComponent = Home;
+          if (item.path === '#portfolio') IconComponent = Briefcase;
+          if (item.path === '#packages') IconComponent = Layers;
+          if (item.path === '#resume') IconComponent = FileText;
+          if (item.path === '#process') IconComponent = Compass;
+          if (item.path === '#brief') IconComponent = Sparkles;
 
-              return (
-                <a
-                  key={item.path}
-                  href={item.path}
-                  onClick={() => setIsOpen(false)} // إغلاق القائمة عند النقر
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-semibold transition-all ${
-                    isBrief
-                      ? 'bg-brand-lime text-black font-bold hover:bg-lime-400 shadow-lg shadow-brand-lime/20 justify-between mt-2'
-                      : isActive
-                      ? 'text-brand-lime bg-brand-lime/10 border border-brand-lime/20'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <IconComponent size={20} className={isBrief ? 'text-black' : isActive ? 'text-brand-lime' : 'text-gray-400'} />
-                    <span>{item.label}</span>
-                  </div>
-                  {isActive && !isBrief && (
-                    <span className="w-2 h-2 rounded-full bg-brand-lime animate-pulse"></span>
-                  )}
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      )}
+          return (
+            <a
+              key={item.path}
+              href={item.path}
+              className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all relative ${
+                isBrief 
+                  ? 'text-black bg-brand-lime -mt-6 shadow-lg shadow-brand-lime/20 h-14 w-14 rounded-full' 
+                  : isActive
+                  ? 'text-brand-lime'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <IconComponent size={isBrief ? 24 : 22} className={isBrief ? 'mb-1' : ''} />
+              {!isBrief && (
+                <span className="text-[10px] font-medium">{item.label}</span>
+              )}
+            </a>
+          );
+        })}
+      </div>
     </nav>
   );
 };

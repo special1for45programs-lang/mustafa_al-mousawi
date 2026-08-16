@@ -70,34 +70,47 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-brand-black dir-rtl" dir="rtl">
-      {/* Mobile Sidebar Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-      
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 right-0 z-30 transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
+      <div className={`hidden lg:block fixed inset-y-0 right-0 z-30 transform transition-transform duration-300 translate-x-0`}>
         <Sidebar />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen lg:mr-64">
-        {/* Top Header (Mobile) */}
-        <header className="lg:hidden bg-brand-dark border-b border-white/5 p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">لوحة الإدارة</h2>
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white">
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </header>
-
-        <main className="flex-1">
+        <main className="flex-1 max-lg:pb-24">
           <div className="w-full h-full">
             <Outlet />
           </div>
         </main>
+      </div>
+
+      {/* شريط التنقل السفلي للموبايل للإدمن */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center bg-gray-900 border-t border-gray-800 px-2 py-3 pb-safe" dir="rtl">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all ${
+                isActive
+                  ? 'text-brand-lime'
+                  : 'text-gray-400 hover:text-white'
+              }`
+            }
+          >
+            <item.icon size={22} />
+            <span className="text-[10px] font-medium whitespace-nowrap">{item.label}</span>
+          </NavLink>
+        ))}
+        {/* زر تسجيل الخروج في الموبايل */}
+        <button
+          onClick={handleSignOut}
+          className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-red-400 hover:text-red-300 transition-colors"
+        >
+          <LogOut size={22} />
+          <span className="text-[10px] font-medium whitespace-nowrap">خروج</span>
+        </button>
       </div>
     </div>
   );
