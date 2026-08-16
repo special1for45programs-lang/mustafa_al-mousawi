@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Resend } from 'resend';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
-import { pdfHeaderBase64 } from './pdfHeaderBase64';
+import { pdfHeaderBase64 } from './pdfHeaderBase64.js';
 
 // Initialize Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
