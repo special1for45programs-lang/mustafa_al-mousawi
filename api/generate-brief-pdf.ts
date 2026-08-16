@@ -276,6 +276,10 @@ function generatePdfHTML(formData: BriefFormData): string {
       box-sizing: border-box;
     }
     
+    @page {
+      margin: 0;
+    }
+    
     body {
       font-family: 'Cairo', sans-serif;
       background: #ffffff;
@@ -530,7 +534,7 @@ function generatePdfHTML(formData: BriefFormData): string {
   <div class="page">
     <!-- Header -->
     <div class="header" style="background-color: #000; text-align: center; border-bottom: 2px solid #d4ff00;">
-      <img src="${pdfHeaderBase64}" alt="Header" style="max-height: 120px; width: auto; margin: 0 auto;">
+      <img src="${pdfHeaderBase64}" alt="Header" style="width: 100%; object-fit: cover; display: block; margin: 0; padding: 0;">
     </div>
     
     <!-- Content -->
@@ -711,7 +715,7 @@ function generatePdfHTML(formData: BriefFormData): string {
             <span>نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</span>
             ${(formData as any).logoTypeDesc ? `<span style="font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 12px; font-weight: normal; color: #666;">${(formData as any).logoTypeDesc}</span>` : ''}
           </div>
-          <div class="images-gallery" style="grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; gap: 10px;">
+          <div class="images-gallery" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 10px; gap: 10px;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
               <div class="gallery-image" style="padding: 10px; background: #fff; border: 1px solid #eee; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;">
                 <img src="${img}" alt="Logo Type" style="max-width: 100%; max-height: 100%; object-fit: contain;">
@@ -725,7 +729,7 @@ function generatePdfHTML(formData: BriefFormData): string {
         <div class="field" style="margin-bottom: 20px;">
           <div class="field-label">النمط التصميمي المختار: ${(formData as any).designStyleName || (isSocial ? sd.designStyle : logo.designStyle)}</div>
           ${(formData as any).designStyleImageBase64 ? `
-          <div class="images-gallery" style="grid-template-columns: 180px; margin-top: 10px;">
+          <div class="images-gallery" style="display: grid; grid-template-columns: 180px; margin-top: 10px; gap: 10px;">
             <div class="gallery-image">
               <img src="${(formData as any).designStyleImageBase64}" alt="Design Style">
             </div>
