@@ -107,13 +107,18 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
     const getDynamicHint = () => {
         if (activeTab === 'styles') {
             return {
-                title: '🎨 خطوة 1 — نمط تصاميم منشوراتك',
+                title: 'نمط تصاميم منشوراتك 🎨',
                 text: (
                     <div className="space-y-2 mt-1">
                         <p>اختر النمط البصري الذي يمثل هويتك وطريقة تقديم محتوى منشوراتك على السوشيال ميديا. سيُطبَّق هذا النمط على تصاميم بوستاتك لضمان الاتساق البصري.</p>
-                        <div className="bg-black/20 p-3 rounded-lg border border-white/5 mt-2">
-                            <span className="font-bold text-brand-lime mb-1.5 block">💡 نصيحة:</span>
-                            <p className="text-xs sm:text-sm text-zinc-300">بعد اختيار النمط، استخدم تبويب <strong className="text-brand-lime">&laquo;نمط مسبق&raquo;</strong> لرفع صور منشورات تعجبك، أو <strong className="text-brand-lime">&laquo;عجلة الألوان&raquo;</strong> لتحديد ألوان منشوراتك.</p>
+                        <div className="bg-black/20 p-4 rounded-lg border border-white/5 mt-2">
+                            <span className="font-bold text-brand-lime mb-3 block text-sm sm:text-base">💡 دليلك لاستخدام التبويبات:</span>
+                            <ul className="text-xs sm:text-sm text-gray-300 leading-relaxed space-y-2">
+                                <li><LayoutTemplate className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">أنماط التصميم:</strong> لاختيار التوجه البصري العام لمنشوراتك.</li>
+                                <li><UploadCloud className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">نمط مسبق:</strong> لرفع صور أو تصاميم تعجبك لنستلهم منها.</li>
+                                <li><Palette className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">عجلة الألوان:</strong> استخدمها إذا كانت لديك ألوان وهوية بصرية محددة تريد منا الالتزام بها.</li>
+                                <li><Wand2 className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">دع الخيار للمصمم:</strong> إذا كنت متردداً، اترك لي مهمة ابتكار الأنسب لعلامتك التجارية.</li>
+                            </ul>
                         </div>
                     </div>
                 )
@@ -143,12 +148,12 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
                             ? 'اللوحات المعروضة أدناه هي نماذج استرشادية لألوان منشوراتك. اختيارك لأي منها يمنح المصمم توجهاً لوناً واضحاً لتصاميم السوشيال ميديا.'
                             : 'اللوحات المعروضة أدناه هي نماذج استرشادية للعرض والاستلهام فقط وليست اعتماداً نهائياً لهويتك البصرية.'}
                         </p>
-                        <div className="bg-black/20 p-3 rounded-lg border border-white/5 mt-2">
+                        <div className="bg-black/20 p-4 rounded-lg border border-white/5 mt-2">
                             <span className="font-bold text-brand-lime mb-1.5 block">💡 لضمان أفضل نتيجة:</span>
-                            <ul className="list-none space-y-1.5 text-xs sm:text-sm text-zinc-300">
+                            <ul className="list-none space-y-1.5 text-xs sm:text-sm text-zinc-300 mb-4">
                                 <li className="flex items-start gap-1.5">
                                     <span className="text-brand-lime mt-0.5">&bull;</span>
-                                    <span>تفقّد أيقونة البحث 🔍 داخل كارت كل فئة لاستكشاف مئات الباليتات على Pinterest.</span>
+                                    <span>تفقّد أيقونة البحث 🔍 داخل كارت كل فئة لاستكشاف مئات التنسيقات اللونية على Pinterest.</span>
                                 </li>
                                 <li className="flex items-start gap-1.5">
                                     <span className="text-brand-lime mt-0.5">&bull;</span>
@@ -157,6 +162,14 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
                                         : 'الصور التي تعجبك وتستلهم منها هناك، يرجى رفعها عبر تبويب (رفع صورة استلهام) ليعتمدها المصمم بدقة.'}
                                     </span>
                                 </li>
+                            </ul>
+                            
+                            <span className="font-bold text-brand-lime mb-3 block text-sm sm:text-base border-t border-white/5 pt-3">💡 دليلك لاستخدام التبويبات:</span>
+                            <ul className="text-xs sm:text-sm text-gray-300 leading-relaxed space-y-2">
+                                <li><LayoutTemplate className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">لوحات جاهزة:</strong> لاختيار مجموعة ألوان متناسقة وجاهزة تناسب مجال عملك.</li>
+                                <li><UploadCloud className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">رفع صورة استلهام:</strong> لرفع صورة تحتوي على ألوان تعجبك لنستخرج منها الألوان.</li>
+                                <li><Palette className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">عجلة الألوان:</strong> لاختيار ألوانك المفضلة بدقة إذا كانت لديك فكرة محددة.</li>
+                                <li><Wand2 className="w-4 h-4 inline-block ml-1.5 text-brand-lime" /><strong className="text-brand-lime font-bold">دع الخيار للمصمم:</strong> إذا كنت متردداً، اترك لي مهمة اختيار الألوان الأنسب لعلامتك التجارية.</li>
                             </ul>
                         </div>
                     </div>

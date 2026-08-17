@@ -8,6 +8,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://mustafa-kappa.vercel.app',
   'https://mustafa-al-moussaw.vercel.app',
   'https://mustafa-al-moussawi.vercel.app',
+  'https://mustafa-al-mousawi.vercel.app',
 ]);
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

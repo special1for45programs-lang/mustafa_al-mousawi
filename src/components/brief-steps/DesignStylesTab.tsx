@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, ExternalLink } from 'lucide-react';
+import { CheckCircle2, ExternalLink, Search } from 'lucide-react';
 import { BriefFormData } from '../../types';
 import { DESIGN_STYLES } from '../../utils/designConstants';
 
@@ -86,8 +86,8 @@ export const DesignStylesTab: React.FC<DesignStylesProps> = ({ formData, updateD
                                             : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:text-white'
                                     }`}
                                 >
-                                    <ExternalLink className="w-2.5 h-2.5 sm:w-4 sm:h-4 shrink-0" />
-                                    <span className="truncate">Pinterest 📌</span>
+                                    <Search className="w-2.5 h-2.5 sm:w-4 sm:h-4 shrink-0" />
+                                    <span className="truncate">البحث في Pinterest</span>
                                 </button>
                             </div>
                         </div>
@@ -98,7 +98,7 @@ export const DesignStylesTab: React.FC<DesignStylesProps> = ({ formData, updateD
             {/* Instruction Banner at bottom of Design Styles */}
             <div className="mt-6 sm:mt-10 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-zinc-900 via-brand-dark to-zinc-900 border border-brand-lime/30 shadow-xl flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4 text-right">
                 <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed">
-                    <span className="font-bold text-lime-400">📌 وجدت تصميماً أعجبك على Pinterest؟</span> قم بتنزيل الصورة على جهازك، ثم انتقل لتبويب <span className="font-bold text-white">نمط مسبق</span> في الأعلى وارفقها مباشرة لنسهل عليك تطبيق الفكرة.
+                    <span className="font-bold text-lime-400">📌 وجدت تصميماً أعجبك على Pinterest؟</span> قم بتنزيل الصورة على جهازك، ثم انتقل لتبويب <span className="font-bold text-white">نمط مسبق</span> في الأعلى وارفقها مباشرة لنسهل عليك تطبيق الفكرة. يمكنك استخدام زر البحث في Pinterest أسفل كل نمط لاستلهام المزيد من الأفكار.
                 </p>
                 <button
                     type="button"
