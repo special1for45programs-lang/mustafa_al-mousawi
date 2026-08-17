@@ -81,7 +81,7 @@ const App: React.FC = () => {
         </div>
 
         {/* المحتوى الرئيسي */}
-        <main className="flex-grow z-10 relative">
+        <main className="flex-grow z-10 relative lg:pr-20">
           
           {/* قسم الهيرو (البداية) - محمل فوراً */}
           <section id="home">
@@ -126,7 +126,7 @@ const App: React.FC = () => {
         <button
           onClick={scrollToTop}
           aria-label="Scroll to top"
-          className={`fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-30 hidden lg:flex items-center justify-center p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 ${
+          className={`fixed bottom-24 left-4 sm:bottom-8 sm:left-8 z-30 hidden lg:flex items-center justify-center p-3 bg-brand-lime text-black rounded-full shadow-lg transition-all duration-300 hover:bg-white hover:scale-110 active:scale-95 active:opacity-80 ${
             showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
           }`}
         >

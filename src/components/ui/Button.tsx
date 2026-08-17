@@ -17,7 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props 
 }) => {
   // التنسيقات الأساسية المشتركة
-  const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-accent disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 active:opacity-80";
   
   // تنسيقات كل نمط
   const variants = {

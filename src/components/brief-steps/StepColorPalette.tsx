@@ -85,6 +85,7 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
     };
 
     const removeColor = (index: number) => {
+        if (!window.confirm('هل أنت متأكد من حذف هذا اللون؟')) return;
         const newPalette = palette.filter((_, i) => i !== index);
         setPalette(newPalette);
         savePalette(newPalette);
@@ -302,7 +303,7 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
                                         <button 
                                             type="button" 
                                             onClick={() => removeColor(i)}
-                                            className="p-2 rounded-full shadow-xl transition-all bg-red-500/80 text-white hover:bg-red-500"
+                                            className="p-2 rounded-full shadow-xl transition-all bg-red-500/80 text-white hover:bg-red-500 active:scale-95 active:opacity-80"
                                             title="حذف اللون"
                                         >
                                             <Trash2 size={16} />
