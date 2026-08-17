@@ -539,6 +539,12 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
       font-weight: 700;
       letter-spacing: 0.5px;
     }
+    
+    /* Page Breaks - Prevent awkward cutting */
+    .section, .field, .gallery-image, .images-gallery, .color-circle {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
   </style>
 </head>
 <body>
@@ -614,7 +620,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
                        ${(isSocial ? sd.favoriteColors : logo.favoriteColors).split('، ').map((c: string) => `
                          <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #eee; border-radius: 6px;">
                            <div style="width: 14px; height: 14px; border-radius: 50%; background-color: ${c}; border: 1px solid #ddd;"></div>
-                           <span style="font-size: 11px;">${c}</span>
+                           <span style="font-size: 11px; direction: ltr !important; unicode-bidi: isolate; display: inline-block;">${c}</span>
                          </div>
                        `).join('')}
                      </div>`
@@ -720,7 +726,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             <span>نوع الشعار المختار: ${(formData as any).logoTypeName || logoTypeLabels[logo.logoType]}</span>
             ${(formData as any).logoTypeDesc ? `<span style="font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 12px; font-weight: normal; color: #666;">${(formData as any).logoTypeDesc}</span>` : ''}
           </div>
-          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: flex-start; direction: ltr;">
+          <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; justify-content: center !important; direction: ltr;">
             ${(formData as any).logoTypeImagesBase64.map((img: string) => `
               <img src="${resolveImgSrc(img)}" style="width: 120px; height: 120px; object-fit: contain !important; background-color: #f8f9fa; border-radius: 8px; padding: 5px; border: 1px solid #eee;" />
             `).join('')}
