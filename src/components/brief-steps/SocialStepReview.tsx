@@ -86,7 +86,8 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
             <Row label="رقم الهاتف"        value={<span dir="ltr">{formData.phone || 'لم يتم تحديد هذا الخيار'}</span>} />
             <Row label="البريد الإلكتروني" value={<span dir="ltr">{formData.email || 'لم يتم تحديد هذا الخيار'}</span>} />
             <Row label="مجال العمل"        value={formData.projectType} />
-            <div className="space-y-1">
+            <Row label="لغة المنشورات"     value={formData.postsLanguage} />
+            <div className="space-y-1 md:col-span-2">
                 <span className="text-sm font-bold text-gray-400 block">الهوية اللونية</span>
                 {sd?.favoriteColors === 'designer_choice' || sd?.favoriteColors === 'متروك للمصمم' ? (
                     <div className="font-bold text-gray-800 text-lg bg-gray-50 p-3 rounded-xl border border-gray-100 min-h-[52px] flex items-center">
@@ -101,6 +102,34 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
         </div>
       </div>
 
+      {/* Target Audience Reference */}
+      {(formData.targetAge || formData.targetGender || formData.targetDescription) && (
+          <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                  <div className="w-1.5 h-8 bg-brand-lime rounded-full"></div>
+                  <h3 className="text-xl font-normal text-gray-900">الجمهور المستهدف</h3>
+              </div>
+              <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Row label="الفئة العمرية" value={formData.targetAge} />
+                      <Row label="الجنس المستهدف" value={formData.targetGender} />
+                  </div>
+                  <Row label="وصف واهتمامات الجمهور" value={formData.targetDescription} />
+              </div>
+          </div>
+      )}
+
+      {/* Competitors Reference */}
+      {formData.competitors && (
+          <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                  <div className="w-1.5 h-8 bg-brand-lime rounded-full"></div>
+                  <h3 className="text-xl font-normal text-gray-900">المنافسون</h3>
+              </div>
+              <Row label="المنافسون في السوق" value={formData.competitors} />
+          </div>
+      )}
+
       <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
             <div className="w-1.5 h-8 bg-brand-lime rounded-full"></div>
@@ -109,9 +138,32 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
                 <Row label="المنصات المستهدفة"       value={sd?.platforms} />
+                <Row label="روابط الحسابات الحالية"  value={sd?.currentAccountsLinks} />
+                <Row label="أنواع المحتوى"           value={sd?.contentMix} />
+                <Row label="جاهزية الشعار والملفات"  value={sd?.assetsAvailability} />
                 <Row label="المنتجات / الخدمات"      value={sd?.productsServices} />
-                <Row label="أفكار البوستات"          value={sd?.postIdeas} />
             </div>
+
+            {/* Dynamic Posts List */}
+            {sd?.postsList && sd.postsList.length > 0 && (
+                <div className="space-y-3 mt-6">
+                    <span className="text-sm font-bold text-gray-400 block">تفاصيل البوستات المطلوبة ({sd.postsList.length})</span>
+                    <div className="grid grid-cols-1 gap-4">
+                        {sd.postsList.map((post, index) => (
+                            <div key={index} className="bg-gray-50 border border-gray-100 rounded-xl p-4 flex flex-col gap-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="bg-white text-gray-900 border border-gray-200 px-3 py-1 rounded-full text-xs font-bold">بوست {index + 1}</span>
+                                    <span className="text-sm font-bold text-gray-700">
+                                        {post.category === 'أخرى (تصنيف مخصص)' ? (post.customCategory || 'أخرى') : post.category}
+                                    </span>
+                                </div>
+                                <div className="font-bold text-gray-900 mt-1">{post.headline || '-'}</div>
+                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">{post.concept || '-'}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
       </div>
 

@@ -33,11 +33,9 @@ const getInitialSocialData = (): SocialDetails => ({
   inspirationImage: '',
   inspirationImages: [],
   designStyle:      '',
-  postsPatternImages: [],
   platforms:        [],
   businessType:     '',
   productsServices: '',
-  postIdeas:        '',
   visualStyle:      '',
   additionalNotes:  '',
   currentAccountsLinks: '',
@@ -168,17 +166,10 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
   };
 
   // ─── إزالة صورة مرفقة ─────────────────────────────────────────────────
+  // ─── إزالة صورة مرفقة ─────────────────────────────────────────────────
   const removeUploadedFile = (e: React.MouseEvent, index: number, isSocialPath: boolean = false) => {
     e.stopPropagation();
-    if (isSocialPath) {
-      setFormData(prev => ({ 
-        ...prev, 
-        socialDetails: {
-          ...prev.socialDetails,
-          postsPatternImages: prev.socialDetails.postsPatternImages.filter((_, i) => i !== index)
-        }
-      }));
-    } else {
+    if (!isSocialPath) {
       setFormData(prev => ({ 
         ...prev, 
         logoDetails: {
@@ -222,12 +213,12 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
         toast.error('يرجى ملء هذا الحقل المطلوب.');
         return false;
       }
-      if (step === 3 && (!formData.socialDetails.platforms.length || !formData.socialDetails.productsServices)) {
-        toast.error('يرجى اختيار خيار واحد على الأقل للمتابعة.');
+      if (step === 3 && (!formData.socialDetails.platforms.length || !formData.socialDetails.assetsAvailability)) {
+        toast.error('يرجى اختيار منصة واحدة على الأقل وتحديد جاهزية الشعار للمتابعة.');
         return false;
       }
-      if (step === 4 && (!formData.socialDetails.postIdeas)) {
-        toast.error('يرجى ملء هذا الحقل المطلوب.');
+      if (step === 4 && (!formData.socialDetails.postsList || formData.socialDetails.postsList.length === 0)) {
+        toast.error('يرجى إضافة تفاصيل بوست واحد على الأقل للمتابعة.');
         return false;
       }
     } else {
@@ -268,7 +259,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
 
       // 1. Strip base64 assets for Firestore to keep document lightweight
       const strippedData = JSON.parse(JSON.stringify(formData));
-      delete strippedData.designStyleImageBase64;
       delete strippedData.logoTypeImagesBase64;
       if (strippedData.logoDetails) {
         delete strippedData.logoDetails.inspirationImage;
@@ -277,7 +267,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
       if (strippedData.socialDetails) {
         delete strippedData.socialDetails.inspirationImage;
         delete strippedData.socialDetails.inspirationImages;
-        delete strippedData.socialDetails.postsPatternImages;
       }
       
       const briefId = await addBriefRequest(strippedData);
@@ -299,8 +288,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
           const activeDesignStyle = finalFormData.socialDetails.designStyle;
           if (activeDesignStyle) {
             const styleObj = DESIGN_STYLES.find(s => s.id === activeDesignStyle);
-            if (styleObj && styleObj.img) {
-              finalFormData.designStyleImageBase64 = styleObj.img;
+            if (styleObj && styleObj.name) {
               finalFormData.designStyleName = styleObj.name;
             }
           }
@@ -586,9 +574,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
               <SocialStepPlatforms
                 socialData={formData.socialDetails}
                 updateSocialData={updateSocialData}
-                companyName={formData.companyName}
-                updateFormData={updateFormData}
-                projectType={formData.projectType}
               />
             )}
             {isSocial && step === 4 && (

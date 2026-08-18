@@ -76,7 +76,8 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Row label="المجال" value={formData.projectType} />
-                        <div className="space-y-1">
+                        <Row label="لغة الشعار" value={formData.logoLanguage} />
+                        <div className="space-y-1 md:col-span-2">
                             <span className="text-sm font-bold text-gray-400 block">الهوية اللونية</span>
                             {logo.favoriteColors === 'image_inspiration' && logo.inspirationImage ? (
                                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-center justify-center min-h-[52px]">
@@ -95,6 +96,34 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
                     </div>
                 </div>
             </div>
+
+            {/* Target Audience Reference */}
+            {(formData.targetAge || formData.targetGender || formData.targetDescription) && (
+                <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <div className="w-1.5 h-8 bg-brand-lime rounded-full"></div>
+                        <h3 className="text-xl font-normal text-gray-900">الجمهور المستهدف</h3>
+                    </div>
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Row label="الفئة العمرية" value={formData.targetAge} />
+                            <Row label="الجنس المستهدف" value={formData.targetGender} />
+                        </div>
+                        <Row label="وصف واهتمامات الجمهور" value={formData.targetDescription} />
+                    </div>
+                </div>
+            )}
+
+            {/* Competitors Reference */}
+            {formData.competitors && (
+                <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                        <div className="w-1.5 h-8 bg-brand-lime rounded-full"></div>
+                        <h3 className="text-xl font-normal text-gray-900">المنافسون</h3>
+                    </div>
+                    <Row label="المنافسون في السوق" value={formData.competitors} />
+                </div>
+            )}
 
             {/* Specs & Timeline */}
             <div className="bg-white p-6 rounded-[2.5rem] border border-gray-100 shadow-sm">

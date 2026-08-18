@@ -95,19 +95,26 @@ const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
       )}
 
       <InfoRow label="المنتجات / الخدمات" value={sd.productsServices} />
-      <InfoRow label="أفكار البوستات المطلوبة" value={sd.postIdeas} />
+      
+      {sd.postsList && sd.postsList.length > 0 && (
+        <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5 space-y-4">
+          <span className="block text-gray-500 text-xs font-bold uppercase tracking-wider">تفاصيل البوستات المطلوبة</span>
+          {sd.postsList.map((post: any, i: number) => (
+            <div key={i} className="border-r-2 border-brand-lime pr-4 py-1">
+              <div className="text-white text-sm font-bold mb-1">
+                النوع: {post.customCategory || post.category}
+              </div>
+              <div className="text-gray-300 text-sm mb-1"><span className="text-brand-lime font-bold">العنوان:</span> {post.headline}</div>
+              <div className="text-gray-400 text-sm leading-relaxed"><span className="text-brand-lime font-bold">الفكرة:</span> {post.concept}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {sd.visualStyle && (
         <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
           <span className="block text-gray-500 text-xs mb-1.5 font-bold uppercase tracking-wider">الأسلوب البصري</span>
           <span className="text-white text-sm font-bold">{VISUAL_STYLE_LABELS[sd.visualStyle] || sd.visualStyle}</span>
-        </div>
-      )}
-
-      {req.designStyleImageBase64 && (
-        <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
-          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">النمط التصميمي المختار ({req.designStyleName || sd.designStyle})</span>
-          <img src={req.designStyleImageBase64} alt="Design Style" className="w-32 h-32 object-cover rounded-lg border border-white/10" loading="lazy" />
         </div>
       )}
 
@@ -119,19 +126,6 @@ const SocialDataSection: React.FC<{ req: BriefRequestWithId }> = ({ req }) => {
       )}
 
       {sd.additionalNotes && <InfoRow label="ملاحظات إضافية" value={sd.additionalNotes} />}
-
-      {/* صور مرجعية */}
-      {(sd.postsPatternImages?.length > 0) && (
-        <div className="bg-brand-black/50 p-4 rounded-lg border border-white/5">
-          <span className="block text-gray-500 text-xs mb-3 font-bold uppercase tracking-wider">الصور المرجعية</span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {sd.postsPatternImages.map((src: string, i: number) => (
-              <img key={i} src={src} alt={`ref-${i}`}
-                className="w-full h-auto max-h-96 object-contain rounded-xl border border-white/10 bg-black/20 p-2" loading="lazy" />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

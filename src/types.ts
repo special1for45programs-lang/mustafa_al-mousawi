@@ -6,6 +6,7 @@ export type BriefCategory = 'logo' | 'branding' | 'social_posts' | 'social_plans
 
 export interface PostItem {
   category: string;
+  customCategory?: string;
   headline: string;
   concept: string;
 }
@@ -18,11 +19,9 @@ export interface SocialDetails {
   inspirationImage: string;
   inspirationImages: string[];       // صور النمط المسبق (متعددة حتى 10)
   designStyle: string;
-  postsPatternImages: string[];
   platforms: string[];
   businessType: string;
   productsServices: string;
-  postIdeas: string;
   visualStyle: 'modern' | 'formal' | 'luxury' | 'bold' | '';
   additionalNotes: string;
   currentAccountsLinks?: string;
@@ -87,7 +86,6 @@ export interface BriefFormData extends BaseBriefData {
   briefType: 'logo' | 'social' | '';
   logoDetails: LogoDetails;
   socialDetails: SocialDetails;
-  designStyleImageBase64?: string;
   designStyleName?: string;
   logoTypeImageBase64?: string[]; // Fixed type from string to string[]
   logoTypeImagesBase64?: string[]; // Added this to match usage in BriefRequests.tsx

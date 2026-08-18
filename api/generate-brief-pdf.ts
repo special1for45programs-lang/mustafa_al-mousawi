@@ -18,11 +18,9 @@ export interface SocialDetails {
   inspirationImage?: string;
   inspirationImages?: string[];
   designStyle: string;
-  postsPatternImages: string[];
   platforms: string[];
   businessType: string;
   productsServices: string;
-  postIdeas: string;
   visualStyle: 'modern' | 'formal' | 'luxury' | 'bold' | '';
   additionalNotes: string;
 }
@@ -133,7 +131,6 @@ function buildTelegramCaption(formData: BriefFormData, briefId?: string, baseUrl
     base.push(`📊 تفاصيل السوشيال:`);
     if (sd.platforms?.length) base.push(`📱 المنصات: ${sd.platforms.join(', ')}`);
     if (sd.productsServices)   base.push(`🛡️ النشاط: ${sd.productsServices.substring(0, 150)}`);
-    if (sd.postIdeas)          base.push(`💡 أفكار: ${sd.postIdeas.substring(0, 200)}`);
     if (sd.visualStyle)        base.push(`🎨 الأسلوب: ${sd.visualStyle}`);
     if (sd.additionalNotes)    base.push(`📝 ملاحظات: ${sd.additionalNotes.substring(0, 150)}`);
   } else {
@@ -722,7 +719,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             ${sd.postsList.map((post: any, index: number) => `
               <div style="background: #f9fafb; border: 1px solid #eee; padding: 12px; border-radius: 8px;">
                 <div style="font-weight: bold; color: #1e293b; margin-bottom: 6px; font-size: 13px;">
-                  بوست رقم ${index + 1} <span style="color: #64748b; font-weight: normal; font-size: 11px;">(${post.category})</span>
+                  بوست رقم ${index + 1} <span style="color: #64748b; font-weight: normal; font-size: 11px;">(${post.category === 'أخرى (تصنيف مخصص)' ? (post.customCategory || 'أخرى') : post.category})</span>
                 </div>
                 <div style="font-weight: 600; color: #334155; margin-bottom: 4px; font-size: 12px;">${post.headline}</div>
                 <div style="color: #475569; font-size: 12px; line-height: 1.5;">${post.concept.replace(/\n/g, '<br />')}</div>
@@ -782,7 +779,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
       </div>
       `}
       
-      ${(formData as any).designStyleImageBase64 || ((formData as any).logoTypeImagesBase64 && (formData as any).logoTypeImagesBase64.length > 0) || (logo.moodboard && logo.moodboard.length > 0) || (sd.postsPatternImages && sd.postsPatternImages.length > 0) || (!isSocial && logo.designStyle) || hasInspirationImages ? `
+      ${((formData as any).logoTypeImagesBase64 && (formData as any).logoTypeImagesBase64.length > 0) || (logo.moodboard && logo.moodboard.length > 0) || (!isSocial && logo.designStyle) || hasInspirationImages ? `
       <!-- المراجع البصرية -->
       <div class="section">
         <div class="section-header">
@@ -819,16 +816,9 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
         </div>
         ` : ''}
         
-        ${(!isSocial && logo.designStyle) || (formData as any).designStyleImageBase64 ? `
+        ${(!isSocial && logo.designStyle) ? `
         <div class="field" style="margin-bottom: 20px;">
-          <div class="field-label">النمط التصميمي المختار: ${(formData as any).designStyleName || (isSocial ? sd.designStyle : logo.designStyle)}</div>
-          ${(formData as any).designStyleImageBase64 ? `
-          <div class="images-gallery" style="display: grid; grid-template-columns: 180px; margin-top: 10px; gap: 10px;">
-            <div class="gallery-image">
-              <img src="${resolveImgSrc((formData as any).designStyleImageBase64)}" alt="Design Style" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
-            </div>
-          </div>
-          ` : ''}
+          <div class="field-label">النمط التصميمي المختار: ${logo.designStyle}</div>
         </div>
         ` : ''}
       
@@ -845,18 +835,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
         </div>
         ` : ''}
 
-        ${sd.postsPatternImages && sd.postsPatternImages.length > 0 ? `
-        <div class="field">
-          <div class="field-label">أنماط المنشورات (${sd.postsPatternImages.length})</div>
-          <div class="images-gallery">
-            ${sd.postsPatternImages.map((img: string, index: number) => `
-              <div class="gallery-image">
-                <img src="${img}" alt="نمط ${index + 1}" style="width: 100%; max-height: 300px; object-fit: contain !important; object-position: center; border-radius: 8px; display: block;">
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        ` : ''}
+
       </div>
       ` : ''}
       
@@ -1208,12 +1187,12 @@ const ApiLogoDetailsSchema = z.object({
 const ApiSocialDetailsSchema = z.object({
   inspirationImage: base64ImageSchema,
   inspirationImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
-  postsPatternImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
   currentAccountsLinks: z.string().optional(),
   contentMix: z.array(z.string()).optional(),
   assetsAvailability: z.string().optional(),
   postsList: z.array(z.object({
     category: z.string(),
+    customCategory: z.string().optional(),
     headline: z.string(),
     concept: z.string()
   })).optional(),
@@ -1232,7 +1211,6 @@ const ApiBriefSchema = z.object({
   postsLanguage: z.string().optional(),
   logoDetails: ApiLogoDetailsSchema.optional(),
   socialDetails: ApiSocialDetailsSchema.optional(),
-  designStyleImageBase64: base64ImageSchema,
   logoTypeImagesBase64: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
 }).passthrough();
 
@@ -1339,7 +1317,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const base64Images: string[] = [];
     const addImg = (img: any) => { if (typeof img === 'string' && img.startsWith('data:image')) base64Images.push(img); };
     
-    addImg((formData as any).designStyleImageBase64);
     if (Array.isArray((formData as any).logoTypeImagesBase64)) (formData as any).logoTypeImagesBase64.forEach(addImg);
     if (brief.logoDetails) {
       addImg(brief.logoDetails.inspirationImage);
@@ -1348,7 +1325,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (brief.socialDetails) {
       addImg(brief.socialDetails.inspirationImage);
       if (Array.isArray(brief.socialDetails.inspirationImages)) brief.socialDetails.inspirationImages.forEach(addImg);
-      if (Array.isArray(brief.socialDetails.postsPatternImages)) brief.socialDetails.postsPatternImages.forEach(addImg);
     }
     
     console.log(`[API] 📸 Found ${base64Images.length} images to upload...`);

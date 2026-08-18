@@ -15,9 +15,6 @@ import {
 interface SocialStepPlatformsProps {
   socialData: SocialDetails;
   updateSocialData: (data: Partial<SocialDetails>) => void;
-  companyName: string;
-  updateFormData: (data: { companyName?: string; projectType?: string }) => void;
-  projectType: string;
 }
 
 const PLATFORMS = [
@@ -40,7 +37,7 @@ const CONTENT_MIX_OPTIONS = [
 ];
 
 const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
-  socialData, updateSocialData, companyName, updateFormData, projectType,
+  socialData, updateSocialData,
 }) => {
 
   const togglePlatform = (id: string) => {
@@ -151,13 +148,13 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
           <select
             value={socialData.assetsAvailability || ''}
             onChange={e => updateSocialData({ assetsAvailability: e.target.value })}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+            className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
             required
           >
-            <option value="" disabled>اختر الحالة...</option>
-            <option value="لدي شعار مفرغ بجودة عالية">لدي شعار مفرغ بجودة عالية</option>
-            <option value="لدي شعار لكن يحتاج إعادة رسم أو تفريغ">لدي شعار لكن يحتاج إعادة رسم أو تفريغ</option>
-            <option value="لا أملك شعاراً وأحتاج تصميمه أولاً">لا أملك شعاراً وأحتاج تصميمه أولاً</option>
+            <option value="" disabled className="text-gray-900">اختر الحالة...</option>
+            <option value="لدي شعار مفرغ بجودة عالية" className="text-gray-900">لدي شعار مفرغ بجودة عالية</option>
+            <option value="لدي شعار لكن يحتاج إعادة رسم أو تفريغ" className="text-gray-900">لدي شعار لكن يحتاج إعادة رسم أو تفريغ</option>
+            <option value="لا أملك شعاراً وأحتاج تصميمه أولاً" className="text-gray-900">لا أملك شعاراً وأحتاج تصميمه أولاً</option>
           </select>
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

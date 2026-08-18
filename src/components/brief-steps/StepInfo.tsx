@@ -136,13 +136,13 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                 name="logoLanguage"
                                 value={formData.logoLanguage || ''}
                                 onChange={handleChange}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
                             >
-                                <option value="" disabled>اختر لغة الشعار...</option>
-                                <option value="عربي فقط">عربي فقط</option>
-                                <option value="إنجليزي فقط">إنجليزي فقط</option>
-                                <option value="دمج عربي وإنجليزي">دمج عربي وإنجليزي</option>
-                                <option value="رمز فقط بدون نص">رمز فقط بدون نص</option>
+                                <option value="" disabled className="text-gray-900">اختر لغة الشعار...</option>
+                                <option value="عربي فقط" className="text-gray-900">عربي فقط</option>
+                                <option value="إنجليزي فقط" className="text-gray-900">إنجليزي فقط</option>
+                                <option value="دمج عربي وإنجليزي" className="text-gray-900">دمج عربي وإنجليزي</option>
+                                <option value="رمز فقط بدون نص" className="text-gray-900">رمز فقط بدون نص</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -158,12 +158,12 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                 name="postsLanguage"
                                 value={formData.postsLanguage || ''}
                                 onChange={handleChange}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
                             >
-                                <option value="" disabled>اختر لغة المنشورات...</option>
-                                <option value="عربي فقط">عربي فقط</option>
-                                <option value="إنجليزي فقط">إنجليزي فقط</option>
-                                <option value="مزج بين اللغتين">مزج بين اللغتين</option>
+                                <option value="" disabled className="text-gray-900">اختر لغة المنشورات...</option>
+                                <option value="عربي فقط" className="text-gray-900">عربي فقط</option>
+                                <option value="إنجليزي فقط" className="text-gray-900">إنجليزي فقط</option>
+                                <option value="مزج بين اللغتين" className="text-gray-900">مزج بين اللغتين</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -184,14 +184,14 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                     name="targetAge"
                                     value={formData.targetAge || ''}
                                     onChange={handleChange}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
                                 >
-                                    <option value="" disabled>اختر الفئة...</option>
-                                    <option value="أطفال">أطفال</option>
-                                    <option value="مراهقين">مراهقين</option>
-                                    <option value="شباب">شباب</option>
-                                    <option value="كبار السن">كبار السن</option>
-                                    <option value="جميع الفئات">جميع الفئات</option>
+                                    <option value="" disabled className="text-gray-900">اختر الفئة...</option>
+                                    <option value="أطفال" className="text-gray-900">أطفال</option>
+                                    <option value="مراهقين" className="text-gray-900">مراهقين</option>
+                                    <option value="شباب" className="text-gray-900">شباب</option>
+                                    <option value="كبار السن" className="text-gray-900">كبار السن</option>
+                                    <option value="جميع الفئات" className="text-gray-900">جميع الفئات</option>
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -205,12 +205,12 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                     name="targetGender"
                                     value={formData.targetGender || ''}
                                     onChange={handleChange}
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
                                 >
-                                    <option value="" disabled>اختر الجنس...</option>
-                                    <option value="رجال">رجال</option>
-                                    <option value="نساء">نساء</option>
-                                    <option value="كلاهما">كلاهما</option>
+                                    <option value="" disabled className="text-gray-900">اختر الجنس...</option>
+                                    <option value="رجال" className="text-gray-900">رجال</option>
+                                    <option value="نساء" className="text-gray-900">نساء</option>
+                                    <option value="كلاهما" className="text-gray-900">كلاهما</option>
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
