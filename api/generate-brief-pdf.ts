@@ -58,6 +58,11 @@ interface BriefFormData {
   projectDescription: string;
   projectType: string;
 
+  logoLanguage?: string;
+  targetAge?: string;
+  targetGender?: string;
+  targetDescription?: string;
+
   briefType: 'logo' | 'social' | '';
   logoDetails: LogoDetails;
   socialDetails: SocialDetails;
@@ -610,6 +615,18 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             <div class="field-label">المجال</div>
             <div class="field-value">${formData.projectType || '-'}</div>
           </div>
+          ${!isSocial && formData.logoLanguage ? `
+          <div class="field">
+            <div class="field-label">لغة الشعار</div>
+            <div class="field-value">${formData.logoLanguage}</div>
+          </div>
+          ` : ''}
+          ${isSocial && formData.postsLanguage ? `
+          <div class="field">
+            <div class="field-label">لغة المنشورات</div>
+            <div class="field-value">${formData.postsLanguage}</div>
+          </div>
+          ` : ''}
           <div class="field">
             <div class="field-label">الألوان المفضلة</div>
             <div class="field-value">
@@ -629,6 +646,45 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
           </div>
         </div>
       </div>
+
+      ${!isSocial && (formData.targetAge || formData.targetGender || formData.targetDescription) ? `
+      <!-- الجمهور المستهدف -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-indicator"></div>
+          <div class="section-title">الجمهور المستهدف</div>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <div class="field-label">الفئة العمرية</div>
+            <div class="field-value">${formData.targetAge || 'غير محدد'}</div>
+          </div>
+          <div class="field">
+            <div class="field-label">الجنس المستهدف</div>
+            <div class="field-value">${formData.targetGender || 'غير محدد'}</div>
+          </div>
+        </div>
+        ${formData.targetDescription ? `
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">وصف واهتمامات الجمهور</div>
+          <div class="field-value multiline">${formData.targetDescription}</div>
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
+
+      ${formData.competitors ? `
+      <!-- المنافسون -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-indicator"></div>
+          <div class="section-title">المنافسون</div>
+        </div>
+        <div class="field">
+          <div class="field-value multiline">${formData.competitors}</div>
+        </div>
+      </div>
+      ` : ''}
       
       ${isSocial && sd ? `
       <!-- تفاصيل السوشيال ميديا -->
@@ -643,14 +699,43 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             ${sd.platforms?.map((p: string) => `<span class="tag">${p}</span>`).join('') || '<span class="empty-tag">-</span>'}
           </div>
         </div>
+        ${sd.currentAccountsLinks ? `
         <div class="field" style="margin-top: 15px;">
-          <div class="field-label">المنتجات / الخدمات</div>
-          <div class="field-value multiline">${sd.productsServices || '-'}</div>
+          <div class="field-label">روابط الحسابات الحالية</div>
+          <div class="field-value multiline">${sd.currentAccountsLinks}</div>
+        </div>
+        ` : ''}
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">أنواع المحتوى</div>
+          <div class="tags">
+            ${sd.contentMix?.length ? sd.contentMix.map((c: string) => `<span class="tag">${c}</span>`).join('') : '<span class="empty-tag">-</span>'}
+          </div>
         </div>
         <div class="field" style="margin-top: 15px;">
-          <div class="field-label">أفكار البوستات</div>
-          <div class="field-value multiline">${sd.postIdeas || '-'}</div>
+          <div class="field-label">جاهزية الشعار والملفات</div>
+          <div class="field-value">${sd.assetsAvailability || '-'}</div>
         </div>
+        ${sd.postsList && sd.postsList.length > 0 ? `
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">تفاصيل البوستات المطلوبة</div>
+          <div style="margin-top: 10px; display: grid; gap: 10px;">
+            ${sd.postsList.map((post: any, index: number) => `
+              <div style="background: #f9fafb; border: 1px solid #eee; padding: 12px; border-radius: 8px;">
+                <div style="font-weight: bold; color: #1e293b; margin-bottom: 6px; font-size: 13px;">
+                  بوست رقم ${index + 1} <span style="color: #64748b; font-weight: normal; font-size: 11px;">(${post.category})</span>
+                </div>
+                <div style="font-weight: 600; color: #334155; margin-bottom: 4px; font-size: 12px;">${post.headline}</div>
+                <div style="color: #475569; font-size: 12px; line-height: 1.5;">${post.concept.replace(/\n/g, '<br />')}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : `
+        <div class="field" style="margin-top: 15px;">
+          <div class="field-label">تفاصيل البوستات المطلوبة</div>
+          <div class="field-value">-</div>
+        </div>
+        `}
         <div class="grid" style="margin-top: 15px;">
           <div class="field">
             <div class="field-label">الأسلوب البصري للمنشورات</div>
@@ -1124,6 +1209,14 @@ const ApiSocialDetailsSchema = z.object({
   inspirationImage: base64ImageSchema,
   inspirationImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
   postsPatternImages: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
+  currentAccountsLinks: z.string().optional(),
+  contentMix: z.array(z.string()).optional(),
+  assetsAvailability: z.string().optional(),
+  postsList: z.array(z.object({
+    category: z.string(),
+    headline: z.string(),
+    concept: z.string()
+  })).optional(),
 }).passthrough();
 
 const ApiBriefSchema = z.object({
@@ -1131,6 +1224,12 @@ const ApiBriefSchema = z.object({
   phone: z.string().trim().min(6, "رقم الهاتف مطلوب").max(50),
   briefType: z.enum(['logo', 'social', '']),
   email: z.string().email("صيغة البريد الإلكتروني غير صحيحة").or(z.literal('')).optional(),
+  logoLanguage: z.string().optional(),
+  targetAge: z.string().optional(),
+  targetGender: z.string().optional(),
+  targetDescription: z.string().optional(),
+  competitors: z.string().optional(),
+  postsLanguage: z.string().optional(),
   logoDetails: ApiLogoDetailsSchema.optional(),
   socialDetails: ApiSocialDetailsSchema.optional(),
   designStyleImageBase64: base64ImageSchema,

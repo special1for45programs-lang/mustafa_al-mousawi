@@ -4,6 +4,12 @@
 // ==========================================
 export type BriefCategory = 'logo' | 'branding' | 'social_posts' | 'social_plans';
 
+export interface PostItem {
+  category: string;
+  headline: string;
+  concept: string;
+}
+
 // ==========================================
 // بيانات مسار السوشيال ميديا
 // ==========================================
@@ -19,6 +25,10 @@ export interface SocialDetails {
   postIdeas: string;
   visualStyle: 'modern' | 'formal' | 'luxury' | 'bold' | '';
   additionalNotes: string;
+  currentAccountsLinks?: string;
+  contentMix?: string[];
+  assetsAvailability?: string;
+  postsList?: PostItem[];
 }
 
 // ==========================================
@@ -57,6 +67,13 @@ export interface BaseBriefData {
   projectName: string;
   projectDescription: string;
   projectType: string;
+
+  logoLanguage?: string;
+  targetAge?: string;
+  targetGender?: string;
+  targetDescription?: string;
+  competitors?: string;
+  postsLanguage?: string;
 
   briefCategory?: BriefCategory;
   selectedPackageName?: string;

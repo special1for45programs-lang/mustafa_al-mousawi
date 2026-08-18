@@ -40,6 +40,10 @@ const getInitialSocialData = (): SocialDetails => ({
   postIdeas:        '',
   visualStyle:      '',
   additionalNotes:  '',
+  currentAccountsLinks: '',
+  contentMix: [],
+  assetsAvailability: '',
+  postsList: [{ category: 'ترويجي / بيعي', headline: '', concept: '' }],
 });
 
 const getInitialLogoData = (): LogoDetails => ({
@@ -66,6 +70,12 @@ const getInitialBaseData = (): BaseBriefData => ({
   projectName:      '',
   projectDescription: '',
   projectType:      '',
+  logoLanguage:     '',
+  targetAge:        '',
+  targetGender:     '',
+  targetDescription: '',
+  competitors:      '',
+  postsLanguage:    '',
 });
 
 const getInitialFormData = (): BriefFormData => ({
@@ -585,6 +595,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
               <SocialStepContent
                 socialData={formData.socialDetails}
                 updateSocialData={updateSocialData}
+                selectedPackageName={formData.selectedPackageName}
               />
             )}
             {isSocial && step === 5 && (

@@ -31,6 +31,14 @@ const PLATFORMS = [
   { id: 'telegram',  label: 'Telegram / تيليجرام',  icon: Send, activeClass: 'border-[#26A5E4] bg-[#26A5E4]/10 text-[#26A5E4]' },
 ];
 
+const CONTENT_MIX_OPTIONS = [
+  "عروض بيع وترويج",
+  "محتوى تثقيفي ونصائح",
+  "اقتباسات وعبارات",
+  "مسابقات وتفاعل",
+  "تغطية فعاليات"
+];
+
 const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
   socialData, updateSocialData, companyName, updateFormData, projectType,
 }) => {
@@ -43,47 +51,27 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
     updateSocialData({ platforms: updated });
   };
 
+  const toggleContentMix = (option: string) => {
+    const current = socialData.contentMix || [];
+    const updated = current.includes(option)
+      ? current.filter(o => o !== option)
+      : [...current, option];
+    updateSocialData({ contentMix: updated });
+  };
+
   return (
     <div className="space-y-8 animate-fadeIn">
 
-      {/* اسم الشركة / الحساب */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-800">
-            اسم الشركة / الحساب <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={companyName}
-            onChange={e => updateFormData({ companyName: e.target.value })}
-            placeholder="الاسم كما يظهر في حساباتك"
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-800">مجال العمل</label>
-          <input
-            type="text"
-            value={projectType}
-            onChange={e => updateFormData({ projectType: e.target.value })}
-            placeholder="مثال: مطعم، عيادة، متجر إلكتروني..."
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
-          />
-        </div>
-      </div>
-
-      {/* وصف المنتجات والخدمات */}
+      {/* روابط الحسابات الحالية */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-800">
-          ما الذي تقدمه / تبيعه؟ <span className="text-red-500">*</span>
+          روابط الحسابات الحالية <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span>
         </label>
         <textarea
-          value={socialData.productsServices}
-          onChange={e => updateSocialData({ productsServices: e.target.value })}
-          placeholder="صف بإيجاز منتجاتك أو خدماتك، والجمهور المستهدف..."
+          value={socialData.currentAccountsLinks || ''}
+          onChange={e => updateSocialData({ currentAccountsLinks: e.target.value })}
+          placeholder="ضع روابط حساباتك الحالية هنا لنتمكن من الاطلاع عليها، أو اترك الحقل فارغاً إذا كان الحساب جديداً..."
           className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-28 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
-          required
         />
       </div>
 
@@ -122,6 +110,59 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
             ⚠️ يرجى اختيار منصة واحدة على الأقل
           </p>
         )}
+      </div>
+
+      {/* أنواع المحتوى المطلوب تصميمه */}
+      <div className="space-y-3">
+        <label className="text-sm font-semibold text-slate-800">
+          أنواع المحتوى المطلوب تصميمه <span className="text-xs font-normal text-gray-400 mr-1">(اختر ما ينطبق)</span>
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {CONTENT_MIX_OPTIONS.map(option => {
+            const selected = (socialData.contentMix || []).includes(option);
+            return (
+              <label
+                key={option}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                  selected ? 'border-brand-lime bg-brand-lime/10' : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => toggleContentMix(option)}
+                  className="w-4 h-4 text-brand-lime focus:ring-brand-lime border-gray-300 rounded"
+                />
+                <span className={`text-sm font-semibold ${selected ? 'text-slate-800' : 'text-gray-600'}`}>
+                  {option}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* جاهزية الشعار والملفات */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-800">
+          جاهزية الشعار والملفات <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <select
+            value={socialData.assetsAvailability || ''}
+            onChange={e => updateSocialData({ assetsAvailability: e.target.value })}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+            required
+          >
+            <option value="" disabled>اختر الحالة...</option>
+            <option value="لدي شعار مفرغ بجودة عالية">لدي شعار مفرغ بجودة عالية</option>
+            <option value="لدي شعار لكن يحتاج إعادة رسم أو تفريغ">لدي شعار لكن يحتاج إعادة رسم أو تفريغ</option>
+            <option value="لا أملك شعاراً وأحتاج تصميمه أولاً">لا أملك شعاراً وأحتاج تصميمه أولاً</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
       </div>
 
     </div>

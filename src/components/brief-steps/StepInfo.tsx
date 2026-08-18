@@ -4,7 +4,7 @@ import { StepProps } from './types';
 const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
     const isSocial = formData.briefType === 'social';
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         updateFormData({ [e.target.name]: e.target.value });
     };
 
@@ -41,13 +41,13 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2 sm:col-span-2">
-                    <label className="text-sm font-semibold text-slate-800">اسم المشروع / النشاط <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-semibold text-slate-800">{isSocial ? 'اسم الحساب / العلامة التجارية' : 'اسم المشروع / الشعار'} <span className="text-red-500">*</span></label>
                     <input
                         type="text"
                         name="projectName"
                         value={formData.projectName}
                         onChange={handleChange}
-                        placeholder="اسم المشروع أو النشاط التجاري"
+                        placeholder={isSocial ? "اكتب اسم حسابك كما يظهر للمتابعين..." : "اكتب الاسم المراد تصميمه بدقة (مثل: أبل، سامسونج...)"}
                         className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
                         autoComplete="on"
                         required
@@ -94,28 +94,142 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                     name="projectDescription"
                     value={formData.projectDescription}
                     onChange={handleChange}
-                    placeholder={isSocial ? "أي تفاصيل تعريفية عامة عن نشاطك..." : "ما هو نشاط الشركة؟ من هم العملاء المستهدفين؟ ما هي القيم التي تود إيصالها؟"}
+                    placeholder={isSocial ? "حدثنا عن حسابك... ما هي الخدمات أو المنتجات التي تقدمها؟ وما هو هدفك من هذه المنشورات؟" : "حدثنا عن مشروعك كأنك تروي قصة... ما هي فكرة المشروع؟ وما القيمة التي تميزك عن غيرك؟"}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-32 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
                     required={!isSocial}
                 ></textarea>
             </div>
+            <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-800">
+                    المنافسون <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span>
+                </label>
+                <textarea
+                    name="competitors"
+                    value={formData.competitors || ''}
+                    onChange={handleChange}
+                    placeholder="اذكر 2 أو 3 من أهم منافسيك في السوق، أو ضع روابط حساباتهم..."
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-32 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                ></textarea>
+            </div>
             
-            {!isSocial && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2 sm:col-span-2">
-                    <label className="text-sm font-semibold text-slate-800">مجال العمل</label>
-                    <input
-                        type="text"
-                        name="projectType"
-                        value={formData.projectType}
-                        onChange={handleChange}
-                        placeholder="مثال: تقنية، مطاعم، ملابس..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
-                        autoComplete="on"
-                    />
+            <div className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {!isSocial && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-800">مجال العمل</label>
+                        <input
+                            type="text"
+                            name="projectType"
+                            value={formData.projectType}
+                            onChange={handleChange}
+                            placeholder="مثال: تقنية، مطاعم، ملابس..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                            autoComplete="on"
+                        />
+                    </div>
+                    )}
+                    {!isSocial && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-800">لغة الشعار <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span></label>
+                        <div className="relative">
+                            <select
+                                name="logoLanguage"
+                                value={formData.logoLanguage || ''}
+                                onChange={handleChange}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                            >
+                                <option value="" disabled>اختر لغة الشعار...</option>
+                                <option value="عربي فقط">عربي فقط</option>
+                                <option value="إنجليزي فقط">إنجليزي فقط</option>
+                                <option value="دمج عربي وإنجليزي">دمج عربي وإنجليزي</option>
+                                <option value="رمز فقط بدون نص">رمز فقط بدون نص</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    )}
+                    {isSocial && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-800">لغة المنشورات <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span></label>
+                        <div className="relative">
+                            <select
+                                name="postsLanguage"
+                                value={formData.postsLanguage || ''}
+                                onChange={handleChange}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                            >
+                                <option value="" disabled>اختر لغة المنشورات...</option>
+                                <option value="عربي فقط">عربي فقط</option>
+                                <option value="إنجليزي فقط">إنجليزي فقط</option>
+                                <option value="مزج بين اللغتين">مزج بين اللغتين</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    )}
+                </div>
+
+                {/* الجمهور المستهدف */}
+                <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-base font-bold text-slate-900 mb-4">الجمهور المستهدف</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-800">الفئة العمرية <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span></label>
+                            <div className="relative">
+                                <select
+                                    name="targetAge"
+                                    value={formData.targetAge || ''}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                >
+                                    <option value="" disabled>اختر الفئة...</option>
+                                    <option value="أطفال">أطفال</option>
+                                    <option value="مراهقين">مراهقين</option>
+                                    <option value="شباب">شباب</option>
+                                    <option value="كبار السن">كبار السن</option>
+                                    <option value="جميع الفئات">جميع الفئات</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-800">الجنس المستهدف <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span></label>
+                            <div className="relative">
+                                <select
+                                    name="targetGender"
+                                    value={formData.targetGender || ''}
+                                    onChange={handleChange}
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900"
+                                >
+                                    <option value="" disabled>اختر الجنس...</option>
+                                    <option value="رجال">رجال</option>
+                                    <option value="نساء">نساء</option>
+                                    <option value="كلاهما">كلاهما</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-gray-500">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-800">وصف واهتمامات الجمهور <span className="text-xs font-normal text-gray-400 mr-1">(اختياري)</span></label>
+                        <textarea
+                            name="targetDescription"
+                            value={formData.targetDescription || ''}
+                            onChange={handleChange}
+                            placeholder="مثال: أصحاب الشركات الناشئة، أو رياضيين مهتمين بالأكل الصحي..."
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-24 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                        ></textarea>
+                    </div>
                 </div>
             </div>
-            )}
         </div>
     );
 };
