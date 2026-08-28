@@ -18,8 +18,6 @@
   body {
     @apply bg-brand-black text-white;
     -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
-    overscroll-behavior-y: none;
   }
 }
 
