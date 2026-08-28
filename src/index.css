@@ -4,7 +4,7 @@
 
 @layer components {
   .glass-pill {
-    @apply bg-black/60 backdrop-blur-xl border border-white/15 shadow-2xl transform-gpu will-change-transform translate-z-0;
+    @apply bg-black/60 backdrop-blur-xl border border-white/15 shadow-2xl transform-gpu will-change-transform;
   }
 
   .instagram-gradient {
