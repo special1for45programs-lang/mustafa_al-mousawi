@@ -5,12 +5,15 @@ import { Button } from './ui/Button';
 
 // مكون شريط التنقل العلوي (Navbar)
 const Navbar: React.FC = () => {
-  const [activeSection, setActiveSection] = useState('home'); // حالة القسم النشط حالياً
+  const [activeSection, setActiveSection] = useState('home'); // القسم النشط للتظليل
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const lastScrollY = React.useRef(0);
 
   // تتبع التمرير لتحديد القسم النشط وتحديث القائمة العلوية
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 100; // إضافة إزاحة صغيرة
+      const currentScrollY = window.scrollY;
+      const scrollPosition = currentScrollY + 100; // إضافة إزاحة صغيرة
 
       // البحث عن القسم الحالي
       const sections = NAVIGATION.map(item => item.path.replace('#', ''));
@@ -21,15 +24,23 @@ const Navbar: React.FC = () => {
           break;
         }
       }
+
+      // Smart Scroll Logic
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsScrollingDown(true);
+      } else if (currentScrollY < lastScrollY.current) {
+        setIsScrollingDown(false);
+      }
+      lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <>
-    <nav className="fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 transition-all duration-300">
+    <nav className={`fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 transition-transform duration-300 ${isScrollingDown ? '-translate-y-full md:translate-y-0' : 'translate-y-0'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center lg:justify-between items-center h-20" dir="ltr">
           
@@ -107,7 +118,7 @@ const Navbar: React.FC = () => {
     </nav>
 
     {/* شريط التنقل السفلي للموبايل (Bottom Navigation Bar) */}
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] flex justify-around items-center bg-black/50 backdrop-blur-md border-t border-white/10 shadow-lg px-2 py-3 pb-safe" dir="rtl">
+    <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-[60] flex justify-around items-center glass-pill px-2 py-3 mx-4 mb-4 rounded-full transition-transform duration-300 ${isScrollingDown ? 'translate-y-[150%]' : 'translate-y-0'}`} dir="rtl">
       {NAVIGATION.filter(item => item.path !== '#brief').map((item) => {
         const sectionId = item.path.replace('#', '');
         const isActive = activeSection === sectionId;

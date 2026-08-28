@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .glass-pill {
+    @apply bg-black/60 backdrop-blur-xl border border-white/15 shadow-2xl;
+  }
+
+  .instagram-gradient {
+    @apply bg-[linear-gradient(45deg,#ffdf40_0%,#ff5d3a_30%,#e1306c_60%,#833ab4_100%)];
+  }
+}
 /* Global dark mode styles */
 @layer base {
 

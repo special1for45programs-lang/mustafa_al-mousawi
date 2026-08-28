@@ -118,19 +118,19 @@ const Portfolio: React.FC = () => {
                   src={post.mediaUrl} 
                   alt="Instagram Post" 
                   loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 [@media(hover:hover)]:group-hover:scale-110"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
-                <div className="absolute inset-0 bg-brand-black/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
-                  <div className="transform translate-y-8 group-hover:translate-y-0 transition-transform duration-500 flex flex-col items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-brand-lime flex items-center justify-center text-black">
-                      <Instagram size={28} />
+                <div className="absolute inset-0 bg-brand-black/80 opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                  <div className="transform translate-y-8 [@media(hover:hover)]:group-hover:translate-y-0 transition-transform duration-500 flex flex-col items-center gap-4">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-2 rounded-full bg-brand-lime flex items-center justify-center text-black shrink-0">
+                      <Instagram className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
                     </div>
-                    <span className="text-white font-bold text-lg flex items-center gap-2">
+                    <span className="text-white text-xs sm:text-sm md:text-base lg:text-lg font-bold text-center leading-tight flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
                       عرض المشروع على انستغرام 
-                      <ExternalLink size={18} className="rtl:rotate-180" />
+                      <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 rtl:rotate-180 shrink-0" />
                     </span>
                   </div>
                 </div>
@@ -144,14 +144,14 @@ const Portfolio: React.FC = () => {
           href="https://www.instagram.com/mustafa.al_mousawi" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="mt-12 mx-auto flex w-fit items-center gap-3 bg-[#c4ff00] text-black font-bold py-3 px-8 rounded-xl hover:scale-105 transition-transform duration-300 cursor-pointer"
+          className="mt-12 mx-auto flex w-fit items-center gap-3 instagram-gradient text-white border-none font-bold py-3 px-8 rounded-full shadow-lg shadow-pink-500/40 [@media(hover:hover)]:hover:shadow-2xl [@media(hover:hover)]:hover:shadow-pink-500/70 [@media(hover:hover)]:hover:scale-105 transition-all duration-300 cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
           </svg>
-          <span className="text-lg">تابع المزيد من الأعمال على انستغرام</span>
+          <span className="text-lg">المزيد على انستغرام</span>
         </a>
 
         {/* Premium Banner for Resource Library */}

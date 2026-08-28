@@ -31,11 +31,15 @@ export const SocialDetailsSchema = z.object({
   inspirationImage: z.string().optional(),
   inspirationImages: z.array(z.string()).optional(),
   designStyle: z.string().optional(),
-  postsPatternImages: z.array(z.string()).optional(),
   platforms: z.array(z.string()).optional(),
   businessType: z.string().optional(),
   productsServices: z.string().optional(),
-  postIdeas: z.string().optional(),
+  postsList: z.array(z.object({
+    category: z.string(),
+    customCategory: z.string().optional(),
+    headline: z.string(),
+    concept: z.string(),
+  })).optional(),
   visualStyle: z.union([
     z.literal('modern'),
     z.literal('formal'),
