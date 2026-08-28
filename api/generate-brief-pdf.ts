@@ -618,12 +618,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
             <div class="field-value">${formData.logoLanguage}</div>
           </div>
           ` : ''}
-          ${isSocial && formData.postsLanguage ? `
-          <div class="field">
-            <div class="field-label">لغة المنشورات</div>
-            <div class="field-value">${formData.postsLanguage}</div>
-          </div>
-          ` : ''}
+          
           <div class="field">
             <div class="field-label">الألوان المفضلة</div>
             <div class="field-value">
@@ -670,18 +665,7 @@ function generatePdfHTML(formData: BriefFormData, baseUrl?: string): string {
       </div>
       ` : ''}
 
-      ${formData.competitors ? `
-      <!-- المنافسون -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-indicator"></div>
-          <div class="section-title">المنافسون</div>
-        </div>
-        <div class="field">
-          <div class="field-value multiline">${formData.competitors}</div>
-        </div>
-      </div>
-      ` : ''}
+      
       
       ${isSocial && sd ? `
       <!-- تفاصيل السوشيال ميديا -->
@@ -1207,8 +1191,8 @@ const ApiBriefSchema = z.object({
   targetAge: z.string().optional(),
   targetGender: z.string().optional(),
   targetDescription: z.string().optional(),
-  competitors: z.string().optional(),
-  postsLanguage: z.string().optional(),
+  
+  
   logoDetails: ApiLogoDetailsSchema.optional(),
   socialDetails: ApiSocialDetailsSchema.optional(),
   logoTypeImagesBase64: z.array(base64ImageSchema).max(10, 'لا يمكن إرفاق أكثر من 10 صور').optional(),
