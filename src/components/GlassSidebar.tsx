@@ -5,30 +5,39 @@ const GlassSidebar: React.FC = () => {
     const [activeSection, setActiveSection] = useState('home');
     const [isHovered, setIsHovered] = useState(false);
 
-    // Scroll spy to update active section
+    // Scroll spy to update active section (Optimized with requestAnimationFrame)
     useEffect(() => {
-        const handleScroll = () => {
-        const sections = ['home', 'portfolio', 'packages', 'resume', 'process', 'brief'];
+        let ticking = false;
 
-            // Find the section currently in view
-            // We look for the one that takes up the most screen space or is at the top
+        const updateScrollState = () => {
+            const sections = ['home', 'portfolio', 'packages', 'resume', 'process', 'brief'];
             let current = 'home';
+            const halfScreen = window.innerHeight / 2;
 
             for (const section of sections) {
                 const element = document.getElementById(section);
                 if (element) {
                     const rect = element.getBoundingClientRect();
                     // If top overlapping with center of screen, or mostly visible
-                    if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+                    if (rect.top <= halfScreen && rect.bottom >= halfScreen) {
                         current = section;
                         break;
                     }
                 }
             }
-            setActiveSection(current);
+            
+            setActiveSection(prev => prev !== current ? current : prev);
+            ticking = false;
         };
 
-        window.addEventListener('scroll', handleScroll);
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateScrollState);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 

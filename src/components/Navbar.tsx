@@ -9,9 +9,11 @@ const Navbar: React.FC = () => {
   const [isScrollingDown, setIsScrollingDown] = useState(false);
   const lastScrollY = React.useRef(0);
 
-  // تتبع التمرير لتحديد القسم النشط وتحديث القائمة العلوية
+  // تتبع التمرير لتحديد القسم النشط وتحديث القائمة العلوية باستخدام requestAnimationFrame
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updateScrollState = () => {
       const currentScrollY = window.scrollY;
       const scrollPosition = currentScrollY + 100; // إضافة إزاحة صغيرة
 
@@ -20,27 +22,39 @@ const Navbar: React.FC = () => {
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element && element.offsetTop <= scrollPosition && (element.offsetTop + element.offsetHeight) > scrollPosition) {
-          setActiveSection(section);
+          setActiveSection(prev => prev !== section ? section : prev);
           break;
         }
       }
 
       // Smart Scroll Logic
       if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        setIsScrollingDown(true);
+        setIsScrollingDown(prev => prev !== true ? true : prev);
       } else if (currentScrollY < lastScrollY.current) {
-        setIsScrollingDown(false);
+        setIsScrollingDown(prev => prev !== false ? false : prev);
       }
       lastScrollY.current = currentScrollY;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollState);
+        ticking = true;
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // تشغيل مبدئي لتحديث الحالة
+    handleScroll();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <>
-    <nav className={`fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 transition-transform duration-300 ${isScrollingDown ? '-translate-y-full md:translate-y-0' : 'translate-y-0'}`}>
+    <nav className={`fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/5 transition-transform duration-300 transform-gpu will-change-transform translate-z-0 ${isScrollingDown ? '-translate-y-full md:translate-y-0' : 'translate-y-0'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center lg:justify-between items-center h-20" dir="ltr">
           

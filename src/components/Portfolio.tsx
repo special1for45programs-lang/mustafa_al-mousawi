@@ -123,7 +123,7 @@ const Portfolio: React.FC = () => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
-                <div className="absolute inset-0 bg-brand-black/80 opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+                <div className="absolute inset-0 bg-brand-black/80 opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
                   <div className="transform translate-y-8 [@media(hover:hover)]:group-hover:translate-y-0 transition-transform duration-500 flex flex-col items-center gap-4">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-2 rounded-full bg-brand-lime flex items-center justify-center text-black shrink-0">
                       <Instagram className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
@@ -144,7 +144,7 @@ const Portfolio: React.FC = () => {
           href="https://www.instagram.com/mustafa.al_mousawi" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="mt-12 mx-auto flex w-fit items-center gap-3 instagram-gradient text-white border-none font-bold py-3 px-8 rounded-full shadow-lg shadow-pink-500/40 [@media(hover:hover)]:hover:shadow-2xl [@media(hover:hover)]:hover:shadow-pink-500/70 [@media(hover:hover)]:hover:scale-105 transition-all duration-300 cursor-pointer"
+          className="mt-12 mx-auto flex w-fit items-center gap-3 instagram-gradient text-white border-none font-bold py-3 px-8 rounded-full shadow-lg shadow-pink-500/40 [@media(hover:hover)]:hover:shadow-2xl [@media(hover:hover)]:hover:shadow-pink-500/70 [@media(hover:hover)]:hover:scale-105 transition duration-300 cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -157,7 +157,7 @@ const Portfolio: React.FC = () => {
         {/* Premium Banner for Resource Library */}
         <div 
           onClick={() => setIsResourcesOpen(true)}
-          className="mt-16 mx-auto w-full max-w-3xl cursor-pointer group bg-brand-dark/50 backdrop-blur-md border border-brand-lime/20 rounded-2xl p-6 md:p-8 flex items-center justify-between transition-all duration-300 hover:border-brand-lime/60 hover:bg-brand-dark/70 hover:shadow-[0_0_30px_rgba(196,255,0,0.15)]"
+          className="mt-16 mx-auto w-full max-w-3xl cursor-pointer group bg-brand-dark/50 backdrop-blur-md border border-brand-lime/20 rounded-2xl p-6 md:p-8 flex items-center justify-between transition duration-300 hover:border-brand-lime/60 hover:bg-brand-dark/70 hover:shadow-[0_0_30px_rgba(196,255,0,0.15)]"
         >
           <div className="flex items-center gap-5 md:gap-6">
             <div className="bg-brand-lime/10 p-4 rounded-xl group-hover:scale-110 transition-transform duration-300">
