@@ -186,6 +186,16 @@ export interface PackagesData {
 
 export interface BriefRequestRecord extends BriefFormData {
   id: string;
-  submittedAt: string;    // ISO string
+  submittedAt: string | { toMillis: () => number; toDate: () => Date };
   status: 'new' | 'in_progress' | 'completed' | 'archived';
+  telegramFileIds?: string[];
+}
+
+export interface ClientReview {
+  id?: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  isApproved: boolean;
+  createdAt: string | { toMillis: () => number; toDate: () => Date };
 }

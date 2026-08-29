@@ -317,4 +317,4 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
     );
 };
 
-export default StepStyle;
+export default React.memo(StepStyle);

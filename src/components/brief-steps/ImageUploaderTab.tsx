@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, Image as ImageIcon, X, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { BriefFormData } from '../../types';
 import { compressImageBase64 } from '../../utils/imageUtils';
 
@@ -27,7 +28,10 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
 
     const validateFile = (file: File): string | null => {
         if (!file.type.startsWith('image/')) return 'الرجاء رفع ملف صورة صالح (JPEG، PNG، إلخ).';
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) return `حجم الصورة كبير جداً. الحد الأقصى هو ${MAX_SIZE_MB} ميجابايت.`;
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+            toast.error('عذراً، حجم الصورة يتجاوز 5 ميجابايت');
+            return `حجم الصورة كبير جداً. الحد الأقصى هو ${MAX_SIZE_MB} ميجابايت.`;
+        }
         return null;
     };
 
@@ -39,7 +43,13 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
         try {
             const base64 = await compressImageBase64(file);
             updateDomainData({ inspirationImage: base64, favoriteColors: 'image_inspiration' });
-        } catch { setError('حدث خطأ أثناء قراءة الصورة. يرجى المحاولة مرة أخرى.'); }
+        } catch (e: any) { 
+            if (e.message === 'FILE_TOO_LARGE') {
+                toast.error('عذراً، حجم الصورة يتجاوز 5 ميجابايت');
+            } else {
+                setError('حدث خطأ أثناء قراءة الصورة. يرجى المحاولة مرة أخرى.'); 
+            }
+        }
     };
 
     // ─── Social: multi-file ───────────────────────────────────────────────
@@ -58,7 +68,13 @@ export const ImageUploaderTab: React.FC<ImageUploaderTabProps> = ({ formData, up
             try {
                 const base64 = await compressImageBase64(file);
                 results.push(base64);
-            } catch { setError('حدث خطأ أثناء قراءة إحدى الصور.'); }
+            } catch (e: any) { 
+                if (e.message === 'FILE_TOO_LARGE') {
+                    toast.error('عذراً، حجم الصورة يتجاوز 5 ميجابايت');
+                } else {
+                    setError('حدث خطأ أثناء قراءة إحدى الصور.'); 
+                }
+            }
         }
         if (results.length > 0) {
             const updated = [...socialImages, ...results];

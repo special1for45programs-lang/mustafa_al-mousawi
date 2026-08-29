@@ -142,7 +142,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         value={logoDetails.otherApplication}
                         onChange={handleChange}
                         placeholder="أضف تطبيقات أخرى مفصولة بفاصلة..."
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                     />
                 </div>
 
@@ -157,7 +157,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         name="startDate"
                         value={logoDetails.startDate}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                     />
                 </div>
                 <div className="space-y-2">
@@ -167,7 +167,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                         name="deadline"
                         value={logoDetails.deadline}
                         onChange={handleChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                     />
                 </div>
             </div>
@@ -178,7 +178,7 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
                     value={logoDetails.notes}
                     onChange={handleChange}
                     placeholder="أي تفاصيل أخرى تود إضافتها..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-24 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none"
+                    className="form-input-clean h-24 resize-none"
                 ></textarea>
             </div>
 
@@ -186,4 +186,4 @@ const StepDetails: React.FC<StepDetailsProps> = ({ logoDetails, updateLogoDetail
     );
 };
 
-export default StepDetails;
+export default React.memo(StepDetails);

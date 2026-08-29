@@ -1,5 +1,9 @@
 export const compressImageBase64 = (file: File, maxWidth: number = 1200, quality: number = 0.75): Promise<string> => {
     return new Promise((resolve, reject) => {
+        if (file.size > 5 * 1024 * 1024) {
+            reject(new Error('FILE_TOO_LARGE'));
+            return;
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();

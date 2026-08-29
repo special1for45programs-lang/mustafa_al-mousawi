@@ -334,4 +334,4 @@ const StepColorPalette: React.FC<ColorPaletteProps> = ({ formData, updateDomainD
     );
 };
 
-export default StepColorPalette;
+export default React.memo(StepColorPalette);

@@ -224,7 +224,7 @@ export const ColorWheelTab: React.FC<ColorWheelTabProps> = ({
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 w-full">
+                <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-4 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-x-visible md:pb-0 w-full">
                     {INDUSTRY_PALETTES.map((p) => {
                         const isActive = currentPalette && JSON.stringify(currentPalette) === JSON.stringify(p.colors);
                         return (
@@ -232,7 +232,7 @@ export const ColorWheelTab: React.FC<ColorWheelTabProps> = ({
                             key={p.id} 
                             type="button" 
                             onClick={() => applyPreset(p.colors)} 
-                            className={`flex flex-col p-4 sm:p-5 rounded-2xl transition-all shadow-lg group text-right relative ${isActive ? 'border-2 border-[#ccff00] bg-brand-dark' : 'border border-white/10 bg-brand-black hover:border-brand-lime'}`}
+                            className={`min-w-[85%] snap-center md:min-w-full flex flex-col p-4 sm:p-5 rounded-2xl transition-colors shadow-lg group text-right relative ${isActive ? 'border-2 border-[#ccff00] bg-brand-dark' : 'border border-white/10 bg-brand-black hover:border-brand-lime'}`}
                         >
                             {isActive && (
                                 <div className="absolute -top-3 -right-3 bg-brand-lime text-brand-black px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md z-20 animate-fadeIn">

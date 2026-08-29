@@ -244,4 +244,4 @@ const SocialStepContent: React.FC<SocialStepContentProps> = ({
   );
 };
 
-export default SocialStepContent;
+export default React.memo(SocialStepContent);

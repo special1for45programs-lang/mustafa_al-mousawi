@@ -240,4 +240,4 @@ const SocialStepReview: React.FC<SocialStepReviewProps> = ({ formData, selectedP
   );
 };
 
-export default SocialStepReview;
+export default React.memo(SocialStepReview);

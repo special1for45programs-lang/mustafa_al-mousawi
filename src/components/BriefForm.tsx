@@ -22,8 +22,7 @@ import SocialStepReview    from './brief-steps/SocialStepReview';
 import { DesignStylesTab } from './brief-steps/DesignStylesTab';
 
 import SuccessView from './brief-steps/SuccessView';
-
-
+import ReviewModal from './ReviewModal';
 
 import { useBriefForm } from '../hooks/useBriefForm';
 
@@ -56,7 +55,26 @@ const BriefForm: React.FC<BriefFormProps> = ({ selectedPackage, onClearPackage, 
     handleSubmit
   } = useBriefForm(selectedPackage);
 
-  if (isSuccess) return <SuccessView resetForm={resetForm} />;
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setIsReviewModalOpen(true);
+    }
+  }, [isSuccess]);
+
+  if (isSuccess) {
+    return (
+      <>
+        <SuccessView resetForm={resetForm} />
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          clientName={formData.clientName || 'عميلنا العزيز'}
+        />
+      </>
+    );
+  }
 
   const STEP_TITLES = isSocial
     ? ['معلومات العميل', 'النمط والألوان', 'المنصات والنشاط', 'تفاصيل ومحتوى البوستات', 'مراجعة الطلب']

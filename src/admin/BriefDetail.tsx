@@ -160,14 +160,14 @@ const BriefDetail: React.FC = () => {
           </div>
 
           {/* معرض الصور المرفوعة (تيليجرام) */}
-          {(req as any).telegramFileIds && (req as any).telegramFileIds.length > 0 && (
+          {req.telegramFileIds && req.telegramFileIds.length > 0 && (
             <div className="bg-brand-dark p-6 rounded-2xl border border-white/10 shadow-lg">
               <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-3">
                 <ImageIcon className="text-brand-lime" size={20} />
-                <h3 className="text-lg font-bold text-white">الصور المرفوعة ({(req as any).telegramFileIds.length})</h3>
+                <h3 className="text-lg font-bold text-white">الصور المرفوعة ({req.telegramFileIds.length})</h3>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {(req as any).telegramFileIds.map((fileId: string, index: number) => (
+                {req.telegramFileIds.map((fileId: string, index: number) => (
                   <a 
                     key={index}
                     href={`/api/get-telegram-image?file_id=${fileId}`}

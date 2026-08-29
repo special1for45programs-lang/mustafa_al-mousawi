@@ -164,27 +164,27 @@ export const useBriefForm = (selectedPackage: SelectedPackage | null) => {
   // ─── دفع حالة تاريخ المتصفح عند تقديم الخطوة ──────────────────────────────────
 
   // ─── تحديث البيانات ───────────────────────────────────────────────────
-  const updateFormData = (data: Partial<BaseBriefData>) => {
+  const updateFormData = useCallback((data: Partial<BaseBriefData>) => {
     setFormData(prev => ({ ...prev, ...data }));
-  };
+  }, []);
 
-  const updateLogoData = (data: Partial<LogoDetails>) => {
+  const updateLogoData = useCallback((data: Partial<LogoDetails>) => {
     setFormData(prev => ({
       ...prev,
       logoDetails: { ...prev.logoDetails, ...data },
     }));
-  };
+  }, []);
 
-  const updateSocialData = (data: Partial<SocialDetails>) => {
+  const updateSocialData = useCallback((data: Partial<SocialDetails>) => {
     setFormData(prev => ({
       ...prev,
       socialDetails: { ...prev.socialDetails, ...data },
     }));
-  };
+  }, []);
 
   // ─── إزالة صورة مرفقة ─────────────────────────────────────────────────
   // ─── إزالة صورة مرفقة ─────────────────────────────────────────────────
-  const removeUploadedFile = (e: React.MouseEvent, index: number, isSocialPath: boolean = false) => {
+  const removeUploadedFile = useCallback((e: React.MouseEvent, index: number, isSocialPath: boolean = false) => {
     e.stopPropagation();
     if (!isSocialPath) {
       setFormData(prev => ({ 
@@ -195,16 +195,16 @@ export const useBriefForm = (selectedPackage: SelectedPackage | null) => {
         }
       }));
     }
-  };
+  }, []);
 
   // ─── إعادة تعيين النموذج ─────────────────────────────────────────────
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData(getInitialFormData());
     setStep(1);
     setIsSuccess(false);
     setIsSubmitting(false);
     setIsPdfDownloaded(false);
-  };
+  }, []);
 
   // ─── التحقق من صحة البيانات قبل الانتقال ─────────────────────────────
   const validateStep = (): boolean => {

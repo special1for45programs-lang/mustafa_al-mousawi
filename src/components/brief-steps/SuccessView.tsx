@@ -37,4 +37,4 @@ const SuccessView: React.FC<SuccessViewProps> = ({ resetForm }) => {
     );
 };
 
-export default SuccessView;
+export default React.memo(SuccessView);

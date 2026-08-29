@@ -166,4 +166,4 @@ const SocialStepPlatforms: React.FC<SocialStepPlatformsProps> = ({
   );
 };
 
-export default SocialStepPlatforms;
+export default React.memo(SocialStepPlatforms);

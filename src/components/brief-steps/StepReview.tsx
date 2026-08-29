@@ -245,5 +245,5 @@ const StepReview = forwardRef<HTMLDivElement, StepReviewProps>(({ formData, remo
 
 StepReview.displayName = 'StepReview';
 
-export default StepReview;
+export default React.memo(StepReview);
 

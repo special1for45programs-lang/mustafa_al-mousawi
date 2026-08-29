@@ -80,8 +80,8 @@ const AdminHome: React.FC = () => {
   // Recent 5 requests by submittedAt
   const recentRequests = [...requests]
     .sort((a, b) => {
-      const timeA = (a.submittedAt as any)?.toMillis ? (a.submittedAt as any).toMillis() : new Date(a.submittedAt as unknown as string).getTime();
-      const timeB = (b.submittedAt as any)?.toMillis ? (b.submittedAt as any).toMillis() : new Date(b.submittedAt as unknown as string).getTime();
+      const timeA = typeof a.submittedAt === 'string' ? new Date(a.submittedAt).getTime() : a.submittedAt?.toMillis?.() ?? 0;
+      const timeB = typeof b.submittedAt === 'string' ? new Date(b.submittedAt).getTime() : b.submittedAt?.toMillis?.() ?? 0;
       return timeB - timeA;
     })
     .slice(0, 5);
@@ -178,9 +178,9 @@ const AdminHome: React.FC = () => {
         <h4 className="text-xl font-bold text-white mb-6">أحدث الطلبات</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {recentRequests.map(req => {
-            const dateStr = (req.submittedAt as any)?.toDate 
-              ? (req.submittedAt as any).toDate().toLocaleDateString('ar-IQ') 
-              : new Date(req.submittedAt as unknown as string).toLocaleDateString('ar-IQ');
+            const dateStr = typeof req.submittedAt === 'string' 
+              ? new Date(req.submittedAt).toLocaleDateString('ar-IQ')
+              : req.submittedAt?.toDate?.().toLocaleDateString('ar-IQ') ?? 'تاريخ غير معروف';
 
             return (
               <div key={req.id} className="p-4 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-colors">

@@ -1,7 +1,7 @@
-import { collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from './firebase';
-import type { BriefFormData } from '../types';
+import type { BriefFormData, ClientReview } from '../types';
 
 export const getResumeData = async (): Promise<unknown> => {
   try {
@@ -183,4 +183,33 @@ export const uploadImageWithProgress = (
       }
     );
   });
+};
+
+export const addClientReview = async (review: Omit<ClientReview, 'id'>): Promise<string> => {
+  try {
+    const docRef = await addDoc(collection(db, 'reviews'), {
+      ...review,
+      createdAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`[Firestore] addClientReview failed: ${msg}`);
+  }
+};
+
+export const getApprovedReviews = async (): Promise<ClientReview[]> => {
+  try {
+    const q = query(
+      collection(db, 'reviews'),
+      where('isApproved', '==', true),
+      orderBy('createdAt', 'desc'),
+      limit(6)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as ClientReview));
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`[Firestore] getApprovedReviews failed: ${msg}`);
+  }
 };

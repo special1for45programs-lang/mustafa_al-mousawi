@@ -20,7 +20,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         value={formData.clientName}
                         onChange={handleChange}
                         placeholder="الاسم الكامل"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                         autoComplete="name"
                         required
                     />
@@ -33,7 +33,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         value={formData.companyName}
                         onChange={handleChange}
                         placeholder="اسم الشركة، الصفحة، أو اتركه فارغاً"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                         autoComplete="organization"
                     />
                 </div>
@@ -48,7 +48,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         value={formData.projectName}
                         onChange={handleChange}
                         placeholder={isSocial ? "اكتب اسم حسابك كما يظهر للمتابعين..." : "اكتب الاسم المراد تصميمه بدقة (مثل: أبل، سامسونج...)"}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                         autoComplete="on"
                         required
                     />
@@ -64,7 +64,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="07XX XXX XXXX"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                         autoComplete="tel"
                         required
                     />
@@ -77,7 +77,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                         value={formData.email}
                         onChange={handleChange}
                         placeholder="لاستلام ملفات المشروع"
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                        className="form-input-clean"
                         autoComplete="email"
                     />
                 </div>
@@ -95,7 +95,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                     value={formData.projectDescription}
                     onChange={handleChange}
                     placeholder={isSocial ? "حدثنا عن حسابك... ما هي الخدمات أو المنتجات التي تقدمها؟ وما هو هدفك من هذه المنشورات؟" : "حدثنا عن مشروعك كأنك تروي قصة... ما هي فكرة المشروع؟ وما القيمة التي تميزك عن غيرك؟"}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-32 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                    className="form-input-clean h-32 resize-none leading-relaxed"
                     required={!isSocial}
                 ></textarea>
             </div>
@@ -108,7 +108,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                     value={formData.competitors || ''}
                     onChange={handleChange}
                     placeholder="اذكر 2 أو 3 من أهم منافسيك في السوق، أو ضع روابط حساباتهم..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-32 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                    className="form-input-clean h-32 resize-none leading-relaxed"
                 ></textarea>
             </div>
             
@@ -123,7 +123,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                             value={formData.projectType}
                             onChange={handleChange}
                             placeholder="مثال: تقنية، مطاعم، ملابس..."
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400"
+                            className="form-input-clean"
                             autoComplete="on"
                         />
                     </div>
@@ -136,7 +136,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                 name="logoLanguage"
                                 value={formData.logoLanguage || ''}
                                 onChange={handleChange}
-                                className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
+                                className="form-input-clean bg-white font-semibold appearance-none focus:border-brand-lime"
                             >
                                 <option value="" disabled className="text-gray-900">اختر لغة الشعار...</option>
                                 <option value="عربي فقط" className="text-gray-900">عربي فقط</option>
@@ -158,7 +158,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                 name="postsLanguage"
                                 value={formData.postsLanguage || ''}
                                 onChange={handleChange}
-                                className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
+                                className="form-input-clean bg-white font-semibold appearance-none focus:border-brand-lime"
                             >
                                 <option value="" disabled className="text-gray-900">اختر لغة المنشورات...</option>
                                 <option value="عربي فقط" className="text-gray-900">عربي فقط</option>
@@ -184,7 +184,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                     name="targetAge"
                                     value={formData.targetAge || ''}
                                     onChange={handleChange}
-                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
+                                    className="form-input-clean bg-white font-semibold appearance-none focus:border-brand-lime"
                                 >
                                     <option value="" disabled className="text-gray-900">اختر الفئة...</option>
                                     <option value="أطفال" className="text-gray-900">أطفال</option>
@@ -205,7 +205,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                                     name="targetGender"
                                     value={formData.targetGender || ''}
                                     onChange={handleChange}
-                                    className="w-full bg-white text-gray-900 border border-gray-200 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-lime focus:border-brand-lime outline-none transition-all font-semibold text-base sm:text-sm"
+                                    className="form-input-clean bg-white font-semibold appearance-none focus:border-brand-lime"
                                 >
                                     <option value="" disabled className="text-gray-900">اختر الجنس...</option>
                                     <option value="رجال" className="text-gray-900">رجال</option>
@@ -225,7 +225,7 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
                             value={formData.targetDescription || ''}
                             onChange={handleChange}
                             placeholder="مثال: أصحاب الشركات الناشئة، أو رياضيين مهتمين بالأكل الصحي..."
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 h-24 focus:ring-2 focus:ring-brand-lime focus:border-transparent outline-none transition-all font-normal text-base sm:text-sm text-gray-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                            className="form-input-clean h-24 resize-none leading-relaxed"
                         ></textarea>
                     </div>
                 </div>
@@ -234,4 +234,4 @@ const StepInfo: React.FC<StepProps> = ({ formData, updateFormData }) => {
     );
 };
 
-export default StepInfo;
+export default React.memo(StepInfo);
