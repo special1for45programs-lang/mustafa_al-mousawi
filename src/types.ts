@@ -193,7 +193,7 @@ export interface BriefRequestRecord extends BriefFormData {
 
 export interface ClientReview {
   id?: string;
-  clientName: string;
+  clientName?: string;
   rating: number;
   comment: string;
   isApproved: boolean;

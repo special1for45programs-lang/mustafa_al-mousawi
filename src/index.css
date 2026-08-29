@@ -167,3 +167,12 @@ section {
   scrollbar-width: none;
 }
 
+
+@keyframes marquee-rtl {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(33.333333%); }
+}
+.animate-marquee-rtl {
+  animation: marquee-rtl 30s linear infinite;
+}
+

@@ -10,6 +10,7 @@ import { ArrowUp, Loader2 } from 'lucide-react';
 // Lazy load below-the-fold components for better performance
 const Footer = lazy(() => import('./components/Footer'));
 const Portfolio = lazy(() => import('./components/Portfolio'));
+const TestimonialsMarquee = lazy(() => import('./components/TestimonialsMarquee'));
 const Packages = lazy(() => import('./components/Packages'));
 const Process = lazy(() => import('./components/Process'));
 const BriefForm = lazy(() => import('./components/BriefForm'));
@@ -102,6 +103,11 @@ const App: React.FC = () => {
             {/* قسم الأعمال */}
             <section id="portfolio">
               <Portfolio />
+            </section>
+
+            {/* Testimonials Marquee */}
+            <section id="testimonials">
+              <TestimonialsMarquee />
             </section>
 
             {/* قسم الباقات والأسعار */}

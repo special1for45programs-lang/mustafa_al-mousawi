@@ -14,6 +14,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, clientName }
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inputClientName, setInputClientName] = useState(clientName || '');
 
   if (!isOpen) return null;
 
@@ -65,10 +66,24 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, clientName }
 
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-white mb-2">كيف كانت تجربتك؟</h2>
-          <p className="text-gray-400 text-sm">مرحباً {clientName}، رأيك يهمنا جداً لتطوير خدماتنا</p>
+          <p className="text-gray-400 text-sm">رأيك يهمنا جداً لتطوير خدماتنا</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-300">
+              الاسم أو اسم المشروع (اختياري)
+            </label>
+            <input
+              type="text"
+              value={inputClientName}
+              onChange={(e) => setInputClientName(e.target.value)}
+              disabled={isSubmitting}
+              className="form-input-clean"
+              placeholder="مثال: متجر عطور..."
+            />
+          </div>
+
           <div className="flex justify-center gap-2" dir="ltr">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
