@@ -10,6 +10,7 @@ import ContactEditor from './components/ContactEditor';
 import ResourcesEditor from './components/ResourcesEditor';
 import AdminReviews from './components/AdminReviews';
 import AdminHome from './AdminHome';
+import ErrorBoundary from '../components/ErrorBoundary';
 import BriefDetail from './BriefDetail';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -26,6 +27,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 const AdminApp: React.FC = () => {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <div className="min-h-screen bg-brand-black text-white dir-rtl" dir="rtl">
         <Routes>
@@ -43,10 +45,12 @@ const AdminApp: React.FC = () => {
             <Route path="briefs/:id" element={<BriefDetail />} />
             <Route path="contacts" element={<ContactEditor />} />
             <Route path="resources" element={<ResourcesEditor />} />
+            <Route path="reviews" element={<AdminReviews />} />
           </Route>
         </Routes>
       </div>
     </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

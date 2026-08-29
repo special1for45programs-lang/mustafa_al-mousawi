@@ -6,6 +6,17 @@ import { updateReviewVisibility, deleteReview } from '../../lib/firestore';
 import toast from 'react-hot-toast';
 import { Loader2, Trash2, Eye, EyeOff, Star } from 'lucide-react';
 
+const formatDate = (date: any) => {
+  if (!date) return 'تاريخ غير معروف';
+  if (typeof date === 'string') {
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? 'تاريخ غير معروف' : d.toLocaleDateString('ar-SA');
+  }
+  if (typeof date.toDate === 'function') return date.toDate().toLocaleDateString('ar-SA');
+  if (date instanceof Date) return date.toLocaleDateString('ar-SA');
+  return 'تاريخ غير معروف';
+};
+
 const AdminReviews: React.FC = () => {
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,8 +134,7 @@ const AdminReviews: React.FC = () => {
               </p>
               <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-xs text-gray-500">
                 <span>
-                  {typeof review.createdAt === 'string' ? new Date(review.createdAt).toLocaleDateString('ar-SA') : 
-                   (review.createdAt && 'toDate' in review.createdAt) ? review.createdAt.toDate().toLocaleDateString('ar-SA') : 'تاريخ غير معروف'}
+                  {formatDate(review.createdAt)}
                 </span>
                 <span className={review.isVisible ? 'text-brand-lime' : 'text-gray-500'}>
                   {review.isVisible ? 'مرئي' : 'مخفي'}
