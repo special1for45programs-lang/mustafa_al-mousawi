@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Package, FileText, Inbox, LogOut, ExternalLink, Menu, X, Phone, FolderDown } from 'lucide-react';
+import { Home, Package, FileText, Inbox, LogOut, ExternalLink, Menu, X, Phone, FolderDown, Star } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { signOut } = useAuth();
@@ -20,6 +20,7 @@ const AdminDashboard: React.FC = () => {
     { to: '/admin/contacts', icon: Phone, label: 'معلومات التواصل' },
     { to: '/admin/resources', icon: FolderDown, label: 'مكتبة المصادر' },
     { to: '/admin/requests', icon: Inbox, label: 'الطلبات الواردة' },
+    { to: '/admin/reviews', icon: Star, label: 'إدارة التقييمات' },
   ];
 
   const Sidebar = () => (

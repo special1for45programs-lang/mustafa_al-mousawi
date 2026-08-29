@@ -8,6 +8,7 @@ import ResumeEditor from './components/ResumeEditor';
 import BriefRequests from './components/BriefRequests';
 import ContactEditor from './components/ContactEditor';
 import ResourcesEditor from './components/ResourcesEditor';
+import AdminReviews from './components/AdminReviews';
 import AdminHome from './AdminHome';
 import BriefDetail from './BriefDetail';
 

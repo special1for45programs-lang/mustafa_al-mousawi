@@ -202,7 +202,7 @@ export const getApprovedReviews = async (): Promise<ClientReview[]> => {
   try {
     const q = query(
       collection(db, 'reviews'),
-      where('isApproved', '==', true),
+      where('isVisible', '==', true),
       orderBy('createdAt', 'desc'),
       limit(6)
     );
@@ -211,5 +211,25 @@ export const getApprovedReviews = async (): Promise<ClientReview[]> => {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`[Firestore] getApprovedReviews failed: ${msg}`);
+  }
+};
+
+export const updateReviewVisibility = async (id: string, isVisible: boolean): Promise<void> => {
+  try {
+    const docRef = doc(db, 'reviews', id);
+    await updateDoc(docRef, { isVisible });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`[Firestore] updateReviewVisibility failed: ${msg}`);
+  }
+};
+
+export const deleteReview = async (id: string): Promise<void> => {
+  try {
+    const docRef = doc(db, 'reviews', id);
+    await deleteDoc(docRef);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`[Firestore] deleteReview failed: ${msg}`);
   }
 };

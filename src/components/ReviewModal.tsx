@@ -31,7 +31,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, clientName }
         clientName,
         rating,
         comment,
-        isApproved: false,
+        isVisible: false,
         createdAt: new Date().toISOString(), // this gets overwritten by serverTimestamp in the db layer but satisfies the type if needed, or we omit it depending on the exact Omit. Wait, in Omit<ClientReview, 'id'>, createdAt is present.
       });
       toast.success('تم إرسال تقييمك بنجاح. شكراً لك!');

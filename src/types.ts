@@ -196,6 +196,6 @@ export interface ClientReview {
   clientName?: string;
   rating: number;
   comment: string;
-  isApproved: boolean;
+  isVisible: boolean;
   createdAt: string | { toMillis: () => number; toDate: () => Date };
 }
