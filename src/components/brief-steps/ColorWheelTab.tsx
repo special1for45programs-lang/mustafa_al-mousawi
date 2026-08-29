@@ -224,7 +224,7 @@ export const ColorWheelTab: React.FC<ColorWheelTabProps> = ({
                     </button>
                 </div>
 
-                <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pb-4 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-x-visible md:pb-0 w-full">
+                <div className="flex flex-row overflow-x-auto snap-x snap-mandatory gap-4 pt-6 pb-4 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-x-visible md:pb-0 md:pt-0 w-full">
                     {INDUSTRY_PALETTES.map((p) => {
                         const isActive = currentPalette && JSON.stringify(currentPalette) === JSON.stringify(p.colors);
                         return (
