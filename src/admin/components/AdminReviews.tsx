@@ -5,6 +5,7 @@ import { ClientReview } from '../../types';
 import { updateReviewVisibility, deleteReview } from '../../lib/firestore';
 import toast from 'react-hot-toast';
 import { Loader2, Trash2, Eye, EyeOff, Star } from 'lucide-react';
+import ReviewAvatar from '../../components/ReviewAvatar';
 
 const formatDate = (date: any) => {
   if (!date) return 'تاريخ غير معروف';

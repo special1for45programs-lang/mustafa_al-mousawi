@@ -3,6 +3,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { ClientReview } from '../types';
 import { Star, X } from 'lucide-react';
+import ReviewAvatar from './ReviewAvatar';
 
 const TestimonialsMarquee: React.FC = () => {
   const [reviews, setReviews] = useState<ClientReview[]>([]);
@@ -143,7 +144,8 @@ const TestimonialsMarquee: React.FC = () => {
                     {review.comment || 'خدمة ممتازة وعمل احترافي، شكراً لكم.'}
                   </p>
                   
-                  <div className="mt-auto border-t border-white/10 pt-4">
+                  <div className="mt-auto border-t border-white/10 pt-4 flex items-center gap-3">
+                    <ReviewAvatar name={review.clientName} />
                     <p className="text-white font-bold text-base">
                       {review.clientName || 'عميل مميز'}
                     </p>
@@ -187,7 +189,8 @@ const TestimonialsMarquee: React.FC = () => {
               {selectedReview.comment || 'خدمة ممتازة وعمل احترافي، شكراً لكم.'}
             </p>
             
-            <div className="border-t border-white/10 pt-6">
+            <div className="border-t border-white/10 pt-6 flex items-center gap-4">
+              <ReviewAvatar name={selectedReview.clientName} className="w-12 h-12 text-xl" />
               <p className="text-brand-lime font-bold text-xl">
                 {selectedReview.clientName || 'عميل مميز'}
               </p>
