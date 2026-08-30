@@ -39,7 +39,7 @@ const Hero: React.FC = () => {
   }, []);
 
   return (
-    <div ref={heroRef} className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden bg-brand-black">
+    <div ref={heroRef} className="relative min-h-screen flex flex-col justify-start pt-28 md:pt-32 pb-20 overflow-hidden bg-brand-black">
       {/* الخلفية والمؤثرات البصرية */}
       <div className="absolute inset-0 bg-brand-black pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-neutral-800/30 via-brand-black to-brand-black opacity-60"></div>

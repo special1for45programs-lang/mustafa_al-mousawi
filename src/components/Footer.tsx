@@ -55,10 +55,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-white font-medium mb-4">خريطة الموقع</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
-              <li><a href="#home" className="hover:text-brand-lime transition-colors">الرئيسية</a></li>
-              <li><a href="#portfolio" className="hover:text-brand-lime transition-colors">الأعمال</a></li>
-              <li><a href="#process" className="hover:text-brand-lime transition-colors">طريقة العمل</a></li>
-              <li><a href="#brief" className="hover:text-brand-lime transition-colors">ابدأ مشروعك</a></li>
+              <li><a href="#home" className="hover:text-brand-lime transition-colors break-all">الرئيسية</a></li>
+              <li><a href="#portfolio" className="hover:text-brand-lime transition-colors break-all">الأعمال</a></li>
+              <li><a href="#process" className="hover:text-brand-lime transition-colors break-all">طريقة العمل</a></li>
+              <li><a href="#brief" className="hover:text-brand-lime transition-colors break-all">ابدأ مشروعك</a></li>
             </ul>
           </div>
 
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-gray-400 text-sm">
               <li className="flex items-center gap-2">
                 <Mail size={16} className="text-brand-lime" />
-                <a href={`mailto:${contactData.email}`} className="hover:text-brand-lime transition-colors">{contactData.email}</a>
+                <a href={`mailto:${contactData.email}`} className="hover:text-brand-lime transition-colors break-all">{contactData.email}</a>
               </li>
               <li>{contactData.location}</li>
               <li className="text-xs mt-4 text-gray-600">© {new Date().getFullYear()} جميع الحقوق محفوظة.</li>

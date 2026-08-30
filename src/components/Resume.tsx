@@ -125,7 +125,7 @@ const Resume: React.FC = () => {
 
                 <a href={`mailto:${resumeData?.contact?.email}`} className="flex items-center gap-3 text-gray-300 hover:text-brand-lime transition-colors group">
                   <Mail className="text-brand-lime flex-shrink-0 group-hover:scale-110 transition-transform" size={20} />
-                  <span dir="ltr" className="text-sm">{resumeData?.contact?.email}</span>
+                  <span dir="ltr" className="text-sm break-all">{resumeData?.contact?.email}</span>
                 </a>
 
                 <a href={resumeData?.contact?.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-gray-300 hover:text-brand-lime transition-colors group">

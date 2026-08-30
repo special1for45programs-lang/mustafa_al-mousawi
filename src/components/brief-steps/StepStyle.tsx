@@ -165,15 +165,15 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
                                 </div>
 
                                 {/* Mobile: Images Grid (Bottom) | Desktop: Images Row (Center) */}
-                                <div className="w-full sm:flex-1 grid grid-cols-4 sm:flex sm:flex-row sm:flex-nowrap items-center sm:justify-center gap-1.5 sm:gap-2 md:gap-3 overflow-hidden mt-1 sm:mt-0" dir="ltr">
+                                <div className="w-full sm:flex-1 grid grid-cols-4 sm:flex sm:flex-row sm:flex-wrap items-center sm:justify-center gap-1.5 sm:gap-2 md:gap-3 py-4 mt-1 sm:mt-0" dir="ltr">
                                     {type.images && type.images.length > 0 ? (
                                         type.images.slice(0, 4).map((img: string, idx: number) => (
                                             <div
                                                 key={idx}
                                                 className={`
-                                                    bg-white rounded-lg sm:rounded-xl overflow-hidden border shrink-0
+                                                    bg-white rounded-lg sm:rounded-xl border shrink-0
                                                     transition-all duration-200
-                                                    aspect-square sm:aspect-auto sm:w-20 sm:h-20 md:w-24 md:h-24
+                                                    aspect-square sm:aspect-auto w-full sm:w-20 md:w-24 h-auto min-h-[5rem]
                                                     ${isSelected ? 'border-brand-lime/30 shadow-sm' : 'border-gray-200'}
                                                 `}
                                             >
