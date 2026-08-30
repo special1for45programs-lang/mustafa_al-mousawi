@@ -170,10 +170,10 @@ section {
 
 @keyframes marquee-rtl {
   0% { transform: translateX(0); }
-  100% { transform: translateX(50%); }
+  100% { transform: translateX(calc(50% + 12px)); } /* Perfect math loop accounting for flex gap-6 */
 }
 .animate-marquee-rtl {
-  animation: marquee-rtl 40s linear infinite;
+  animation: marquee-rtl 20s linear infinite;
 }
 
 

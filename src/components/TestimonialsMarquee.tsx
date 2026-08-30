@@ -79,7 +79,13 @@ const TestimonialsMarquee: React.FC = () => {
   if (loading || reviews.length === 0) return null;
 
   // Duplicated array for seamless 0 to 50% translation loop
-  const displayReviews = [...reviews, ...reviews];
+  // Dynamically calculate repetitions to ensure the track is always wider than the viewport
+  const minItemsPerHalf = 6;
+  const repeatCount = Math.max(1, Math.ceil(minItemsPerHalf / reviews.length));
+  const baseReviews = Array(repeatCount).fill(reviews).flat();
+  
+  // Duplicated array for seamless 0 to 50% translation loop
+  const displayReviews = [...baseReviews, ...baseReviews];
 
   // Drag Handlers
   const handleDragStart = (clientX: number) => {
@@ -123,7 +129,7 @@ const TestimonialsMarquee: React.FC = () => {
           <div style={{ transform: `translateX(${scrollLeft}px)`, transition: isDragging ? 'none' : 'transform 0.3s ease-out' }}>
             
             {/* The CSS Animated Track */}
-            <div className={`flex w-max gap-6 animate-marquee-rtl ${(isDragging || isHovered.current) ? '[animation-play-state:paused]' : 'hover:[animation-play-state:paused]'}`}>
+            <div className={`flex justify-start w-max gap-6 animate-marquee-rtl ${(isDragging || isHovered.current) ? '[animation-play-state:paused]' : 'hover:[animation-play-state:paused]'}`}>
               {displayReviews.map((review, idx) => (
                 <div 
                   key={idx} 
