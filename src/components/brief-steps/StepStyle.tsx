@@ -129,11 +129,11 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
                                 className={`
                                     relative overflow-hidden cursor-pointer rounded-2xl sm:rounded-3xl
                                     border-2 transition-all duration-300
-                                    flex flex-col sm:flex-row sm:items-center justify-between
-                                    gap-3 sm:gap-4 group
+                                    flex flex-row flex-wrap lg:flex-nowrap items-start lg:items-center justify-between w-full
+                                    lg:gap-4 group
                                     ${isSelected
-                                        ? 'border-[#d4ff00] ring-1 ring-[#d4ff00]/50 bg-white p-3 sm:p-5'
-                                        : 'bg-gray-50 border-gray-200 hover:border-[#d4ff00]/50 hover:bg-white hover:shadow-lg p-3 sm:p-4'
+                                        ? 'border-[#d4ff00] ring-1 ring-[#d4ff00]/50 bg-white p-4 lg:p-5'
+                                        : 'bg-gray-50 border-gray-200 hover:border-[#d4ff00]/50 hover:bg-white hover:shadow-lg p-4 lg:p-4'
                                     }
                                 `}
                             >
@@ -142,65 +142,53 @@ const StepStyle: React.FC<StepStyleProps> = ({ logoDetails, updateLogoDetails })
                                     <div className="absolute top-0 right-0 w-1.5 h-full bg-[#d4ff00] rounded-r-3xl" />
                                 )}
 
-                                {/* Card Header (Mobile) / Right Block (Desktop) */}
-                                <div className="flex flex-row items-center justify-between sm:justify-start gap-2 shrink-0 w-full sm:w-[160px] md:w-[190px] pr-2 sm:pr-3">
-                                    <div className="flex flex-col justify-center min-w-0">
-                                        <div className={`font-bold text-sm sm:text-base leading-tight transition-colors ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
-                                            {type.label}
-                                        </div>
-                                        <div className="text-[11px] sm:text-xs text-gray-400 mt-1 leading-tight">{type.desc}</div>
+                                {/* Block 1: Arabic Label — top-right on mobile (DOM-first = RTL right), right column on desktop */}
+                                <div className="order-1 w-1/2 lg:w-[20%] lg:shrink-0 text-right pr-1">
+                                    <div className={`font-bold text-sm sm:text-base lg:text-xl leading-tight transition-colors ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                                        {type.label}
                                     </div>
-                                    
-                                    {/* Mobile Only: English Label & Badge on the Left */}
-                                    <div className="sm:hidden flex items-center gap-2 shrink-0 text-left" dir="ltr">
-                                        {isSelected && (
-                                            <div className="bg-[#d4ff00] rounded-full p-1 animate-fadeIn shadow-sm">
-                                                <Check className="w-3 h-3 text-black" strokeWidth={3} />
-                                            </div>
-                                        )}
-                                        <span className={`text-[10px] font-mono uppercase tracking-widest font-semibold ${isSelected ? 'text-gray-900' : 'text-neutral-400'}`}>
+                                    <div className="text-[11px] sm:text-xs lg:text-sm text-gray-400 mt-1 leading-tight">{type.desc}</div>
+                                </div>
+
+                                {/* Block 2: English Label — top-left on mobile (DOM-second = RTL left), left column on desktop */}
+                                <div className="order-2 lg:order-3 w-1/2 lg:w-[20%] lg:shrink-0 text-left pl-1" dir="ltr">
+                                    <div className="flex items-center justify-start gap-2">
+                                        <span className={`text-xs lg:text-sm font-mono uppercase tracking-widest font-semibold ${isSelected ? 'text-gray-900' : 'text-neutral-400'}`}>
                                             {type.labelEn}
                                         </span>
+                                        {isSelected && (
+                                            <div className="bg-[#d4ff00] rounded-full p-1 animate-fadeIn shadow-sm shrink-0">
+                                                <Check className="w-3.5 h-3.5 text-black" strokeWidth={3} />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Mobile: Images Grid (Bottom) | Desktop: Images Row (Center) */}
-                                <div className="w-full sm:flex-1 grid grid-cols-4 sm:flex sm:flex-row sm:flex-wrap items-center sm:justify-center gap-1.5 sm:gap-2 md:gap-3 py-4 mt-1 sm:mt-0" dir="ltr">
+                                {/* Block 3: Logos — full-width second row on mobile, center column on desktop */}
+                                <div className="order-3 lg:order-2 w-full lg:w-[60%] mt-5 lg:mt-0 grid grid-cols-4 gap-2 sm:gap-3" dir="ltr">
                                     {type.images && type.images.length > 0 ? (
                                         type.images.slice(0, 4).map((img: string, idx: number) => (
                                             <div
                                                 key={idx}
                                                 className={`
-                                                    bg-white rounded-lg sm:rounded-xl border shrink-0
+                                                    w-full aspect-square flex items-center justify-center p-2 sm:p-3
+                                                    bg-white rounded-lg sm:rounded-xl border
                                                     transition-all duration-200
-                                                    aspect-square sm:aspect-auto w-full sm:w-20 md:w-24 h-auto min-h-[5rem]
-                                                    ${isSelected ? 'border-brand-lime/30 shadow-sm' : 'border-gray-200'}
+                                                    ${isSelected ? 'border-brand-lime/30 shadow-sm' : 'border-gray-100'}
                                                 `}
                                             >
                                                 <img
                                                     src={img}
                                                     alt={`${type.label} example ${idx + 1}`}
-                                                    className="w-full h-full object-contain p-1.5 sm:p-2"
+                                                    className="w-full h-full object-contain"
                                                 />
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="text-gray-300 text-xs italic px-4 col-span-4 text-center">
+                                        <div className="text-gray-300 text-xs italic col-span-4 text-center py-4">
                                             لا توجد أمثلة
                                         </div>
                                     )}
-                                </div>
-
-                                {/* Desktop Only: English Label & Badge on the Left */}
-                                <div className="hidden sm:flex items-center justify-end gap-2 shrink-0 w-[110px] md:w-[150px] text-left" dir="ltr">
-                                    {isSelected && (
-                                        <div className="bg-[#d4ff00] rounded-full p-1 animate-fadeIn shadow-sm">
-                                            <Check className="w-3.5 h-3.5 text-black" strokeWidth={3} />
-                                        </div>
-                                    )}
-                                    <span className={`text-xs font-mono uppercase tracking-widest font-semibold ${isSelected ? 'text-gray-900' : 'text-neutral-400'}`}>
-                                        {type.labelEn}
-                                    </span>
                                 </div>
                             </div>
 
